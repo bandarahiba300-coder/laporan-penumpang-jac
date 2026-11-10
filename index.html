@@ -96,6 +96,9 @@ td.aksi{position:relative;padding:4px}
 .label-kemarin{font-size:11px;font-weight:bold;font-style:italic;color:#ea580c;margin-left:6px}
 .label-besok{font-size:11px;font-weight:bold;font-style:italic;color:#16a34a;margin-left:6px}
 input.tanggal-asli{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;padding:0;border:none}
+.preview-box{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:14px;margin-top:12px;white-space:pre-wrap;font-family:monospace;font-size:13px;line-height:1.55;color:#111;min-height:120px;word-break:break-word}
+.btn-wa{background:#25D366;color:#fff;font-size:15px;margin-top:12px}
+.btn-wa:active{background:#1da851}
 </style>
 </head>
 <body class="depok">
@@ -112,6 +115,7 @@ input.tanggal-asli{position:absolute;opacity:0;pointer-events:none;width:1px;hei
 <button class="menu-btn active" id="btn-form" onclick="pindah('form')">📝 Form Laporan<small>Input penumpang harian</small></button>
 <button class="menu-btn" id="btn-rekap" onclick="pindah('rekap')">📋 Rekap Laporan<small>Depok & Bandara ditumpuk</small></button>
 <button class="menu-btn" id="btn-bulanan" onclick="pindah('bulanan')">📊 Report Bulanan<small>Rekap per tanggal 1 bulan</small></button>
+<button class="menu-btn" id="btn-format" onclick="pindah('format')">📋 Format Laporan Grup<small>Shift 1, Shift 2 & Total Harian</small></button>
 <div class="sidebar-footer"><div class="copy">© <b>Bagja Eka Aprianto</b></div><div class="unit">JAC - Hiba Bandara</div></div>
 </div>
 
@@ -191,12 +195,31 @@ input.tanggal-asli{position:absolute;opacity:0;pointer-events:none;width:1px;hei
 </div>
 </div>
 
+<div class="card page" id="page-format">
+<h3>📋 FORMAT LAPORAN GRUP</h3>
+<label>Tanggal</label>
+<div style="position:relative">
+<div class="tanggal-wrap" onclick="bukaKalender('tanggalFormat')"><span class="tanggal-teks" id="tampilTanggalFormat">-</span><span class="tanggal-panah">⌄</span></div>
+<input type="date" id="tanggalFormat" class="tanggal-asli" onchange="onTanggalFormatGanti()">
+</div>
+<label>Jenis Laporan</label>
+<select id="jenisLaporan" onchange="renderFormat()">
+<option value="shift1">1. Laporan Bandara Shift 1</option>
+<option value="shift2">2. Laporan Bandara Shift 2</option>
+<option value="total">3. Laporan Total Harian Bandara</option>
+</select>
+<div class="preview-box" id="previewFormat"></div>
+<button class="btn-wa" onclick="shareWA()">📲 Share ke WA</button>
+</div>
+
 <script>
 const jadwal = {
 Depok: ["2:00","2:30","3:00","3:30","4:00","4:30","5:00","5:30","6:00","6:30","7:00","7:30","8:00","8:30","9:00","9:30","10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00","18:00","19:00","20:00","21:00"],
 Bandara: ["5:20","6:20","7:20","7:50","8:20","8:50","9:20","9:50","10:20","10:50","11:20","11:50","12:20","12:50","13:20","13:50","14:20","14:50","15:20","15:50","16:20","16:50","17:20","17:50","18:20","18:50","19:20","19:50","20:20","20:50","21:20","21:50","22:20","23:20","0:20"]
 };
 const listBodyBus = ["A47","A48","A50","A51","A52","A53","A54","A55","A56","A57","A58","A59","A60","A61","A62","A63","A64","A65","A66","A67","A68"];
+const namaHariArr=["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+const namaBulanArr=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 function nilaiJam(s){let p=s.split(':');let h=parseInt(p[0],10);let m=parseInt(p[1]||'0',10);if(h===0)h=24;return h*60+m;}
 function urutJam(a,b){return nilaiJam(a.jam)-nilaiJam(b.jam);}
 function bukaMenu(){document.getElementById('sidebar').classList.add('open');document.getElementById('overlay').style.display='block';}
@@ -209,6 +232,7 @@ function pindah(hal){
   tutupMenu();
   if(hal==='rekap') render();
   if(hal==='bulanan') renderBulanan();
+  if(hal==='format') renderFormat();
   if(hal==='form') updateJamList();
   window.scrollTo(0,0);
 }
@@ -224,6 +248,7 @@ let limo=JSON.parse(localStorage.getItem('jac_limo')||'{}');
 let tabRekap='semua';
 let editIndex=-1;
 let editKeyLimoLama='';
+let teksFormatTerakhir='';
 function tampilTanggal(t){return t.split('-').reverse().join('/');}
 function toISO(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function updateTampilTanggal(idInput,idTampil){
@@ -241,7 +266,7 @@ function updateTampilTanggal(idInput,idTampil){
   else if(v===isoBesok) label=' <span class="label-besok">[Besok]</span>';
   el.innerHTML=teks+label;
 }
-function updateSemuaTampilTanggal(){updateTampilTanggal('tanggal','tampilTanggalForm');updateTampilTanggal('tanggalRekap','tampilTanggalRekap');}
+function updateSemuaTampilTanggal(){updateTampilTanggal('tanggal','tampilTanggalForm');updateTampilTanggal('tanggalRekap','tampilTanggalRekap');updateTampilTanggal('tanggalFormat','tampilTanggalFormat');}
 function bukaKalender(id){
   let inp=document.getElementById(id);
   if(inp.showPicker){try{inp.showPicker();return;}catch(e){}}
@@ -249,6 +274,7 @@ function bukaKalender(id){
 }
 function onTanggalFormGanti(){updateTampilTanggal('tanggal','tampilTanggalForm');updateJamList();}
 function onTanggalRekapGanti(){updateTampilTanggal('tanggalRekap','tampilTanggalRekap');render();}
+function onTanggalFormatGanti(){updateTampilTanggal('tanggalFormat','tampilTanggalFormat');renderFormat();}
 function setTabRekap(t){
   tabRekap=t;
   document.getElementById('tab-semua').classList.toggle('active',t==='semua');
@@ -296,7 +322,7 @@ function kunciLimo(tgl,rute,jam){return tgl+'|'+rute+'|'+jam;}
 function simpanLimo(tgl,rute,jam,val){
   limo[kunciLimo(tgl,rute,jam)]=val;
   localStorage.setItem('jac_limo',JSON.stringify(limo));
-  render();renderBulanan();
+  render();renderBulanan();renderFormat();
 }
 function toggleMenu(btn){
   let menu=btn.nextElementSibling;
@@ -328,6 +354,7 @@ function editBaris(tgl,rute,jam){
   document.getElementById('btnSimpan').style.background='#f59e0b';
   document.getElementById('btnBatalEdit').style.display='block';
   document.getElementById('tanggalRekap').value=d.tgl;
+  document.getElementById('tanggalFormat').value=d.tgl;
   updateSemuaTampilTanggal();
   updateJamList();
   pindah('form');
@@ -353,7 +380,7 @@ function hapusBaris(tgl,rute,jam,body){
   localStorage.setItem('jac',JSON.stringify(data));
   if(editIndex===idx) batalEdit();
   else if(editIndex>idx) editIndex--;
-  render();renderBulanan();updateJamList();
+  render();renderBulanan();renderFormat();updateJamList();
   alert('Baris dihapus. Jam '+jam+' sekarang bisa di-input lagi.');
 }
 function render(){
@@ -487,6 +514,56 @@ function exportBulanan(){
   document.body.removeChild(a);
   alert('Berhasil export Aa! File Laporan_JAC_'+namaBulan+'.csv sudah ke-download, bisa dibuka di Excel / Spreadsheet.');
 }
+function namaHariDanTanggalPanjang(tgl){
+  let p=tgl.split('-');
+  let d=new Date(Number(p[0]),Number(p[1])-1,Number(p[2]));
+  return {hari:namaHariArr[d.getDay()],panjang:Number(p[2])+' '+namaBulanArr[Number(p[1])-1]+' '+p[0]};
+}
+function hitungShift(tgl,shift){
+  let list=data.filter(d=>d.tgl===tgl && d.rute==='Bandara');
+  if(shift===1) list=list.filter(d=>nilaiJam(d.jam)<nilaiJam('15:20'));
+  if(shift===2) list=list.filter(d=>nilaiJam(d.jam)>=nilaiJam('15:20'));
+  let total=0, keLimo=0;
+  list.forEach(d=>{
+    total+=Number(d.pnp);
+    keLimo+=Number(limo[kunciLimo(d.tgl,'Bandara',d.jam)]||0);
+  });
+  return {total,keLimo,depok:total-keLimo,ritase:list.length};
+}
+function hitungTotalHarian(tgl){
+  let depokList=data.filter(d=>d.tgl===tgl && d.rute==='Depok');
+  let bandaraList=data.filter(d=>d.tgl===tgl && d.rute==='Bandara');
+  let totalDepokKotor=0, totalBandaraKotor=0, dariLimo=0, keLimo=0;
+  depokList.forEach(d=>{totalDepokKotor+=Number(d.pnp); dariLimo+=Number(limo[kunciLimo(d.tgl,'Depok',d.jam)]||0);});
+  bandaraList.forEach(d=>{totalBandaraKotor+=Number(d.pnp); keLimo+=Number(limo[kunciLimo(d.tgl,'Bandara',d.jam)]||0);});
+  let depokBandara=totalDepokKotor-dariLimo;
+  let bandaraDepok=totalBandaraKotor-keLimo;
+  return {depokBandara,dariLimo,totalDepok:totalDepokKotor,bandaraDepok,keLimo,totalBandara:totalBandaraKotor,ritase:depokList.length+bandaraList.length,totalHarian:totalDepokKotor+totalBandaraKotor};
+}
+function renderFormat(){
+  let tgl=document.getElementById('tanggalFormat').value;
+  let jenis=document.getElementById('jenisLaporan').value;
+  if(!tgl){document.getElementById('previewFormat').textContent='Pilih tanggal dulu Aa';teksFormatTerakhir='';return;}
+  let info=namaHariDanTanggalPanjang(tgl);
+  let teks='';
+  if(jenis==='shift1' || jenis==='shift2'){
+    let s=jenis==='shift1'?1:2;
+    let h=hitungShift(tgl,s);
+    let salam=s===1?'Selamat sore Team':'Selamat malam Team';
+    let jamRange=s===1?'*Dari Jam 05:20-14:50*':'*Dari Jam 15:20-00:20*';
+    teks='*LAPORAN SHIFT '+s+'*\n\n'+salam+'\n\nLaporan Harian \nJAC Hiba Utama \nBANDARA\t\tSOETTA\n*Hari        : '+info.hari+'*\n*Tanggal : '+info.panjang+'*\n'+jamRange+'\n--------------------------------\n Bsh - Depok = '+h.depok+' pnp\n Bsh - Limo   =  '+h.keLimo+' pnp\n Total Pnp     = '+h.total+' pnp\n Ritase           =   '+h.ritase+' \n \n--------------------------------\nDemikian Laporan Harian Yang Dapat disampaikan.\n\n*Terima Kasih*';
+  } else {
+    let t=hitungTotalHarian(tgl);
+    teks='*LAPORAN HARIAN*\n\n*Hari : '+info.hari+'*\n*Tanggal : '+info.panjang+'*\n\n*1. DEPOK*\n- Depok - Bandara (Pnp) = '+t.depokBandara+'\n- Limo - Bandara (Pnp) = '+t.dariLimo+'\n- _TOTAL DEPOK (Pnp) = '+t.totalDepok+'_\n\n*2. BANDARA*\n- Bandara - Depok (Pnp) = '+t.bandaraDepok+'\n- Bandara - Limo (Pnp) = '+t.keLimo+'\n- _TOTAL BANDARA (Pnp) = '+t.totalBandara+'_\n- Ritase/KR = '+t.ritase+'\n\n___________________________\n\n • *_TOTAL Harian (Pnp) = '+t.totalHarian+'_*\n\nDemikian Laporan Harian yang dapat disampaikan.\n\n*Terima Kasih*';
+  }
+  teksFormatTerakhir=teks;
+  document.getElementById('previewFormat').textContent=teks;
+}
+function shareWA(){
+  if(!teksFormatTerakhir){renderFormat();}
+  if(!teksFormatTerakhir){alert('Pilih tanggal dulu Aa');return;}
+  window.open('https://wa.me/?text='+encodeURIComponent(teksFormatTerakhir),'_blank');
+}
 function tambah(){
   let tgl=document.getElementById('tanggal').value;
   let rute=document.getElementById('rute').value;
@@ -512,8 +589,9 @@ function tambah(){
     alert('Perubahan disimpan!');
     batalEdit();
     document.getElementById('tanggalRekap').value=tgl;
+    document.getElementById('tanggalFormat').value=tgl;
     updateSemuaTampilTanggal();
-    render();renderBulanan();
+    render();renderBulanan();renderFormat();
     pindah('rekap');
     return;
   }
@@ -521,17 +599,19 @@ function tambah(){
   localStorage.setItem('jac',JSON.stringify(data));
   document.getElementById('penumpang').value='';document.getElementById('body').value='';document.getElementById('jam').value='';document.getElementById('ket').value='';
   document.getElementById('tanggalRekap').value=tgl;
+  document.getElementById('tanggalFormat').value=tgl;
   updateSemuaTampilTanggal();
   alert('Berhasil! Cek di Rekap Laporan');
   updateJamList();
-  render();renderBulanan();
+  render();renderBulanan();renderFormat();
 }
 let today=new Date().toISOString().slice(0,10);
 document.getElementById('tanggal').value=today;
 document.getElementById('tanggalRekap').value=today;
+document.getElementById('tanggalFormat').value=today;
 document.getElementById('bulan').value=today.slice(0,7);
 updateSemuaTampilTanggal();
-gantiRute();render();renderBulanan();
+gantiRute();render();renderBulanan();renderFormat();
 </script>
 </body>
 </html>
