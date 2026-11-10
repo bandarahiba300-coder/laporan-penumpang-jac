@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Laporan Penumpang JAC</title>
+<title>Laporan Penumpang JAC - Hiba Bandara</title>
 <style>
 :root{--warna:#2563eb}
 body.depok{--warna:#2563eb}
@@ -38,7 +38,7 @@ td input.limo{width:56px;padding:7px;text-align:center;border:1px solid #999;bor
 .t-limo-b{background:#bbf7d0;color:#166534}
 .badge{display:inline-block;padding:4px 10px;border-radius:20px;background:var(--warna);color:#fff;font-size:11px;font-weight:bold}
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:90}
-.sidebar{position:fixed;top:0;left:-260px;width:250px;height:100%;background:#fff;z-index:100;transition:.3s;padding:16px;box-shadow:2px 0 12px rgba(0,0,0,.2);box-sizing:border-box}
+.sidebar{position:fixed;top:0;left:-260px;width:250px;height:100%;background:#fff;z-index:100;transition:.3s;padding:16px 16px 70px;box-shadow:2px 0 12px rgba(0,0,0,.2);box-sizing:border-box}
 .sidebar.open{left:0}
 .sidebar h3{color:#1e3a8a;text-align:left;margin:10px 0 16px}
 .menu-btn{display:block;width:100%;text-align:left;background:#f1f5f9;color:#111;padding:13px;border:none;border-radius:10px;margin-bottom:8px;font-size:15px;font-weight:bold}
@@ -46,6 +46,10 @@ td input.limo{width:56px;padding:7px;text-align:center;border:1px solid #999;bor
 .menu-btn small{display:block;font-weight:normal;color:#888;font-size:11px}
 .menu-btn.active small{color:#ddd}
 .close-btn{background:#ef4444;color:#fff;border:none;padding:8px 12px;border-radius:8px;float:right}
+.sidebar-footer{position:absolute;left:0;right:0;bottom:0;padding:12px 16px;border-top:1px solid #e5e7eb;text-align:center;background:#fff}
+.sidebar-footer .copy{font-size:11px;color:#666}
+.sidebar-footer .copy b{color:#111}
+.sidebar-footer .unit{font-size:11px;color:#888;margin-top:2px}
 .page{display:none}
 .page.active{display:block}
 .tab-wrap{display:flex;gap:6px;margin:12px 0 4px;overflow-x:auto;padding-bottom:4px}
@@ -98,7 +102,7 @@ input.tanggal-asli{position:absolute;opacity:0;pointer-events:none;width:1px;hei
 
 <div class="topbar">
 <button class="hamburger" onclick="bukaMenu()">☰</button>
-<div class="top-title">Laporan Penumpang JAC<br><span style="font-size:11px;color:#666;font-weight:normal">Bandara HIBA</span></div>
+<div class="top-title">Laporan Penumpang JAC<br><span style="font-size:11px;color:#666;font-weight:normal">JAC - Hiba Bandara</span></div>
 </div>
 
 <div class="overlay" id="overlay" onclick="tutupMenu()"></div>
@@ -108,11 +112,12 @@ input.tanggal-asli{position:absolute;opacity:0;pointer-events:none;width:1px;hei
 <button class="menu-btn active" id="btn-form" onclick="pindah('form')">📝 Form Laporan<small>Input penumpang harian</small></button>
 <button class="menu-btn" id="btn-rekap" onclick="pindah('rekap')">📋 Rekap Laporan<small>Depok & Bandara ditumpuk</small></button>
 <button class="menu-btn" id="btn-bulanan" onclick="pindah('bulanan')">📊 Report Bulanan<small>Rekap per tanggal 1 bulan</small></button>
+<div class="sidebar-footer"><div class="copy">© <b>Bagja Eka Aprianto</b></div><div class="unit">JAC - Hiba Bandara</div></div>
 </div>
 
 <div class="card page active" id="page-form">
 <h2>Laporan Penumpang JAC</h2>
-<p class="sub">Bandara HIBA - Input Harian &nbsp;<span class="badge" id="badgeRute">DEPOK - BIRU</span></p>
+<p class="sub">JAC - Hiba Bandara - Input Harian &nbsp;<span class="badge" id="badgeRute">DEPOK - BIRU</span></p>
 <div class="edit-banner" id="editBanner">✏️ MODE EDIT - Aa lagi benerin data lama</div>
 <label>Tanggal</label>
 <div style="position:relative">
@@ -466,7 +471,7 @@ function exportBulanan(){
   let r=hitungBulanan(bln);
   if(!r.rows.length){alert('Belum ada data di bulan ini Aa');return;}
   let namaBulan=new Date(bln+'-01').toLocaleDateString('id-ID',{month:'long',year:'numeric'}).replace(/ /g,'_');
-  let csv='\uFEFFLaporan Penumpang JAC - Bandara HIBA\n';
+  let csv='\uFEFFLaporan Penumpang JAC - Hiba Bandara\n';
   csv+='Bulan,'+namaBulan.replace(/_/g,' ')+'\n\n';
   csv+='Tanggal,Depok,Dari Limo,Bandara,Ke Limo,Total\n';
   r.rows.forEach(x=>{
