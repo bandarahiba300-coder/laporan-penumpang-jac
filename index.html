@@ -28,8 +28,8 @@ th.bandara{background:#6fbf6f;color:#000}
 td.depok{background:#eaf4ff}
 td.bandara{background:#eefbee}
 td input.limo{width:56px;padding:7px;text-align:center;border:1px solid #999;border-radius:8px;font-size:14px;background:#fff}
-.total-box{display:flex;gap:8px;margin-top:10px}
-.total-box div{flex:1;text-align:center;padding:10px;border-radius:10px;font-weight:bold;font-size:13px}
+.total-box{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.total-box div{flex:1;min-width:100px;text-align:center;padding:10px;border-radius:10px;font-weight:bold;font-size:13px}
 .t-depok{background:#dbeafe;color:#1e3a8a}
 .t-bandara{background:#dcfce7;color:#166534}
 .t-all{background:#1e3a8a;color:#fff}
@@ -56,7 +56,6 @@ td input.limo{width:56px;padding:7px;text-align:center;border:1px solid #999;bor
 .rekap-title.depok-t{background:#5aa9e6}
 .rekap-title.bandara-t{background:#6fbf6f}
 .sisa{font-size:11px;color:#16a34a;font-weight:bold;margin-top:4px}
-/* TITIK 3 */
 td.aksi{position:relative;padding:4px}
 .btn-titik{background:#fff;border:1px solid #999;width:32px;height:32px;border-radius:8px;font-size:18px;line-height:1;cursor:pointer;padding:0}
 .menu-aksi{display:none;position:absolute;right:4px;top:36px;background:#fff;border:1px solid #ddd;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,.2);z-index:20;width:140px;overflow:hidden}
@@ -64,6 +63,9 @@ td.aksi{position:relative;padding:4px}
 .menu-aksi button:last-child{border-bottom:none}
 .menu-aksi button.hapus{color:#dc2626}
 .edit-banner{display:none;background:#fef3c7;border:1px solid #f59e0b;color:#92400e;padding:10px;border-radius:10px;font-size:13px;text-align:center;font-weight:bold;margin-bottom:10px}
+.wrap-bulanan{overflow-x:auto}
+.wrap-bulanan table{min-width:620px}
+.rumus-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px;font-size:12px;color:#1e3a8a;line-height:1.6;margin-top:12px}
 </style>
 </head>
 <body class="depok">
@@ -132,14 +134,25 @@ td.aksi{position:relative;padding:4px}
 <div class="card page" id="page-bulanan">
 <h3>📊 REPORT BULANAN</h3>
 <label>Pilih Bulan</label><input type="month" id="bulan" onchange="renderBulanan()">
+<div class="wrap-bulanan">
 <table style="margin-top:12px">
-<thead><tr><th>Tanggal</th><th style="background:#5aa9e6">Depok</th><th style="background:#6fbf6f">Bandara</th><th style="background:#1e3a8a;color:#fff">Total</th></tr></thead>
+<thead><tr><th>Tanggal</th><th style="background:#5aa9e6">Depok<br><small>(Bersih)</small></th><th style="background:#bfdbfe">Dari Limo</th><th style="background:#6fbf6f">Bandara<br><small>(Bersih)</small></th><th style="background:#bbf7d0">Ke Limo</th><th style="background:#1e3a8a;color:#fff">Total<br><small>Kotor</small></th></tr></thead>
 <tbody id="listBulanan"></tbody>
 </table>
+</div>
 <div class="total-box">
-<div class="t-depok" id="totBDepok">Depok: 0</div>
-<div class="t-bandara" id="totBBandara">Bandara: 0</div>
-<div class="t-all" id="totBAll">Total: 0</div>
+<div class="t-depok" id="totBDepok">Depok Bersih: 0</div>
+<div class="t-limo-d" id="totBDariLimo">Dari Limo: 0</div>
+<div class="t-bandara" id="totBBandara">Bandara Bersih: 0</div>
+<div class="t-limo-b" id="totBKeLimo">Ke Limo: 0</div>
+<div class="t-all" id="totBAll">Total Kotor: 0</div>
+</div>
+<div class="rumus-box">
+<b>Rumus Bulanan:</b><br>
+• Depok (Bersih) = Depok Harian - Dari Limo<br>
+• Bandara (Bersih) = Bandara Harian - Ke Limo<br>
+• Total Kotor = Depok Bersih + Dari Limo + Bandara Bersih + Ke Limo<br>
+<small>Dari / Ke Limo adalah bagian dari penumpang, bukan tambahan. Jadi Total Kotor = total penumpang asli.</small>
 </div>
 </div>
 
@@ -168,7 +181,6 @@ function gantiRute(){
   let rute=document.getElementById('rute').value;
   document.body.className=rute.toLowerCase();
   document.getElementById('badgeRute').innerText=rute.toUpperCase()+(rute==='Depok'?' - BIRU':' - HIJAU');
-  // Kalau lagi mode edit, jangan kosongin jam, biar jam lama tetep keisi
   if(editIndex===-1) document.getElementById('jam').value='';
   updateJamList();
 }
@@ -191,7 +203,6 @@ swipeEl.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;},{passive
 swipeEl.addEventListener('touchend',e=>{
   let dx=e.changedTouches[0].clientX-startX;
   if(Math.abs(dx)<50) return;
-  // Kalau menu titik 3 lagi kebuka, jangan slide
   if(document.querySelector('.menu-aksi[style*="block"]')) return;
   if(dx<0){
     if(tabRekap==='semua') setTabRekap('depok');
@@ -211,7 +222,6 @@ function updateJamList(){
   let rute=document.getElementById('rute').value;
   let terpakai=jamTerpakai(tgl,rute);
   let sisa=jadwal[rute].filter(j=>!terpakai.includes(j));
-  // Kalau lagi edit, jam lama harus tetep muncul di pilihan
   if(editIndex!==-1){
     let d=data[editIndex];
     if(d && d.tgl===tgl && d.rute===rute && !sisa.includes(d.jam)){
@@ -230,9 +240,8 @@ function kunciLimo(tgl,rute,jam){return tgl+'|'+rute+'|'+jam;}
 function simpanLimo(tgl,rute,jam,val){
   limo[kunciLimo(tgl,rute,jam)]=val;
   localStorage.setItem('jac_limo',JSON.stringify(limo));
-  render();
+  render();renderBulanan();
 }
-// === TITIK 3 ===
 function toggleMenu(btn){
   let menu=btn.nextElementSibling;
   let lagiBuka=menu.style.display==='block';
@@ -280,13 +289,11 @@ function hapusBaris(tgl,rute,jam,body){
   if(!confirm('Yakin hapus?\n'+rute+' | '+jam+' | Body '+body+'\nJam ini nanti bisa di-input lagi.')) return;
   let idx=cariIndex(tgl,rute,jam);
   if(idx===-1) return;
-  // Hapus juga Limo-nya biar ga nyangkut
   let k=kunciLimo(tgl,rute,jam);
   delete limo[k];
   localStorage.setItem('jac_limo',JSON.stringify(limo));
   data.splice(idx,1);
   localStorage.setItem('jac',JSON.stringify(data));
-  // Kalau yang dihapus lagi di-edit, batalin edit
   if(editIndex===idx) batalEdit();
   else if(editIndex>idx) editIndex--;
   render();renderBulanan();updateJamList();
@@ -328,26 +335,51 @@ function render(){
   document.getElementById('totKeLimo').innerText='Ke Limo: '+tKL;
   setTabRekap(tabRekap);
 }
+// === REPORT BULANAN - FORMULA BARU ===
+function totalLimoPerTanggal(tgl,rute){
+  let total=0;
+  Object.keys(limo).forEach(k=>{
+    let parts=k.split('|');
+    if(parts[0]===tgl && parts[1]===rute){
+      total+=Number(limo[k]||0);
+    }
+  });
+  return total;
+}
 function renderBulanan(){
   let bln=document.getElementById('bulan').value;
   let grouped={};
   data.forEach(d=>{
     if(bln && !d.tgl.startsWith(bln)) return;
-    if(!grouped[d.tgl]) grouped[d.tgl]={depok:0,bandara:0};
-    if(d.rute==='Depok') grouped[d.tgl].depok+=Number(d.pnp);
-    else grouped[d.tgl].bandara+=Number(d.pnp);
+    if(!grouped[d.tgl]) grouped[d.tgl]={depokKotor:0,bandaraKotor:0};
+    if(d.rute==='Depok') grouped[d.tgl].depokKotor+=Number(d.pnp);
+    else grouped[d.tgl].bandaraKotor+=Number(d.pnp);
+  });
+  // Tanggal yang cuma ada Limo-nya tapi ga ada Pnp-nya tetep muncul
+  Object.keys(limo).forEach(k=>{
+    let tgl=k.split('|')[0];
+    if(bln && !tgl.startsWith(bln)) return;
+    if(!grouped[tgl]) grouped[tgl]={depokKotor:0,bandaraKotor:0};
   });
   let keys=Object.keys(grouped).sort();
-  let h=''; let tD=0,tB=0;
+  let h=''; let tDepokBersih=0,tDariLimo=0,tBandaraBersih=0,tKeLimo=0,tTotalKotor=0;
   keys.forEach(k=>{
-    let g=grouped[k]; tD+=g.depok; tB+=g.bandara;
-    h+=`<tr><td>${k.split('-').reverse().join('/')}</td><td>${g.depok}</td><td>${g.bandara}</td><td><b>${g.depok+g.bandara}</b></td></tr>`;
+    let g=grouped[k];
+    let dariLimo=totalLimoPerTanggal(k,'Depok');
+    let keLimo=totalLimoPerTanggal(k,'Bandara');
+    let depokBersih=g.depokKotor-dariLimo;
+    let bandaraBersih=g.bandaraKotor-keLimo;
+    let totalKotor=depokBersih+dariLimo+bandaraBersih+keLimo;
+    tDepokBersih+=depokBersih; tDariLimo+=dariLimo; tBandaraBersih+=bandaraBersih; tKeLimo+=keLimo; tTotalKotor+=totalKotor;
+    h+=`<tr><td>${k.split('-').reverse().join('/')}</td><td>${depokBersih}</td><td>${dariLimo}</td><td>${bandaraBersih}</td><td>${keLimo}</td><td><b>${totalKotor}</b></td></tr>`;
   });
-  if(!keys.length) h='<tr><td colspan="4">Belum ada data di bulan ini</td></tr>';
+  if(!keys.length) h='<tr><td colspan="6">Belum ada data di bulan ini</td></tr>';
   document.getElementById('listBulanan').innerHTML=h;
-  document.getElementById('totBDepok').innerText='Depok: '+tD;
-  document.getElementById('totBBandara').innerText='Bandara: '+tB;
-  document.getElementById('totBAll').innerText='Total: '+(tD+tB);
+  document.getElementById('totBDepok').innerText='Depok Bersih: '+tDepokBersih;
+  document.getElementById('totBDariLimo').innerText='Dari Limo: '+tDariLimo;
+  document.getElementById('totBBandara').innerText='Bandara Bersih: '+tBandaraBersih;
+  document.getElementById('totBKeLimo').innerText='Ke Limo: '+tKeLimo;
+  document.getElementById('totBAll').innerText='Total Kotor: '+tTotalKotor;
 }
 function tambah(){
   let tgl=document.getElementById('tanggal').value;
@@ -362,10 +394,7 @@ function tambah(){
     updateJamList();
     return;
   }
-  // MODE EDIT
   if(editIndex!==-1){
-    let lama=data[editIndex];
-    // Kalau jam / tanggal / rute berubah, pindahin Limo-nya ikut jam baru
     let keyBaru=kunciLimo(tgl,rute,jam);
     if(editKeyLimoLama && editKeyLimoLama!==keyBaru && limo[editKeyLimoLama]!==undefined){
       limo[keyBaru]=limo[editKeyLimoLama];
@@ -381,7 +410,6 @@ function tambah(){
     pindah('rekap');
     return;
   }
-  // MODE TAMBAH BARU
   data.push({tgl,rute,jam,body,pnp,ket});
   localStorage.setItem('jac',JSON.stringify(data));
   document.getElementById('penumpang').value='';document.getElementById('body').value='';document.getElementById('jam').value='';document.getElementById('ket').value='';
