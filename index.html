@@ -56,7 +56,6 @@ td input.limo{width:56px;padding:7px;text-align:center;border:1px solid #999;bor
 .rekap-title{font-weight:bold;padding:8px 10px;border-radius:10px 10px 0 0;text-align:center}
 .rekap-title.depok-t{background:#5aa9e6}
 .rekap-title.bandara-t{background:#6fbf6f}
-.sisa{font-size:11px;color:#16a34a;font-weight:bold;margin-top:4px}
 td.aksi{position:relative;padding:4px}
 .btn-titik{background:#111111;color:#ffffff;border:2px solid #111111;width:40px;height:40px;border-radius:10px;font-size:22px;font-weight:900;line-height:1;cursor:pointer;padding:0;box-shadow:0 2px 5px rgba(0,0,0,.35)}
 .btn-titik:active{background:#000000;transform:scale(.95)}
@@ -95,8 +94,6 @@ td.aksi{position:relative;padding:4px}
 <label>Rute / Trayek</label>
 <select id="rute" onchange="gantiRute()"><option value="Depok">1. Depok</option><option value="Bandara">2. Bandara</option></select>
 <label>Jam Keberangkatan</label><input type="text" id="jam" list="listJam" placeholder="Ketik jam / pilih"><datalist id="listJam"></datalist>
-<div class="hint">Aturan: Jam yang sudah tersimpan di Rekap di tanggal & rute yang sama, otomatis tidak tampil lagi. Ganti tanggal = jam muncul lagi kalau belum terpakai di tanggal itu. 0:20 = 24:20 (paling akhir).</div>
-<div class="sisa" id="sisaJam"></div>
 <label>No. Body Bus</label><input type="text" id="body" list="listBody" placeholder="Pilih / ketik No.Body - Contoh: A60"><datalist id="listBody"></datalist>
 <div class="hint">21 unit: A47, A48, A50 s/d A68.</div>
 <label>Jumlah Penumpang</label><input type="number" id="penumpang" placeholder="0">
@@ -233,10 +230,6 @@ function updateJamList(){
     }
   }
   document.getElementById('listJam').innerHTML=sisa.map(j=>`<option value="${j}">`).join('');
-  let el=document.getElementById('sisaJam');
-  if(!tgl){el.innerHTML='';}
-  else if(sisa.length===0){el.innerHTML='⚠️ Semua jam '+rute+' di tanggal '+tgl.split('-').reverse().join('/')+' sudah terpakai!';}
-  else {el.innerHTML='Sisa jam '+rute+' tanggal '+tgl.split('-').reverse().join('/')+': <b>'+sisa.length+' jam</b> | Sudah terpakai: '+(terpakai.length?terpakai.join(', '):'-');}
   document.getElementById('listBody').innerHTML=listBodyBus.map(b=>`<option value="${b}">`).join('');
 }
 function kunciLimo(tgl,rute,jam){return tgl+'|'+rute+'|'+jam;}
