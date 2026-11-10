@@ -19,7 +19,6 @@ p.sub{text-align:center;color:#666;font-size:13px;margin:0 0 12px}
 label{font-size:13px;font-weight:bold;display:block;margin-top:10px}
 input,select{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;margin-top:5px;box-sizing:border-box;font-size:15px}
 input:focus,select:focus{outline:2px solid var(--warna)}
-input:disabled{background:#e5e7eb;color:#111;font-weight:bold}
 button{width:100%;padding:12px;border:none;border-radius:12px;background:var(--warna);color:#fff;font-weight:bold;font-size:15px;margin-top:14px}
 .hint{font-size:11px;color:#888;margin-top:4px}
 h3{margin:6px 0 10px;text-align:center;font-size:16px}
@@ -70,9 +69,6 @@ td.aksi{position:relative;padding:4px}
 .wrap-bulanan table{min-width:620px}
 .btn-export{background:#16a34a;color:#fff;font-size:15px;margin-top:12px}
 .btn-export:active{background:#15803d}
-.btn-closing{background:#111111;color:#fff;font-size:15px;margin-top:8px}
-.btn-closing:active{background:#000}
-.tanggal-lock{font-size:11px;color:#dc2626;font-weight:bold;margin-top:4px}
 .grafik-wrap{margin-top:18px;border-top:2px solid #e5e7eb;padding-top:12px}
 .grafik-title{text-align:center;font-weight:bold;font-size:15px;margin-bottom:8px}
 .grafik-legend{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;font-size:12px;font-weight:bold;margin-bottom:10px}
@@ -110,8 +106,7 @@ td.aksi{position:relative;padding:4px}
 <h2>Laporan Penumpang JAC</h2>
 <p class="sub">Bandara HIBA - Input Harian &nbsp;<span class="badge" id="badgeRute">DEPOK - BIRU</span></p>
 <div class="edit-banner" id="editBanner">✏️ MODE EDIT - Aa lagi benerin data lama</div>
-<label>Tanggal (Terkunci - Sampai Closing)</label><input type="date" id="tanggal" disabled>
-<div class="tanggal-lock">🔒 Tanggal terkunci. Untuk pindah tanggal, pencet tombol Closing di bawah.</div>
+<label>Tanggal</label><input type="date" id="tanggal" onchange="updateJamList()">
 <label>Rute / Trayek</label>
 <select id="rute" onchange="gantiRute()"><option value="Depok">1. Depok</option><option value="Bandara">2. Bandara</option></select>
 <label>Jam Keberangkatan</label><input type="text" id="jam" list="listJam" placeholder="Ketik jam / pilih"><datalist id="listJam"></datalist>
@@ -120,8 +115,7 @@ td.aksi{position:relative;padding:4px}
 <label>Jumlah Penumpang</label><input type="number" id="penumpang" placeholder="0">
 <label>Keterangan</label><input type="text" id="ket" placeholder="Opsional">
 <button id="btnSimpan" onclick="tambah()">+ Tambah Laporan</button>
-<button id="btnBatalEdit" onclick="batalEdit()" style="display:none;background:#6b7280;margin-top:8px">Batal Edit - Balik ke Tanggal Aktif</button>
-<button class="btn-closing" id="btnClosing" onclick="closingTanggal()">🔒 Closing - Pindah ke Tanggal Berikutnya</button>
+<button id="btnBatalEdit" onclick="batalEdit()" style="display:none;background:#6b7280;margin-top:8px">Batal Edit - Balik ke Input Baru</button>
 <p style="text-align:center;font-size:12px;color:#666;margin-top:12px">Setelah tambah, cek di Menu > Rekap Laporan</p>
 </div>
 
@@ -209,32 +203,7 @@ let limo=JSON.parse(localStorage.getItem('jac_limo')||'{}');
 let tabRekap='semua';
 let editIndex=-1;
 let editKeyLimoLama='';
-let today=new Date().toISOString().slice(0,10);
-let tanggalAktif=localStorage.getItem('jac_tanggal_aktif')||today;
-if(!localStorage.getItem('jac_tanggal_aktif')) localStorage.setItem('jac_tanggal_aktif',tanggalAktif);
 function tampilTanggal(t){return t.split('-').reverse().join('/');}
-function updateLabelClosing(){
-  document.getElementById('btnClosing').innerText='🔒 Closing '+tampilTanggal(tanggalAktif)+' - Pindah ke '+tampilTanggal(tambahHari(tanggalAktif,1));
-}
-function tambahHari(tgl,n){
-  let d=new Date(tgl+'T00:00:00'); d.setDate(d.getDate()+n);
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-}
-function closingTanggal(){
-  if(editIndex!==-1){alert('Aa lagi Mode Edit. Selesaikan / Batal Edit dulu baru bisa Closing.');return;}
-  let tgl=tanggalAktif;
-  let besok=tambahHari(tgl,1);
-  if(!confirm('Yakin Closing tanggal '+tampilTanggal(tgl)+'?\n\nTanggal Form akan pindah ke '+tampilTanggal(besok)+'.\nTanggal '+tampilTanggal(tgl)+' masih bisa di-edit lewat Rekap (Versi B).')) return;
-  tanggalAktif=besok;
-  localStorage.setItem('jac_tanggal_aktif',tanggalAktif);
-  document.getElementById('tanggal').value=tanggalAktif;
-  document.getElementById('tanggalRekap').value=tanggalAktif;
-  document.getElementById('bulan').value=tanggalAktif.slice(0,7);
-  updateLabelClosing();
-  updateJamList(); render(); renderBulanan();
-  alert('Closing berhasil Aa! Sekarang tanggal aktif: '+tampilTanggal(tanggalAktif));
-  pindah('form');
-}
 function setTabRekap(t){
   tabRekap=t;
   document.getElementById('tab-semua').classList.toggle('active',t==='semua');
@@ -310,7 +279,6 @@ function editBaris(tgl,rute,jam){
   document.getElementById('penumpang').value=d.pnp;
   document.getElementById('ket').value=d.ket||'';
   document.getElementById('editBanner').style.display='block';
-  document.getElementById('editBanner').innerText='✏️ MODE EDIT - Benerin data tanggal '+tampilTanggal(d.tgl)+' (Tanggal Aktif tetap '+tampilTanggal(tanggalAktif)+')';
   document.getElementById('btnSimpan').innerText='💾 Simpan Perubahan';
   document.getElementById('btnSimpan').style.background='#f59e0b';
   document.getElementById('btnBatalEdit').style.display='block';
@@ -321,7 +289,6 @@ function editBaris(tgl,rute,jam){
 function batalEdit(){
   editIndex=-1;
   editKeyLimoLama='';
-  document.getElementById('tanggal').value=tanggalAktif;
   document.getElementById('editBanner').style.display='none';
   document.getElementById('btnSimpan').innerText='+ Tambah Laporan';
   document.getElementById('btnSimpan').style.background='var(--warna)';
@@ -511,10 +478,10 @@ function tambah(){
   updateJamList();
   render();renderBulanan();
 }
-document.getElementById('tanggal').value=tanggalAktif;
-document.getElementById('tanggalRekap').value=tanggalAktif;
-document.getElementById('bulan').value=tanggalAktif.slice(0,7);
-updateLabelClosing();
+let today=new Date().toISOString().slice(0,10);
+document.getElementById('tanggal').value=today;
+document.getElementById('tanggalRekap').value=today;
+document.getElementById('bulan').value=today.slice(0,7);
 gantiRute();render();renderBulanan();
 </script>
 </body>
