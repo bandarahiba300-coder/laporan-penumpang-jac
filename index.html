@@ -9,10 +9,10 @@
 body.depok{--warna:#2563eb}
 body.bandara{--warna:#16a34a}
 body{font-family:sans-serif;background:#f0f4ff;margin:0;padding:10px}
-.topbar{display:flex;align-items:center;gap:10px;max-width:900px;margin:0 auto 10px}
+.topbar{display:flex;align-items:center;gap:10px;max-width:780px;margin:0 auto 10px}
 .hamburger{font-size:24px;background:#fff;border:none;border-radius:10px;width:44px;height:44px;box-shadow:0 2px 8px rgba(0,0,0,.1);cursor:pointer}
 .top-title{font-weight:bold;color:#1e3a8a;font-size:15px}
-.card{background:#fff;border-radius:16px;padding:14px;max-width:900px;margin:auto;box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.card{background:#fff;border-radius:16px;padding:14px;max-width:780px;margin:auto;box-shadow:0 4px 12px rgba(0,0,0,.1)}
 h2{text-align:center;color:var(--warna);margin:0 0 4px;font-size:22px}
 p.sub{text-align:center;color:#666;font-size:13px;margin:0 0 12px}
 label{font-size:13px;font-weight:bold;display:block;margin-top:10px}
@@ -21,15 +21,13 @@ input:focus,select:focus{outline:2px solid var(--warna)}
 button{width:100%;padding:12px;border:none;border-radius:12px;background:var(--warna);color:#fff;font-weight:bold;font-size:15px;margin-top:14px}
 .hint{font-size:11px;color:#888;margin-top:4px}
 h3{margin:6px 0 10px;text-align:center;font-size:16px}
-table{width:100%;border-collapse:collapse;font-size:12px}
-th,td{border:1px solid #999;padding:6px;text-align:center}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{border:1px solid #999;padding:8px 4px;text-align:center}
 th.depok{background:#5aa9e6;color:#000}
 th.bandara{background:#6fbf6f;color:#000}
-th.sub-depok{background:#8ec5f0;color:#000}
-th.sub-bandara{background:#9ad39a;color:#000}
 td.depok{background:#eaf4ff}
 td.bandara{background:#eefbee}
-td input.limo{width:60px;padding:6px;text-align:center;border:1px solid #999;border-radius:6px;font-size:13px;background:#fff}
+td input.limo{width:64px;padding:7px;text-align:center;border:1px solid #999;border-radius:8px;font-size:14px;background:#fff}
 .total-box{display:flex;gap:8px;margin-top:10px}
 .total-box div{flex:1;text-align:center;padding:10px;border-radius:10px;font-weight:bold;font-size:13px}
 .t-depok{background:#dbeafe;color:#1e3a8a}
@@ -49,6 +47,16 @@ td input.limo{width:60px;padding:6px;text-align:center;border:1px solid #999;bor
 .close-btn{background:#ef4444;color:#fff;border:none;padding:8px 12px;border-radius:8px;float:right}
 .page{display:none}
 .page.active{display:block}
+/* TAB SLIDE REKAP */
+.tab-wrap{display:flex;gap:6px;margin:12px 0 4px;overflow-x:auto;padding-bottom:4px}
+.tab-btn{flex:1;white-space:nowrap;padding:10px 6px;border-radius:20px;border:1px solid #ddd;background:#f1f5f9;font-weight:bold;font-size:13px;color:#333}
+.tab-btn.active{background:#1e3a8a;color:#fff;border-color:#1e3a8a}
+.tab-btn.active.bandara-tab{background:#16a34a;border-color:#16a34a}
+.swipe-hint{text-align:center;font-size:11px;color:#888;margin:2px 0 10px}
+.rekap-box{margin-bottom:16px}
+.rekap-title{font-weight:bold;padding:8px 10px;border-radius:10px 10px 0 0;text-align:center}
+.rekap-title.depok-t{background:#5aa9e6}
+.rekap-title.bandara-t{background:#6fbf6f}
 </style>
 </head>
 <body class="depok">
@@ -63,7 +71,7 @@ td input.limo{width:60px;padding:6px;text-align:center;border:1px solid #999;bor
 <button class="close-btn" onclick="tutupMenu()">X</button>
 <h3>☰ MENU</h3>
 <button class="menu-btn active" id="btn-form" onclick="pindah('form')">📝 Form Laporan<small>Input penumpang harian</small></button>
-<button class="menu-btn" id="btn-rekap" onclick="pindah('rekap')">📋 Rekap Laporan<small>Tabel gabungan Depok & Bandara</small></button>
+<button class="menu-btn" id="btn-rekap" onclick="pindah('rekap')">📋 Rekap Laporan<small>Depok & Bandara ditumpuk</small></button>
 <button class="menu-btn" id="btn-bulanan" onclick="pindah('bulanan')">📊 Report Bulanan<small>Rekap per tanggal 1 bulan</small></button>
 </div>
 
@@ -83,26 +91,36 @@ td input.limo{width:60px;padding:6px;text-align:center;border:1px solid #999;bor
 <p style="text-align:center;font-size:12px;color:#666;margin-top:12px">Setelah tambah, cek di Menu > Rekap Laporan</p>
 </div>
 
+<!-- REKAP B + SLIDE -->
 <div class="card page" id="page-rekap">
-<h3>📋 REKAPAN - DEPOK & BANDARA DIGABUNG</h3>
+<h3>📋 REKAP LAPORAN</h3>
 <label>Tanggal Rekap</label><input type="date" id="tanggalRekap" onchange="render()">
-<p style="font-size:12px;color:#666;text-align:center">Urut jam terkecil ke terbesar. Kolom Dari Limo / Ke Limo isi manual di sini.</p>
-<table>
-<thead>
-<tr><th rowspan="2">No</th><th class="depok" colspan="4">DEPOK</th><th class="bandara" colspan="4">BANDARA</th></tr>
-<tr><th class="sub-depok">No.Body</th><th class="sub-depok">Jam</th><th class="sub-depok">Jml Pnp</th><th class="sub-depok">Dari Limo</th><th class="sub-bandara">No.Body</th><th class="sub-bandara">Jam</th><th class="sub-bandara">Jml Pnp</th><th class="sub-bandara">Ke Limo</th></tr>
-</thead>
-<tbody id="list"></tbody>
-</table>
-<div class="total-box">
-<div class="t-depok" id="totDepok">Depok: 0</div>
-<div class="t-bandara" id="totBandara">Bandara: 0</div>
-<div class="t-all" id="totAll">Total: 0</div>
+<div class="tab-wrap">
+<button class="tab-btn active" id="tab-semua" onclick="setTabRekap('semua')">Semua</button>
+<button class="tab-btn" id="tab-depok" onclick="setTabRekap('depok')">🔵 Depok</button>
+<button class="tab-btn" id="tab-bandara" onclick="setTabRekap('bandara')">🟢 Bandara</button>
 </div>
-<div class="total-box">
-<div class="t-limo-d" id="totDariLimo">Dari Limo: 0</div>
-<div class="t-limo-b" id="totKeLimo">Ke Limo: 0</div>
+<p class="swipe-hint">👈 Geser kiri-kanan di tabel untuk pindah Depok ↔ Bandara 👉</p>
+
+<div id="swipeArea">
+<!-- DEPOK -->
+<div class="rekap-box" id="boxDepok">
+<div class="rekap-title depok-t">🔵 DEPOK</div>
+<table><thead><tr><th class="depok">No</th><th class="depok">No.Body</th><th class="depok">Jam</th><th class="depok">Jml Pnp</th><th class="depok">Dari Limo</th></tr></thead>
+<tbody id="listDepok"></tbody></table>
+<div class="total-box"><div class="t-depok" id="totDepok">Depok: 0</div><div class="t-limo-d" id="totDariLimo">Dari Limo: 0</div></div>
 </div>
+
+<!-- BANDARA -->
+<div class="rekap-box" id="boxBandara">
+<div class="rekap-title bandara-t">🟢 BANDARA</div>
+<table><thead><tr><th class="bandara">No</th><th class="bandara">No.Body</th><th class="bandara">Jam</th><th class="bandara">Jml Pnp</th><th class="bandara">Ke Limo</th></tr></thead>
+<tbody id="listBandara"></tbody></table>
+<div class="total-box"><div class="t-bandara" id="totBandara">Bandara: 0</div><div class="t-limo-b" id="totKeLimo">Ke Limo: 0</div></div>
+</div>
+</div>
+
+<div class="total-box"><div class="t-all" id="totAll">Total Semua: 0 Pnp</div></div>
 <button onclick="pindah('form')">+ Input Lagi</button>
 </div>
 
@@ -148,6 +166,33 @@ function gantiRute(){
 }
 let data=JSON.parse(localStorage.getItem('jac')||'[]');
 let limo=JSON.parse(localStorage.getItem('jac_limo')||'{}');
+let tabRekap='semua';
+function setTabRekap(t){
+  tabRekap=t;
+  document.getElementById('tab-semua').classList.toggle('active',t==='semua');
+  document.getElementById('tab-depok').classList.toggle('active',t==='depok');
+  document.getElementById('tab-bandara').classList.toggle('active',t==='bandara');
+  document.getElementById('boxDepok').style.display=(t==='semua'||t==='depok')?'block':'none';
+  document.getElementById('boxBandara').style.display=(t==='semua'||t==='bandara')?'block':'none';
+}
+// SWIPE / SLIDE
+let startX=0;
+let swipeEl=document.getElementById('swipeArea');
+swipeEl.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;},{passive:true});
+swipeEl.addEventListener('touchend',e=>{
+  let dx=e.changedTouches[0].clientX-startX;
+  if(Math.abs(dx)<50) return;
+  if(dx<0){ // geser kiri
+    if(tabRekap==='semua') setTabRekap('depok');
+    else if(tabRekap==='depok') setTabRekap('bandara');
+    else if(tabRekap==='bandara') setTabRekap('semua');
+  } else { // geser kanan
+    if(tabRekap==='semua') setTabRekap('bandara');
+    else if(tabRekap==='bandara') setTabRekap('depok');
+    else if(tabRekap==='depok') setTabRekap('semua');
+  }
+},{passive:true});
+
 function kunciLimo(tgl,rute,jam){return tgl+'|'+rute+'|'+jam;}
 function simpanLimo(tgl,rute,jam,val){
   limo[kunciLimo(tgl,rute,jam)]=val;
@@ -159,26 +204,36 @@ function render(){
   let filtered=data.filter(d=>!tglFilter||d.tgl===tglFilter);
   let depok=filtered.filter(d=>d.rute==='Depok').sort(urutJam);
   let bandara=filtered.filter(d=>d.rute==='Bandara').sort(urutJam);
-  let max=Math.max(depok.length,bandara.length,1);
-  let h=''; let tD=0,tB=0,tDL=0,tKL=0;
+  let tD=0,tB=0,tDL=0,tKL=0;
   depok.forEach(d=>tD+=Number(d.pnp)); bandara.forEach(d=>tB+=Number(d.pnp));
-  for(let i=0;i<max;i++){
-    let d=depok[i],b=bandara[i];
-    let vD=d?(limo[kunciLimo(d.tgl,'Depok',d.jam)]||''):'';
-    let vB=b?(limo[kunciLimo(b.tgl,'Bandara',b.jam)]||''):'';
-    if(vD!=='') tDL+=Number(vD); if(vB!=='') tKL+=Number(vB);
-    h+=`<tr><td>${i+1}</td>
-    <td class="depok">${d?d.body:''}</td><td class="depok">${d?d.jam:''}</td><td class="depok">${d?d.pnp:''}</td>
-    <td class="depok">${d?`<input class="limo" type="number" placeholder="0" value="${vD}" onchange="simpanLimo('${d.tgl}','Depok','${d.jam}',this.value)">`:''}</td>
-    <td class="bandara">${b?b.body:''}</td><td class="bandara">${b?b.jam:''}</td><td class="bandara">${b?b.pnp:''}</td>
-    <td class="bandara">${b?`<input class="limo" type="number" placeholder="0" value="${vB}" onchange="simpanLimo('${b.tgl}','Bandara','${b.jam}',this.value)">`:''}</td></tr>`;
+  // DEPOK - selalu tampil minimal 1 baris supaya kotak Dari Limo selalu ada
+  let hD='';
+  let rowsD=Math.max(depok.length,1);
+  for(let i=0;i<rowsD;i++){
+    let d=depok[i];
+    let key=d?kunciLimo(d.tgl,'Depok',d.jam):(tglFilter+'|Depok|baris-'+(i+1));
+    let v=limo[key]||'';
+    if(v!=='') tDL+=Number(v);
+    hD+=`<tr><td class="depok">${i+1}</td><td class="depok">${d?d.body:''}</td><td class="depok">${d?d.jam:''}</td><td class="depok">${d?d.pnp:''}</td><td class="depok"><input class="limo" type="number" placeholder="0" value="${v}" onchange="simpanLimo('${tglFilter}','Depok','${d?d.jam:'baris-'+(i+1)}',this.value)"></td></tr>`;
   }
-  document.getElementById('list').innerHTML=h;
+  document.getElementById('listDepok').innerHTML=hD;
+  // BANDARA
+  let hB='';
+  let rowsB=Math.max(bandara.length,1);
+  for(let i=0;i<rowsB;i++){
+    let b=bandara[i];
+    let key=b?kunciLimo(b.tgl,'Bandara',b.jam):(tglFilter+'|Bandara|baris-'+(i+1));
+    let v=limo[key]||'';
+    if(v!=='') tKL+=Number(v);
+    hB+=`<tr><td class="bandara">${i+1}</td><td class="bandara">${b?b.body:''}</td><td class="bandara">${b?b.jam:''}</td><td class="bandara">${b?b.pnp:''}</td><td class="bandara"><input class="limo" type="number" placeholder="0" value="${v}" onchange="simpanLimo('${tglFilter}','Bandara','${b?b.jam:'baris-'+(i+1)}',this.value)"></td></tr>`;
+  }
+  document.getElementById('listBandara').innerHTML=hB;
   document.getElementById('totDepok').innerText='Depok: '+tD+' Pnp';
   document.getElementById('totBandara').innerText='Bandara: '+tB+' Pnp';
-  document.getElementById('totAll').innerText='Total: '+(tD+tB)+' Pnp';
+  document.getElementById('totAll').innerText='Total Semua: '+(tD+tB)+' Pnp';
   document.getElementById('totDariLimo').innerText='Dari Limo: '+tDL;
   document.getElementById('totKeLimo').innerText='Ke Limo: '+tKL;
+  setTabRekap(tabRekap);
 }
 function renderBulanan(){
   let bln=document.getElementById('bulan').value;
