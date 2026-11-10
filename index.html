@@ -95,4 +95,43 @@ function gantiRute(){
   let rute=document.getElementById('rute').value;
   document.body.className=rute.toLowerCase();
   document.getElementById('badgeRute').innerText=rute.toUpperCase()+(rute==='Depok'?' - BIRU':' - HIJAU');
-  document.getElementById('listJam').innerHTML=jadwal[rute].map(j=>
+  document.getElementById('listJam').innerHTML=jadwal[rute].map(j=>`<option value="${j}">`).join('');
+  document.getElementById('jam').value='';
+  document.getElementById('jam').placeholder='Ketik jam / pilih, contoh: '+jadwal[rute][0];
+}
+let data=JSON.parse(localStorage.getItem('jac')||'[]');
+function render(){
+  let depok=data.filter(d=>d.rute==='Depok').sort(urutJam);
+  let bandara=data.filter(d=>d.rute==='Bandara').sort(urutJam);
+  let max=Math.max(depok.length, bandara.length, 1);
+  let h=''; let tD=0,tB=0;
+  depok.forEach(d=>tD+=Number(d.pnp)); bandara.forEach(d=>tB+=Number(d.pnp));
+  for(let i=0;i<max;i++){
+    let d=depok[i], b=bandara[i];
+    h+=`<tr><td>${i+1}</td>
+    <td class="depok">${d?d.body:''}</td><td class="depok">${d?d.jam:''}</td><td class="depok">${d?d.pnp:''}</td>
+    <td class="bandara">${b?b.body:''}</td><td class="bandara">${b?b.jam:''}</td><td class="bandara">${b?b.pnp:''}</td></tr>`;
+  }
+  document.getElementById('list').innerHTML=h;
+  document.getElementById('totDepok').innerText='Depok: '+tD+' Pnp';
+  document.getElementById('totBandara').innerText='Bandara: '+tB+' Pnp';
+  document.getElementById('totAll').innerText='Total: '+(tD+tB)+' Pnp';
+}
+function tambah(){
+  let tgl=document.getElementById('tanggal').value;
+  let rute=document.getElementById('rute').value;
+  let jam=document.getElementById('jam').value.trim();
+  let body=document.getElementById('body').value;
+  let pnp=document.getElementById('penumpang').value;
+  if(!tgl||!jam||!pnp){alert('Isi tanggal, jam & penumpang dulu Aa');return;}
+  data.push({tgl,rute,jam,body,pnp});
+  localStorage.setItem('jac',JSON.stringify(data));
+  document.getElementById('penumpang').value='';document.getElementById('body').value='';document.getElementById('jam').value='';
+  render();
+}
+function hapusSemua(){if(confirm('Hapus semua?')){data=[];localStorage.removeItem('jac');render();}}
+document.getElementById('tanggal').value=new Date().toISOString().slice(0,10);
+gantiRute();render();
+</script>
+</body>
+</html>
