@@ -57,11 +57,14 @@ td input.limo{width:56px;padding:7px;text-align:center;border:1px solid #999;bor
 .rekap-title.bandara-t{background:#6fbf6f}
 .sisa{font-size:11px;color:#16a34a;font-weight:bold;margin-top:4px}
 td.aksi{position:relative;padding:4px}
-.btn-titik{background:#fff;border:1px solid #999;width:32px;height:32px;border-radius:8px;font-size:18px;line-height:1;cursor:pointer;padding:0}
-.menu-aksi{display:none;position:absolute;right:4px;top:36px;background:#fff;border:1px solid #ddd;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,.2);z-index:20;width:140px;overflow:hidden}
-.menu-aksi button{display:block;width:100%;text-align:left;background:#fff;color:#111;border:none;border-bottom:1px solid #eee;padding:11px 12px;font-size:13px;margin:0;border-radius:0}
+/* TOMBOL TITIK 3 - PILIHAN A : HITAM PEKAT */
+.btn-titik{background:#111111;color:#ffffff;border:2px solid #111111;width:40px;height:40px;border-radius:10px;font-size:22px;font-weight:900;line-height:1;cursor:pointer;padding:0;box-shadow:0 2px 5px rgba(0,0,0,.35)}
+.btn-titik:active{background:#000000;transform:scale(.95)}
+.menu-aksi{display:none;position:absolute;right:4px;top:44px;background:#fff;border:2px solid #111;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,.3);z-index:20;width:160px;overflow:hidden}
+.menu-aksi button{display:block;width:100%;text-align:left;border:none;border-bottom:1px solid #eee;padding:13px 12px;font-size:14px;font-weight:bold;margin:0;border-radius:0}
 .menu-aksi button:last-child{border-bottom:none}
-.menu-aksi button.hapus{color:#dc2626}
+.menu-aksi button.edit{background:#fef9c3;color:#111}
+.menu-aksi button.hapus{background:#fee2e2;color:#dc2626}
 .edit-banner{display:none;background:#fef3c7;border:1px solid #f59e0b;color:#92400e;padding:10px;border-radius:10px;font-size:13px;text-align:center;font-weight:bold;margin-bottom:10px}
 .wrap-bulanan{overflow-x:auto}
 .wrap-bulanan table{min-width:620px}
@@ -149,9 +152,9 @@ td.aksi{position:relative;padding:4px}
 </div>
 <div class="rumus-box">
 <b>Rumus Bulanan:</b><br>
-• Depok (Bersih) = Depok Harian - Dari Limo<br>
-• Bandara (Bersih) = Bandara Harian - Ke Limo<br>
-• Total Kotor = Depok Bersih + Dari Limo + Bandara Bersih + Ke Limo<br>
+- Depok (Bersih) = Depok Harian - Dari Limo<br>
+- Bandara (Bersih) = Bandara Harian - Ke Limo<br>
+- Total Kotor = Depok Bersih + Dari Limo + Bandara Bersih + Ke Limo<br>
 <small>Dari / Ke Limo adalah bagian dari penumpang, bukan tambahan. Jadi Total Kotor = total penumpang asli.</small>
 </div>
 </div>
@@ -313,7 +316,7 @@ function render(){
     let key=d?kunciLimo(d.tgl,'Depok',d.jam):(tglFilter+'|Depok|baris-'+(i+1));
     let v=limo[key]||'';
     if(v!=='') tDL+=Number(v);
-    let aksi=d?`<td class="depok aksi"><button class="btn-titik" onclick="toggleMenu(this)">⋮</button><div class="menu-aksi"><button onclick="editBaris('${d.tgl}','Depok','${d.jam}')">✏️ Edit Baris</button><button class="hapus" onclick="hapusBaris('${d.tgl}','Depok','${d.jam}','${d.body}')">🗑️ Hapus Baris</button></div></td>`:`<td class="depok"></td>`;
+    let aksi=d?`<td class="depok aksi"><button class="btn-titik" onclick="toggleMenu(this)">⋮</button><div class="menu-aksi"><button class="edit" onclick="editBaris('${d.tgl}','Depok','${d.jam}')">✏️ Edit Baris</button><button class="hapus" onclick="hapusBaris('${d.tgl}','Depok','${d.jam}','${d.body}')">🗑️ Hapus Baris</button></div></td>`:`<td class="depok"></td>`;
     hD+=`<tr><td class="depok">${i+1}</td><td class="depok">${d?d.body:''}</td><td class="depok">${d?d.jam:''}</td><td class="depok">${d?d.pnp:''}</td><td class="depok"><input class="limo" type="number" placeholder="0" value="${v}" onchange="simpanLimo('${tglFilter}','Depok','${d?d.jam:'baris-'+(i+1)}',this.value)"></td>${aksi}</tr>`;
   }
   document.getElementById('listDepok').innerHTML=hD;
@@ -324,7 +327,7 @@ function render(){
     let key=b?kunciLimo(b.tgl,'Bandara',b.jam):(tglFilter+'|Bandara|baris-'+(i+1));
     let v=limo[key]||'';
     if(v!=='') tKL+=Number(v);
-    let aksi=b?`<td class="bandara aksi"><button class="btn-titik" onclick="toggleMenu(this)">⋮</button><div class="menu-aksi"><button onclick="editBaris('${b.tgl}','Bandara','${b.jam}')">✏️ Edit Baris</button><button class="hapus" onclick="hapusBaris('${b.tgl}','Bandara','${b.jam}','${b.body}')">🗑️ Hapus Baris</button></div></td>`:`<td class="bandara"></td>`;
+    let aksi=b?`<td class="bandara aksi"><button class="btn-titik" onclick="toggleMenu(this)">⋮</button><div class="menu-aksi"><button class="edit" onclick="editBaris('${b.tgl}','Bandara','${b.jam}')">✏️ Edit Baris</button><button class="hapus" onclick="hapusBaris('${b.tgl}','Bandara','${b.jam}','${b.body}')">🗑️ Hapus Baris</button></div></td>`:`<td class="bandara"></td>`;
     hB+=`<tr><td class="bandara">${i+1}</td><td class="bandara">${b?b.body:''}</td><td class="bandara">${b?b.jam:''}</td><td class="bandara">${b?b.pnp:''}</td><td class="bandara"><input class="limo" type="number" placeholder="0" value="${v}" onchange="simpanLimo('${tglFilter}','Bandara','${b?b.jam:'baris-'+(i+1)}',this.value)"></td>${aksi}</tr>`;
   }
   document.getElementById('listBandara').innerHTML=hB;
@@ -335,7 +338,6 @@ function render(){
   document.getElementById('totKeLimo').innerText='Ke Limo: '+tKL;
   setTabRekap(tabRekap);
 }
-// === REPORT BULANAN - FORMULA BARU ===
 function totalLimoPerTanggal(tgl,rute){
   let total=0;
   Object.keys(limo).forEach(k=>{
@@ -355,7 +357,6 @@ function renderBulanan(){
     if(d.rute==='Depok') grouped[d.tgl].depokKotor+=Number(d.pnp);
     else grouped[d.tgl].bandaraKotor+=Number(d.pnp);
   });
-  // Tanggal yang cuma ada Limo-nya tapi ga ada Pnp-nya tetep muncul
   Object.keys(limo).forEach(k=>{
     let tgl=k.split('|')[0];
     if(bln && !tgl.startsWith(bln)) return;
