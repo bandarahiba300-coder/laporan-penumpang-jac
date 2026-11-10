@@ -559,11 +559,11 @@ function renderFormat(){
     let s=jenis==='shift1'?1:2;
     let h=hitungShift(tgl,s);
     let salam=s===1?'Selamat sore Team':'Selamat malam Team';
-    let jamRange=s===1?'*Dari Jam 05:20-14:50*':'*Dari Jam 15:20-00:20*';
-    teks='*LAPORAN SHIFT '+s+'*\n\n'+salam+'\n\nLaporan Harian \nJAC Hiba Utama \nBANDARA\t\tSOETTA\n*Hari        : '+info.hari+'*\n*Tanggal : '+info.panjang+'*\n'+jamRange+'\n--------------------------------\n Bsh - Depok = '+h.depok+' pnp\n Bsh - Limo   =  '+h.keLimo+' pnp\n Total Pnp     = '+h.total+' pnp\n Ritase           =   '+h.ritase+' \n \n--------------------------------\nDemikian Laporan Harian Yang Dapat disampaikan.\n\n*Terima Kasih*';
+    let jamRange=s===1?'*Dari Jam : 05:20 - 14:50*':'*Dari Jam : 15:20 - 00:20*';
+    teks='*LAPORAN SHIFT '+s+'*\n\n'+salam+'\n\nLaporan Harian\nJAC Hiba Utama\nBANDARA SOETTA\n*Hari : '+info.hari+'*\n*Tanggal : '+info.panjang+'*\n'+jamRange+'\n--------------------------------\nBsh - Depok = '+h.depok+' pnp\nBsh - Limo = '+h.keLimo+' pnp\nTotal Pnp = '+h.total+' pnp\nRitase = '+h.ritase+'\n--------------------------------\nDemikian laporan harian yang dapat disampaikan.\n\n*Terima Kasih*';
   } else {
     let t=hitungTotalHarian(tgl);
-    teks='*LAPORAN HARIAN*\n\n*Hari : '+info.hari+'*\n*Tanggal : '+info.panjang+'*\n\n*1. DEPOK*\n- Depok - Bandara (Pnp) = '+t.depokBandara+'\n- Limo - Bandara (Pnp) = '+t.dariLimo+'\n- _TOTAL DEPOK (Pnp) = '+t.totalDepok+'_\n\n*2. BANDARA*\n- Bandara - Depok (Pnp) = '+t.bandaraDepok+'\n- Bandara - Limo (Pnp) = '+t.keLimo+'\n- _TOTAL BANDARA (Pnp) = '+t.totalBandara+'_\n- Ritase/KR = '+t.ritase+'\n\n___________________________\n\n • *_TOTAL Harian (Pnp) = '+t.totalHarian+'_*\n\nDemikian Laporan Harian yang dapat disampaikan.\n\n*Terima Kasih*';
+    teks='*LAPORAN HARIAN*\n\n*Hari : '+info.hari+'*\n*Tanggal : '+info.panjang+'*\n\n*1. DEPOK*\n- Depok - Bandara (Pnp) = '+t.depokBandara+'\n- Limo - Bandara (Pnp) = '+t.dariLimo+'\n- _TOTAL DEPOK (Pnp) = '+t.totalDepok+'_\n\n*2. BANDARA*\n- Bandara - Depok (Pnp) = '+t.bandaraDepok+'\n- Bandara - Limo (Pnp) = '+t.keLimo+'\n- _TOTAL BANDARA (Pnp) = '+t.totalBandara+'_\n- Ritase/KR = '+t.ritase+'\n\n___________________________\n\n- *_TOTAL Harian (Pnp) = '+t.totalHarian+'_*\n\nDemikian laporan harian yang dapat disampaikan.\n\n*Terima Kasih*';
   }
   teksFormatTerakhir=teks;
   document.getElementById('previewFormat').textContent=teks;
