@@ -67,7 +67,8 @@ td.aksi{position:relative;padding:4px}
 .edit-banner{display:none;background:#fef3c7;border:1px solid #f59e0b;color:#92400e;padding:10px;border-radius:10px;font-size:13px;text-align:center;font-weight:bold;margin-bottom:10px}
 .wrap-bulanan{overflow-x:auto}
 .wrap-bulanan table{min-width:620px}
-.rumus-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px;font-size:12px;color:#1e3a8a;line-height:1.6;margin-top:12px}
+.btn-export{background:#16a34a;color:#fff;font-size:15px;margin-top:12px}
+.btn-export:active{background:#15803d}
 </style>
 </head>
 <body class="depok">
@@ -136,24 +137,18 @@ td.aksi{position:relative;padding:4px}
 <label>Pilih Bulan</label><input type="month" id="bulan" onchange="renderBulanan()">
 <div class="wrap-bulanan">
 <table style="margin-top:12px">
-<thead><tr><th>Tanggal</th><th style="background:#5aa9e6">Depok<br><small>(Bersih)</small></th><th style="background:#bfdbfe">Dari Limo</th><th style="background:#6fbf6f">Bandara<br><small>(Bersih)</small></th><th style="background:#bbf7d0">Ke Limo</th><th style="background:#1e3a8a;color:#fff">Total<br><small>Kotor</small></th></tr></thead>
+<thead><tr><th>Tanggal</th><th style="background:#5aa9e6">Depok</th><th style="background:#bfdbfe">Dari Limo</th><th style="background:#6fbf6f">Bandara</th><th style="background:#bbf7d0">Ke Limo</th><th style="background:#1e3a8a;color:#fff">Total</th></tr></thead>
 <tbody id="listBulanan"></tbody>
 </table>
 </div>
 <div class="total-box">
-<div class="t-depok" id="totBDepok">Depok Bersih: 0</div>
+<div class="t-depok" id="totBDepok">Depok: 0</div>
 <div class="t-limo-d" id="totBDariLimo">Dari Limo: 0</div>
-<div class="t-bandara" id="totBBandara">Bandara Bersih: 0</div>
+<div class="t-bandara" id="totBBandara">Bandara: 0</div>
 <div class="t-limo-b" id="totBKeLimo">Ke Limo: 0</div>
-<div class="t-all" id="totBAll">Total Kotor: 0</div>
+<div class="t-all" id="totBAll">Total: 0</div>
 </div>
-<div class="rumus-box">
-<b>Rumus Bulanan:</b><br>
-- Depok (Bersih) = Depok Harian - Dari Limo<br>
-- Bandara (Bersih) = Bandara Harian - Ke Limo<br>
-- Total Kotor = Depok Bersih + Dari Limo + Bandara Bersih + Ke Limo<br>
-<small>Dari / Ke Limo adalah bagian dari penumpang, bukan tambahan. Jadi Total Kotor = total penumpang asli.</small>
-</div>
+<button class="btn-export" onclick="exportBulanan()">📗 Export ke Excel / Spreadsheet</button>
 </div>
 
 <script>
@@ -341,8 +336,7 @@ function totalLimoPerTanggal(tgl,rute){
   });
   return total;
 }
-function renderBulanan(){
-  let bln=document.getElementById('bulan').value;
+function hitungBulanan(bln){
   let grouped={};
   data.forEach(d=>{
     if(bln && !d.tgl.startsWith(bln)) return;
@@ -356,24 +350,56 @@ function renderBulanan(){
     if(!grouped[tgl]) grouped[tgl]={depokKotor:0,bandaraKotor:0};
   });
   let keys=Object.keys(grouped).sort();
-  let h=''; let tDepokBersih=0,tDariLimo=0,tBandaraBersih=0,tKeLimo=0,tTotalKotor=0;
+  let rows=[];
+  let tDepok=0,tDariLimo=0,tBandara=0,tKeLimo=0,tTotal=0;
   keys.forEach(k=>{
     let g=grouped[k];
     let dariLimo=totalLimoPerTanggal(k,'Depok');
     let keLimo=totalLimoPerTanggal(k,'Bandara');
-    let depokBersih=g.depokKotor-dariLimo;
-    let bandaraBersih=g.bandaraKotor-keLimo;
-    let totalKotor=depokBersih+dariLimo+bandaraBersih+keLimo;
-    tDepokBersih+=depokBersih; tDariLimo+=dariLimo; tBandaraBersih+=bandaraBersih; tKeLimo+=keLimo; tTotalKotor+=totalKotor;
-    h+=`<tr><td>${k.split('-').reverse().join('/')}</td><td>${depokBersih}</td><td>${dariLimo}</td><td>${bandaraBersih}</td><td>${keLimo}</td><td><b>${totalKotor}</b></td></tr>`;
+    let depok=g.depokKotor-dariLimo;
+    let bandara=g.bandaraKotor-keLimo;
+    let total=depok+dariLimo+bandara+keLimo;
+    tDepok+=depok; tDariLimo+=dariLimo; tBandara+=bandara; tKeLimo+=keLimo; tTotal+=total;
+    rows.push({tgl:k,tampil:k.split('-').reverse().join('/'),depok,dariLimo,bandara,keLimo,total});
   });
-  if(!keys.length) h='<tr><td colspan="6">Belum ada data di bulan ini</td></tr>';
+  return {rows,tDepok,tDariLimo,tBandara,tKeLimo,tTotal};
+}
+function renderBulanan(){
+  let bln=document.getElementById('bulan').value;
+  let r=hitungBulanan(bln);
+  let h='';
+  r.rows.forEach(x=>{
+    h+=`<tr><td>${x.tampil}</td><td>${x.depok}</td><td>${x.dariLimo}</td><td>${x.bandara}</td><td>${x.keLimo}</td><td><b>${x.total}</b></td></tr>`;
+  });
+  if(!r.rows.length) h='<tr><td colspan="6">Belum ada data di bulan ini</td></tr>';
   document.getElementById('listBulanan').innerHTML=h;
-  document.getElementById('totBDepok').innerText='Depok Bersih: '+tDepokBersih;
-  document.getElementById('totBDariLimo').innerText='Dari Limo: '+tDariLimo;
-  document.getElementById('totBBandara').innerText='Bandara Bersih: '+tBandaraBersih;
-  document.getElementById('totBKeLimo').innerText='Ke Limo: '+tKeLimo;
-  document.getElementById('totBAll').innerText='Total Kotor: '+tTotalKotor;
+  document.getElementById('totBDepok').innerText='Depok: '+r.tDepok;
+  document.getElementById('totBDariLimo').innerText='Dari Limo: '+r.tDariLimo;
+  document.getElementById('totBBandara').innerText='Bandara: '+r.tBandara;
+  document.getElementById('totBKeLimo').innerText='Ke Limo: '+r.tKeLimo;
+  document.getElementById('totBAll').innerText='Total: '+r.tTotal;
+}
+function exportBulanan(){
+  let bln=document.getElementById('bulan').value;
+  if(!bln){alert('Pilih bulan dulu Aa');return;}
+  let r=hitungBulanan(bln);
+  if(!r.rows.length){alert('Belum ada data di bulan ini Aa');return;}
+  let namaBulan=new Date(bln+'-01').toLocaleDateString('id-ID',{month:'long',year:'numeric'}).replace(/ /g,'_');
+  let csv='\uFEFFLaporan Penumpang JAC - Bandara HIBA\n';
+  csv+='Bulan,'+namaBulan.replace(/_/g,' ')+'\n\n';
+  csv+='Tanggal,Depok,Dari Limo,Bandara,Ke Limo,Total\n';
+  r.rows.forEach(x=>{
+    csv+=x.tampil+','+x.depok+','+x.dariLimo+','+x.bandara+','+x.keLimo+','+x.total+'\n';
+  });
+  csv+='TOTAL,'+r.tDepok+','+r.tDariLimo+','+r.tBandara+','+r.tKeLimo+','+r.tTotal+'\n';
+  let blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  let a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='Laporan_JAC_'+namaBulan+'.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  alert('Berhasil export Aa! File Laporan_JAC_'+namaBulan+'.csv sudah ke-download, bisa dibuka di Excel / Spreadsheet.');
 }
 function tambah(){
   let tgl=document.getElementById('tanggal').value;
