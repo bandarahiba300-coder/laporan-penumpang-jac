@@ -96,7 +96,12 @@ td.aksi{position:relative;padding:4px}
 .label-kemarin{font-size:11px;font-weight:bold;font-style:italic;color:#ea580c;margin-left:6px}
 .label-besok{font-size:11px;font-weight:bold;font-style:italic;color:#16a34a;margin-left:6px}
 input.tanggal-asli{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;padding:0;border:none}
-.preview-box{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:14px;margin-top:12px;white-space:pre-wrap;font-family:monospace;font-size:13px;line-height:1.55;color:#111;min-height:120px;word-break:break-word}
+.preview-wrap{position:relative;margin-top:12px}
+.preview-box{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:28px 12px 12px;white-space:pre-wrap;font-family:monospace;font-size:12px;line-height:1.5;color:#111;max-height:210px;overflow-y:auto;word-break:break-word;outline:none}
+.preview-box:focus{border-color:#2563eb;background:#fff}
+.btn-edit-preview{position:absolute;top:6px;right:6px;width:32px;height:32px;min-width:32px;padding:0;margin:0;border-radius:8px;background:#fff;border:1px solid #ddd;color:#111;font-size:15px;line-height:1;box-shadow:0 1px 4px rgba(0,0,0,.15);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2}
+.btn-edit-preview:active{background:#f1f5f9;transform:scale(.95)}
+.preview-hint{text-align:center;font-size:11px;color:#888;margin-top:6px}
 .btn-wa{background:#25D366;color:#fff;font-size:15px;margin-top:12px}
 .btn-wa:active{background:#1da851}
 </style>
@@ -208,7 +213,11 @@ input.tanggal-asli{position:absolute;opacity:0;pointer-events:none;width:1px;hei
 <option value="shift2">2. Laporan Bandara Shift 2</option>
 <option value="total">3. Laporan Total Harian Bandara</option>
 </select>
-<div class="preview-box" id="previewFormat"></div>
+<div class="preview-wrap">
+<button class="btn-edit-preview" onclick="editPreview()" title="Edit manual">✏️</button>
+<div class="preview-box" id="previewFormat" contenteditable="true" oninput="onPreviewEdit()" spellcheck="false"></div>
+</div>
+<div class="preview-hint">Pencet ✏️ di pojok kanan atas buat edit manual teksnya</div>
 <button class="btn-wa" onclick="shareWA()">📲 Share ke WA</button>
 </div>
 
@@ -559,10 +568,25 @@ function renderFormat(){
   teksFormatTerakhir=teks;
   document.getElementById('previewFormat').textContent=teks;
 }
+function editPreview(){
+  let el=document.getElementById('previewFormat');
+  el.focus();
+  let range=document.createRange();
+  range.selectNodeContents(el);
+  range.collapse(false);
+  let sel=window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  el.scrollTop=el.scrollHeight;
+}
+function onPreviewEdit(){
+  teksFormatTerakhir=document.getElementById('previewFormat').innerText.replace(/\n\n+/g,'\n\n');
+}
 function shareWA(){
-  if(!teksFormatTerakhir){renderFormat();}
-  if(!teksFormatTerakhir){alert('Pilih tanggal dulu Aa');return;}
-  window.open('https://wa.me/?text='+encodeURIComponent(teksFormatTerakhir),'_blank');
+  let isi=document.getElementById('previewFormat').innerText;
+  if(!isi || isi==='Pilih tanggal dulu Aa'){renderFormat(); isi=document.getElementById('previewFormat').innerText;}
+  if(!isi){alert('Pilih tanggal dulu Aa');return;}
+  window.open('https://wa.me/?text='+encodeURIComponent(isi),'_blank');
 }
 function tambah(){
   let tgl=document.getElementById('tanggal').value;
