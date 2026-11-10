@@ -47,16 +47,15 @@ td input.limo{width:64px;padding:7px;text-align:center;border:1px solid #999;bor
 .close-btn{background:#ef4444;color:#fff;border:none;padding:8px 12px;border-radius:8px;float:right}
 .page{display:none}
 .page.active{display:block}
-/* TAB SLIDE REKAP */
 .tab-wrap{display:flex;gap:6px;margin:12px 0 4px;overflow-x:auto;padding-bottom:4px}
 .tab-btn{flex:1;white-space:nowrap;padding:10px 6px;border-radius:20px;border:1px solid #ddd;background:#f1f5f9;font-weight:bold;font-size:13px;color:#333}
 .tab-btn.active{background:#1e3a8a;color:#fff;border-color:#1e3a8a}
-.tab-btn.active.bandara-tab{background:#16a34a;border-color:#16a34a}
 .swipe-hint{text-align:center;font-size:11px;color:#888;margin:2px 0 10px}
 .rekap-box{margin-bottom:16px}
 .rekap-title{font-weight:bold;padding:8px 10px;border-radius:10px 10px 0 0;text-align:center}
 .rekap-title.depok-t{background:#5aa9e6}
 .rekap-title.bandara-t{background:#6fbf6f}
+.sisa{font-size:11px;color:#16a34a;font-weight:bold;margin-top:4px}
 </style>
 </head>
 <body class="depok">
@@ -78,12 +77,14 @@ td input.limo{width:64px;padding:7px;text-align:center;border:1px solid #999;bor
 <div class="card page active" id="page-form">
 <h2>Laporan Penumpang JAC</h2>
 <p class="sub">Bandara HIBA - Input Harian &nbsp;<span class="badge" id="badgeRute">DEPOK - BIRU</span></p>
-<label>Tanggal</label><input type="date" id="tanggal">
+<label>Tanggal</label><input type="date" id="tanggal" onchange="updateJamList()">
 <label>Rute / Trayek</label>
 <select id="rute" onchange="gantiRute()"><option value="Depok">1. Depok</option><option value="Bandara">2. Bandara</option></select>
 <label>Jam Keberangkatan</label><input type="text" id="jam" list="listJam" placeholder="Ketik jam / pilih"><datalist id="listJam"></datalist>
-<div class="hint">Bisa diketik manual. Nanti di tabel otomatis urut dari jam terkecil. 0:20 = 24:20 (paling akhir).</div>
-<label>No. Body Bus</label><input type="text" id="body" placeholder="Contoh: A60">
+<div class="hint">Aturan: Jam yang sudah tersimpan di Rekap di tanggal & rute yang sama, otomatis tidak tampil lagi. Ganti tanggal = jam muncul lagi kalau belum terpakai di tanggal itu. 0:20 = 24:20 (paling akhir).</div>
+<div class="sisa" id="sisaJam"></div>
+<label>No. Body Bus</label><input type="text" id="body" list="listBody" placeholder="Pilih / ketik No.Body - Contoh: A60"><datalist id="listBody"></datalist>
+<div class="hint">21 unit: A47, A48, A50 s/d A68.</div>
 <label>Jumlah Penumpang</label><input type="number" id="penumpang" placeholder="0">
 <label>Keterangan</label><input type="text" id="ket" placeholder="Opsional">
 <button onclick="tambah()">+ Tambah Laporan</button>
@@ -91,7 +92,6 @@ td input.limo{width:64px;padding:7px;text-align:center;border:1px solid #999;bor
 <p style="text-align:center;font-size:12px;color:#666;margin-top:12px">Setelah tambah, cek di Menu > Rekap Laporan</p>
 </div>
 
-<!-- REKAP B + SLIDE -->
 <div class="card page" id="page-rekap">
 <h3>📋 REKAP LAPORAN</h3>
 <label>Tanggal Rekap</label><input type="date" id="tanggalRekap" onchange="render()">
@@ -101,17 +101,13 @@ td input.limo{width:64px;padding:7px;text-align:center;border:1px solid #999;bor
 <button class="tab-btn" id="tab-bandara" onclick="setTabRekap('bandara')">🟢 Bandara</button>
 </div>
 <p class="swipe-hint">👈 Geser kiri-kanan di tabel untuk pindah Depok ↔ Bandara 👉</p>
-
 <div id="swipeArea">
-<!-- DEPOK -->
 <div class="rekap-box" id="boxDepok">
 <div class="rekap-title depok-t">🔵 DEPOK</div>
 <table><thead><tr><th class="depok">No</th><th class="depok">No.Body</th><th class="depok">Jam</th><th class="depok">Jml Pnp</th><th class="depok">Dari Limo</th></tr></thead>
 <tbody id="listDepok"></tbody></table>
 <div class="total-box"><div class="t-depok" id="totDepok">Depok: 0</div><div class="t-limo-d" id="totDariLimo">Dari Limo: 0</div></div>
 </div>
-
-<!-- BANDARA -->
 <div class="rekap-box" id="boxBandara">
 <div class="rekap-title bandara-t">🟢 BANDARA</div>
 <table><thead><tr><th class="bandara">No</th><th class="bandara">No.Body</th><th class="bandara">Jam</th><th class="bandara">Jml Pnp</th><th class="bandara">Ke Limo</th></tr></thead>
@@ -119,7 +115,6 @@ td input.limo{width:64px;padding:7px;text-align:center;border:1px solid #999;bor
 <div class="total-box"><div class="t-bandara" id="totBandara">Bandara: 0</div><div class="t-limo-b" id="totKeLimo">Ke Limo: 0</div></div>
 </div>
 </div>
-
 <div class="total-box"><div class="t-all" id="totAll">Total Semua: 0 Pnp</div></div>
 <button onclick="pindah('form')">+ Input Lagi</button>
 </div>
@@ -143,6 +138,7 @@ const jadwal = {
 Depok: ["2:00","2:30","3:00","3:30","4:00","4:30","5:00","5:30","6:00","6:30","7:00","7:30","8:00","8:30","9:00","9:30","10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00","18:00","19:00","20:00","21:00"],
 Bandara: ["5:20","6:20","7:20","7:50","8:20","8:50","9:20","9:50","10:20","10:50","11:20","11:50","12:20","12:50","13:20","13:50","14:20","14:50","15:20","15:50","16:20","16:50","17:20","17:50","18:20","18:50","19:20","19:50","20:20","20:50","21:20","21:50","22:20","23:20","0:20"]
 };
+const listBodyBus = ["A47","A48","A50","A51","A52","A53","A54","A55","A56","A57","A58","A59","A60","A61","A62","A63","A64","A65","A66","A67","A68"];
 function nilaiJam(s){let p=s.split(':');let h=parseInt(p[0],10);let m=parseInt(p[1]||'0',10);if(h===0)h=24;return h*60+m;}
 function urutJam(a,b){return nilaiJam(a.jam)-nilaiJam(b.jam);}
 function bukaMenu(){document.getElementById('sidebar').classList.add('open');document.getElementById('overlay').style.display='block';}
@@ -155,14 +151,15 @@ function pindah(hal){
   tutupMenu();
   if(hal==='rekap') render();
   if(hal==='bulanan') renderBulanan();
+  if(hal==='form') updateJamList();
   window.scrollTo(0,0);
 }
 function gantiRute(){
   let rute=document.getElementById('rute').value;
   document.body.className=rute.toLowerCase();
   document.getElementById('badgeRute').innerText=rute.toUpperCase()+(rute==='Depok'?' - BIRU':' - HIJAU');
-  document.getElementById('listJam').innerHTML=jadwal[rute].map(j=>`<option value="${j}">`).join('');
   document.getElementById('jam').value='';
+  updateJamList();
 }
 let data=JSON.parse(localStorage.getItem('jac')||'[]');
 let limo=JSON.parse(localStorage.getItem('jac_limo')||'{}');
@@ -175,24 +172,41 @@ function setTabRekap(t){
   document.getElementById('boxDepok').style.display=(t==='semua'||t==='depok')?'block':'none';
   document.getElementById('boxBandara').style.display=(t==='semua'||t==='bandara')?'block':'none';
 }
-// SWIPE / SLIDE
 let startX=0;
 let swipeEl=document.getElementById('swipeArea');
 swipeEl.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;},{passive:true});
 swipeEl.addEventListener('touchend',e=>{
   let dx=e.changedTouches[0].clientX-startX;
   if(Math.abs(dx)<50) return;
-  if(dx<0){ // geser kiri
+  if(dx<0){
     if(tabRekap==='semua') setTabRekap('depok');
     else if(tabRekap==='depok') setTabRekap('bandara');
     else if(tabRekap==='bandara') setTabRekap('semua');
-  } else { // geser kanan
+  } else {
     if(tabRekap==='semua') setTabRekap('bandara');
     else if(tabRekap==='bandara') setTabRekap('depok');
     else if(tabRekap==='depok') setTabRekap('semua');
   }
 },{passive:true});
 
+// === ATURAN NO.1 - PER TANGGAL + PER RUTE ===
+function jamTerpakai(tgl,rute){
+  // Cek di data Rekap: tanggal HARUS SAMA + rute HARUS SAMA
+  return data.filter(d=>d.tgl===tgl && d.rute===rute).map(d=>d.jam);
+}
+function updateJamList(){
+  let tgl=document.getElementById('tanggal').value;
+  let rute=document.getElementById('rute').value;
+  let terpakai=jamTerpakai(tgl,rute);
+  // Sisa = jadwal lengkap - yang sudah terpakai di tanggal & rute itu saja
+  let sisa=jadwal[rute].filter(j=>!terpakai.includes(j));
+  document.getElementById('listJam').innerHTML=sisa.map(j=>`<option value="${j}">`).join('');
+  let el=document.getElementById('sisaJam');
+  if(!tgl){el.innerHTML='';}
+  else if(sisa.length===0){el.innerHTML='⚠️ Semua jam '+rute+' di tanggal '+tgl.split('-').reverse().join('/')+' sudah terpakai!';}
+  else {el.innerHTML='Sisa jam '+rute+' tanggal '+tgl.split('-').reverse().join('/')+': <b>'+sisa.length+' jam</b> | Sudah terpakai: '+terpakai.join(', ');}
+  document.getElementById('listBody').innerHTML=listBodyBus.map(b=>`<option value="${b}">`).join('');
+}
 function kunciLimo(tgl,rute,jam){return tgl+'|'+rute+'|'+jam;}
 function simpanLimo(tgl,rute,jam,val){
   limo[kunciLimo(tgl,rute,jam)]=val;
@@ -206,7 +220,6 @@ function render(){
   let bandara=filtered.filter(d=>d.rute==='Bandara').sort(urutJam);
   let tD=0,tB=0,tDL=0,tKL=0;
   depok.forEach(d=>tD+=Number(d.pnp)); bandara.forEach(d=>tB+=Number(d.pnp));
-  // DEPOK - selalu tampil minimal 1 baris supaya kotak Dari Limo selalu ada
   let hD='';
   let rowsD=Math.max(depok.length,1);
   for(let i=0;i<rowsD;i++){
@@ -217,7 +230,6 @@ function render(){
     hD+=`<tr><td class="depok">${i+1}</td><td class="depok">${d?d.body:''}</td><td class="depok">${d?d.jam:''}</td><td class="depok">${d?d.pnp:''}</td><td class="depok"><input class="limo" type="number" placeholder="0" value="${v}" onchange="simpanLimo('${tglFilter}','Depok','${d?d.jam:'baris-'+(i+1)}',this.value)"></td></tr>`;
   }
   document.getElementById('listDepok').innerHTML=hD;
-  // BANDARA
   let hB='';
   let rowsB=Math.max(bandara.length,1);
   for(let i=0;i<rowsB;i++){
@@ -260,17 +272,24 @@ function tambah(){
   let tgl=document.getElementById('tanggal').value;
   let rute=document.getElementById('rute').value;
   let jam=document.getElementById('jam').value.trim();
-  let body=document.getElementById('body').value;
+  let body=document.getElementById('body').value.trim().toUpperCase();
   let pnp=document.getElementById('penumpang').value;
   if(!tgl||!jam||!pnp){alert('Isi tanggal, jam & penumpang dulu Aa');return;}
+  // PENGAMAN GANDA: Kalau nekat ketik manual jam yang sudah ada di tanggal & rute itu, ditolak
+  if(jamTerpakai(tgl,rute).includes(jam)){
+    alert('Jam '+jam+' di '+rute+' tanggal '+tgl.split('-').reverse().join('/')+' SUDAH TERPAKAI Aa! Pilih jam lain yang masih sisa.');
+    updateJamList();
+    return;
+  }
   data.push({tgl,rute,jam,body,pnp});
   localStorage.setItem('jac',JSON.stringify(data));
   document.getElementById('penumpang').value='';document.getElementById('body').value='';document.getElementById('jam').value='';
   document.getElementById('tanggalRekap').value=tgl;
   alert('Berhasil! Cek di Rekap Laporan');
+  updateJamList();
   render();renderBulanan();
 }
-function hapusSemua(){if(confirm('Hapus semua?')){data=[];limo={};localStorage.removeItem('jac');localStorage.removeItem('jac_limo');render();renderBulanan();}}
+function hapusSemua(){if(confirm('Hapus semua?')){data=[];limo={};localStorage.removeItem('jac');localStorage.removeItem('jac_limo');render();renderBulanan();updateJamList();}}
 let today=new Date().toISOString().slice(0,10);
 document.getElementById('tanggal').value=today;
 document.getElementById('tanggalRekap').value=today;
