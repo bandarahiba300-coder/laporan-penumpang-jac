@@ -5,38 +5,50 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Laporan Penumpang JAC</title>
 <style>
-body{font-family:sans-serif;background:#f0f4ff;margin:0;padding:16px}
-.card{background:#fff;border-radius:16px;padding:16px;max-width:500px;margin:auto;box-shadow:0 4px 12px rgba(0,0,0,.1)}
-h2{text-align:center;color:#1e3a8a;margin:0 0 4px}
+:root{--warna:#2563eb}
+body.depok{--warna:#2563eb}
+body.bandara{--warna:#16a34a}
+body{font-family:sans-serif;background:#f0f4ff;margin:0;padding:16px;transition:.3s}
+.card{background:#fff;border-radius:16px;padding:16px;max-width:520px;margin:auto;box-shadow:0 4px 12px rgba(0,0,0,.1)}
+h2{text-align:center;color:var(--warna);margin:0 0 4px}
 p.sub{text-align:center;color:#666;font-size:13px;margin:0 0 16px}
 label{font-size:13px;font-weight:bold;display:block;margin-top:12px}
 input,select{width:100%;padding:11px;border:1px solid #ddd;border-radius:10px;margin-top:5px;box-sizing:border-box;font-size:15px}
-button{width:100%;padding:13px;border:none;border-radius:12px;background:#1e3a8a;color:#fff;font-weight:bold;font-size:16px;margin-top:18px}
-table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px}
-th,td{border:1px solid #ddd;padding:8px;text-align:left}
-th{background:#1e3a8a;color:#fff}
-.total{margin-top:12px;font-weight:bold;text-align:right}
+input:focus,select:focus{outline:2px solid var(--warna);border-color:var(--warna)}
+button{width:100%;padding:13px;border:none;border-radius:12px;background:var(--warna);color:#fff;font-weight:bold;font-size:16px;margin-top:18px}
+.hint{font-size:11px;color:#888;margin-top:4px}
+table{width:100%;border-collapse:collapse;margin-top:16px;font-size:12px}
+th,td{border:1px solid #ddd;padding:7px;text-align:left}
+th{background:var(--warna);color:#fff}
+.total{margin-top:12px;font-weight:bold;text-align:right;color:var(--warna)}
+.badge{display:inline-block;padding:4px 10px;border-radius:20px;background:var(--warna);color:#fff;font-size:11px;font-weight:bold}
 </style>
 </head>
-<body>
+<body class="depok">
 <div class="card">
-<h2>🚌 Laporan Penumpang JAC</h2>
-<p class="sub">Bandara HIBA - Input Harian</p>
+<h2>Laporan Penumpang JAC</h2>
+<p class="sub">Bandara HIBA - Input Harian &nbsp;<span class="badge" id="badgeRute">DEPOK - BIRU</span></p>
 
 <label>Tanggal</label>
 <input type="date" id="tanggal">
+
 <label>Rute / Trayek</label>
-<select id="rute">
-<option>Bandara Soetta - Gambir</option>
-<option>Bandara Soetta - Kampung Rambutan</option>
-<option>Bandara Soetta - Bogor</option>
-<option>Bandara Soetta - Bekasi</option>
-<option>Bandara Halim - Gambir</option>
+<select id="rute" onchange="gantiRute()">
+<option value="Depok">1. Depok</option>
+<option value="Bandara">2. Bandara</option>
 </select>
-<label>Nama Driver / Nopol</label>
-<input type="text" id="driver" placeholder="Contoh: Budi / B 1234 XYZ">
+
+<label>Jam Keberangkatan</label>
+<input type="text" id="jam" list="listJam" placeholder="Ketik jam / pilih dari daftar, contoh: 7:30">
+<datalist id="listJam"></datalist>
+<div class="hint">Bisa diketik manual kalau ada perubahan jadwal.</div>
+
+<label>No. Body Bus</label>
+<input type="text" id="body" placeholder="Contoh: 123 / HIBA 123">
+
 <label>Jumlah Penumpang</label>
 <input type="number" id="penumpang" placeholder="0">
+
 <label>Keterangan</label>
 <input type="text" id="ket" placeholder="Opsional">
 
@@ -44,19 +56,32 @@ th{background:#1e3a8a;color:#fff}
 <button onclick="hapusSemua()" style="background:#ef4444;margin-top:8px">Hapus Semua</button>
 
 <table>
-<thead><tr><th>Tanggal</th><th>Rute</th><th>Driver</th><th>Pnp</th><th></th></tr></thead>
+<thead><tr><th>Tanggal</th><th>Rute</th><th>Jam</th><th>No.Body</th><th>Pnp</th><th></th></tr></thead>
 <tbody id="list"></tbody>
 </table>
 <div class="total" id="total">Total Penumpang: 0</div>
 </div>
 
 <script>
+const jadwal = {
+Depok: ["2:00","2:30","3:00","3:30","4:00","4:30","5:00","5:30","6:00","6:30","7:00","7:30","8:00","8:30","9:00","9:30","10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00","18:00","19:00","20:00","21:00"],
+Bandara: ["5:20","6:20","7:20","7:50","8:20","8:50","9:20","9:50","10:20","10:50","11:20","11:50","12:20","12:50","13:20","13:50","14:20","14:50","15:20","15:50","16:20","16:50","17:20","17:50","18:20","18:50","19:20","19:50","20:20","20:50","21:20","21:50","22:20","23:20","0:20"]
+};
+function gantiRute(){
+  let rute = document.getElementById('rute').value;
+  document.body.className = rute.toLowerCase();
+  document.getElementById('badgeRute').innerText = rute.toUpperCase() + (rute==='Depok' ? ' - BIRU' : ' - HIJAU');
+  let dl = document.getElementById('listJam');
+  dl.innerHTML = jadwal[rute].map(j=>`<option value="${j}">`).join('');
+  document.getElementById('jam').value = '';
+  document.getElementById('jam').placeholder = 'Ketik jam / pilih, contoh: ' + jadwal[rute][0];
+}
 let data = JSON.parse(localStorage.getItem('jac')||'[]');
 function render(){
   let h=''; let tot=0;
   data.forEach((d,i)=>{
     tot+=Number(d.pnp);
-    h+=`<tr><td>${d.tgl}</td><td>${d.rute}</td><td>${d.driver}</td><td>${d.pnp}</td><td><button onclick="hapus(${i})" style="background:#ef4444;padding:5px;margin:0">x</button></td></tr>`;
+    h+=`<tr><td>${d.tgl}</td><td>${d.rute}</td><td>${d.jam}</td><td>${d.body}</td><td>${d.pnp}</td><td><button onclick="hapus(${i})" style="background:#ef4444;padding:5px;margin:0">x</button></td></tr>`;
   });
   document.getElementById('list').innerHTML=h;
   document.getElementById('total').innerText='Total Penumpang: '+tot;
@@ -64,17 +89,21 @@ function render(){
 function tambah(){
   let tgl=document.getElementById('tanggal').value;
   let rute=document.getElementById('rute').value;
-  let driver=document.getElementById('driver').value;
+  let jam=document.getElementById('jam').value;
+  let body=document.getElementById('body').value;
   let pnp=document.getElementById('penumpang').value;
-  if(!tgl||!pnp){alert('Isi tanggal & penumpang dulu Aa');return;}
-  data.push({tgl,rute,driver,pnp});
+  if(!tgl||!jam||!pnp){alert('Isi tanggal, jam & penumpang dulu Aa');return;}
+  data.push({tgl,rute,jam,body,pnp});
   localStorage.setItem('jac',JSON.stringify(data));
   document.getElementById('penumpang').value='';
+  document.getElementById('body').value='';
+  document.getElementById('jam').value='';
   render();
 }
 function hapus(i){data.splice(i,1);localStorage.setItem('jac',JSON.stringify(data));render();}
 function hapusSemua(){if(confirm('Hapus semua?')){data=[];localStorage.removeItem('jac');render();}}
 document.getElementById('tanggal').value=new Date().toISOString().slice(0,10);
+gantiRute();
 render();
 </script>
 </body>
