@@ -84,6 +84,14 @@ td.aksi{position:relative;padding:4px}
 .bar-l{background:#f97316}
 .grafik-tgl{font-size:11px;font-weight:bold;margin-top:6px;color:#333;text-align:center}
 .grafik-kosong{text-align:center;color:#888;font-size:13px;padding:20px 0}
+.tanggal-wrap{display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;margin-top:5px;box-sizing:border-box;background:#fff;font-size:15px;cursor:pointer}
+.tanggal-wrap:active{outline:2px solid var(--warna)}
+.tanggal-teks{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tanggal-panah{color:#666;font-size:13px;margin-left:8px;flex-shrink:0}
+.label-hariini{font-size:11px;font-weight:bold;font-style:italic;color:#dc2626;margin-left:6px}
+.label-kemarin{font-size:11px;font-weight:bold;font-style:italic;color:#ea580c;margin-left:6px}
+.label-besok{font-size:11px;font-weight:bold;font-style:italic;color:#16a34a;margin-left:6px}
+input.tanggal-asli{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;padding:0;border:none}
 </style>
 </head>
 <body class="depok">
@@ -106,7 +114,11 @@ td.aksi{position:relative;padding:4px}
 <h2>Laporan Penumpang JAC</h2>
 <p class="sub">Bandara HIBA - Input Harian &nbsp;<span class="badge" id="badgeRute">DEPOK - BIRU</span></p>
 <div class="edit-banner" id="editBanner">✏️ MODE EDIT - Aa lagi benerin data lama</div>
-<label>Tanggal</label><input type="date" id="tanggal" onchange="updateJamList()">
+<label>Tanggal</label>
+<div style="position:relative">
+<div class="tanggal-wrap" onclick="bukaKalender('tanggal')"><span class="tanggal-teks" id="tampilTanggalForm">-</span><span class="tanggal-panah">⌄</span></div>
+<input type="date" id="tanggal" class="tanggal-asli" onchange="onTanggalFormGanti()">
+</div>
 <label>Rute / Trayek</label>
 <select id="rute" onchange="gantiRute()"><option value="Depok">1. Depok</option><option value="Bandara">2. Bandara</option></select>
 <label>Jam Keberangkatan</label><input type="text" id="jam" list="listJam" placeholder="Ketik jam / pilih"><datalist id="listJam"></datalist>
@@ -121,7 +133,11 @@ td.aksi{position:relative;padding:4px}
 
 <div class="card page" id="page-rekap">
 <h3>📋 REKAP LAPORAN</h3>
-<label>Tanggal Rekap</label><input type="date" id="tanggalRekap" onchange="render()">
+<label>Tanggal Rekap</label>
+<div style="position:relative">
+<div class="tanggal-wrap" onclick="bukaKalender('tanggalRekap')"><span class="tanggal-teks" id="tampilTanggalRekap">-</span><span class="tanggal-panah">⌄</span></div>
+<input type="date" id="tanggalRekap" class="tanggal-asli" onchange="onTanggalRekapGanti()">
+</div>
 <div class="tab-wrap">
 <button class="tab-btn active" id="tab-semua" onclick="setTabRekap('semua')">Semua</button>
 <button class="tab-btn" id="tab-depok" onclick="setTabRekap('depok')">🔵 Depok</button>
@@ -204,6 +220,30 @@ let tabRekap='semua';
 let editIndex=-1;
 let editKeyLimoLama='';
 function tampilTanggal(t){return t.split('-').reverse().join('/');}
+function toISO(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function updateTampilTanggal(idInput,idTampil){
+  let v=document.getElementById(idInput).value;
+  let el=document.getElementById(idTampil);
+  if(!v){el.innerHTML='Pilih tanggal';return;}
+  let today=new Date(); today.setHours(0,0,0,0);
+  let kemarin=new Date(today); kemarin.setDate(kemarin.getDate()-1);
+  let besok=new Date(today); besok.setDate(besok.getDate()+1);
+  let isoHariIni=toISO(today), isoKemarin=toISO(kemarin), isoBesok=toISO(besok);
+  let teks=tampilTanggal(v);
+  let label='';
+  if(v===isoHariIni) label=' <span class="label-hariini">[Hari Ini]</span>';
+  else if(v===isoKemarin) label=' <span class="label-kemarin">[Kemarin]</span>';
+  else if(v===isoBesok) label=' <span class="label-besok">[Besok]</span>';
+  el.innerHTML=teks+label;
+}
+function updateSemuaTampilTanggal(){updateTampilTanggal('tanggal','tampilTanggalForm');updateTampilTanggal('tanggalRekap','tampilTanggalRekap');}
+function bukaKalender(id){
+  let inp=document.getElementById(id);
+  if(inp.showPicker){try{inp.showPicker();return;}catch(e){}}
+  inp.click();
+}
+function onTanggalFormGanti(){updateTampilTanggal('tanggal','tampilTanggalForm');updateJamList();}
+function onTanggalRekapGanti(){updateTampilTanggal('tanggalRekap','tampilTanggalRekap');render();}
 function setTabRekap(t){
   tabRekap=t;
   document.getElementById('tab-semua').classList.toggle('active',t==='semua');
@@ -283,6 +323,7 @@ function editBaris(tgl,rute,jam){
   document.getElementById('btnSimpan').style.background='#f59e0b';
   document.getElementById('btnBatalEdit').style.display='block';
   document.getElementById('tanggalRekap').value=d.tgl;
+  updateSemuaTampilTanggal();
   updateJamList();
   pindah('form');
 }
@@ -466,6 +507,7 @@ function tambah(){
     alert('Perubahan disimpan!');
     batalEdit();
     document.getElementById('tanggalRekap').value=tgl;
+    updateSemuaTampilTanggal();
     render();renderBulanan();
     pindah('rekap');
     return;
@@ -474,6 +516,7 @@ function tambah(){
   localStorage.setItem('jac',JSON.stringify(data));
   document.getElementById('penumpang').value='';document.getElementById('body').value='';document.getElementById('jam').value='';document.getElementById('ket').value='';
   document.getElementById('tanggalRekap').value=tgl;
+  updateSemuaTampilTanggal();
   alert('Berhasil! Cek di Rekap Laporan');
   updateJamList();
   render();renderBulanan();
@@ -482,6 +525,7 @@ let today=new Date().toISOString().slice(0,10);
 document.getElementById('tanggal').value=today;
 document.getElementById('tanggalRekap').value=today;
 document.getElementById('bulan').value=today.slice(0,7);
+updateSemuaTampilTanggal();
 gantiRute();render();renderBulanan();
 </script>
 </body>
