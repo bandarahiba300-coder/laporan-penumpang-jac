@@ -73,6 +73,21 @@ td.aksi{position:relative;padding:4px}
 .btn-closing{background:#111111;color:#fff;font-size:15px;margin-top:8px}
 .btn-closing:active{background:#000}
 .tanggal-lock{font-size:11px;color:#dc2626;font-weight:bold;margin-top:4px}
+.grafik-wrap{margin-top:18px;border-top:2px solid #e5e7eb;padding-top:12px}
+.grafik-title{text-align:center;font-weight:bold;font-size:15px;margin-bottom:8px}
+.grafik-legend{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;font-size:12px;font-weight:bold;margin-bottom:10px}
+.dot-db{display:inline-block;width:12px;height:12px;background:#1e3a8a;border-radius:3px;vertical-align:middle;margin-right:4px}
+.dot-l{display:inline-block;width:12px;height:12px;background:#f97316;border-radius:3px;vertical-align:middle;margin-right:4px}
+.grafik-chart{display:flex;gap:16px;align-items:flex-end;overflow-x:auto;padding:12px 8px 0;background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;min-height:190px}
+.grafik-col{flex:0 0 72px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
+.grafik-bars{display:flex;gap:6px;align-items:flex-end;height:150px}
+.grafik-bar-wrap{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:150px}
+.grafik-nilai{font-size:11px;font-weight:bold;color:#111;margin-bottom:3px}
+.grafik-bar{width:28px;border-radius:6px 6px 0 0;min-height:4px}
+.bar-db{background:#1e3a8a}
+.bar-l{background:#f97316}
+.grafik-tgl{font-size:11px;font-weight:bold;margin-top:6px;color:#333;text-align:center}
+.grafik-kosong{text-align:center;color:#888;font-size:13px;padding:20px 0}
 </style>
 </head>
 <body class="depok">
@@ -154,6 +169,11 @@ td.aksi{position:relative;padding:4px}
 <div class="t-all" id="totBAll">Total: 0</div>
 </div>
 <button class="btn-export" onclick="exportBulanan()">📗 Export ke Excel / Spreadsheet</button>
+<div class="grafik-wrap">
+<div class="grafik-title">📊 Grafik Harian</div>
+<div class="grafik-legend"><span><span class="dot-db"></span>DB = Depok + Bandara</span><span><span class="dot-l"></span>L = Dari Limo + Ke Limo</span></div>
+<div id="grafikBulanan"></div>
+</div>
 </div>
 
 <script>
@@ -393,9 +413,28 @@ function hitungBulanan(bln){
     let bandara=g.bandaraKotor-keLimo;
     let total=depok+dariLimo+bandara+keLimo;
     tDepok+=depok; tDariLimo+=dariLimo; tBandara+=bandara; tKeLimo+=keLimo; tTotal+=total;
-    rows.push({tgl:k,tampil:k.split('-').reverse().join('/'),depok,dariLimo,bandara,keLimo,total});
+    rows.push({tgl:k,tampil:k.split('-').reverse().join('/'),depok,dariLimo,bandara,keLimo,total,db:depok+bandara,limoTotal:dariLimo+keLimo});
   });
   return {rows,tDepok,tDariLimo,tBandara,tKeLimo,tTotal};
+}
+function renderGrafik(rows){
+  let el=document.getElementById('grafikBulanan');
+  if(!rows.length){el.innerHTML='<div class="grafik-kosong">Belum ada data - Grafik muncul setelah ada data di bulan ini</div>';return;}
+  let maxVal=0;
+  rows.forEach(x=>{maxVal=Math.max(maxVal,x.db,x.limoTotal);});
+  if(maxVal===0) maxVal=1;
+  let h='<div class="grafik-chart">';
+  rows.forEach(x=>{
+    let hDB=Math.max(4,Math.round(x.db/maxVal*150));
+    let hL=Math.max(4,Math.round(x.limoTotal/maxVal*150));
+    let tglPendek=x.tampil.slice(0,5);
+    h+='<div class="grafik-col"><div class="grafik-bars">'
+      +'<div class="grafik-bar-wrap"><div class="grafik-nilai">'+x.db+'</div><div class="grafik-bar bar-db" style="height:'+hDB+'px"></div></div>'
+      +'<div class="grafik-bar-wrap"><div class="grafik-nilai">'+x.limoTotal+'</div><div class="grafik-bar bar-l" style="height:'+hL+'px"></div></div>'
+      +'</div><div class="grafik-tgl">'+tglPendek+'</div></div>';
+  });
+  h+='</div>';
+  el.innerHTML=h;
 }
 function renderBulanan(){
   let bln=document.getElementById('bulan').value;
@@ -411,6 +450,7 @@ function renderBulanan(){
   document.getElementById('totBBandara').innerText='Bandara: '+r.tBandara;
   document.getElementById('totBKeLimo').innerText='Ke Limo: '+r.tKeLimo;
   document.getElementById('totBAll').innerText='Total: '+r.tTotal;
+  renderGrafik(r.rows);
 }
 function exportBulanan(){
   let bln=document.getElementById('bulan').value;
