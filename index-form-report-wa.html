@@ -134,7 +134,6 @@ input.ket-input:disabled{background:#f8fafc;color:#666}
 .btn-hapus-info{width:40px;min-width:40px;padding:10px 0;margin:0;background:#fee2e2;color:#dc2626;border-radius:10px;font-size:16px}
 .btn-tambah-info{background:#f59e0b;color:#111;margin-top:10px}
 .btn-reset-stock{background:#6b7280;margin-top:8px}
-/* === PERENCANAAN OPS - 45 BARIS RAPET === */
 .rencana-table{font-size:12px}
 .rencana-table th{padding:4px 2px;font-size:11px}
 .rencana-table th.depok-h{background:#5aa9e6;color:#000}
@@ -266,7 +265,7 @@ input.rencana-inp{width:100%;padding:4px 2px;border:1px solid #ccc;border-radius
 <div class="tanggal-wrap" onclick="bukaKalender('tanggalRencana')"><span class="tanggal-teks" id="tampilTanggalRencana">-</span><span class="tanggal-panah">⌄</span></div>
 <input type="date" id="tanggalRencana" class="tanggal-asli" onchange="onTanggalRencanaGanti()">
 </div>
-<p class="hint" style="text-align:center">Isi 2 baris pertama yg urut, 5 baris bawahnya auto keisi. Body merah di Stock Unit di-skip. Abis A68 balik ke A47. Jam yg udah kepake hilang dari saran, tapi tetep bisa ketik manual.</p>
+<p class="hint" style="text-align:center">Isi 2 baris pertama yg urut, 5 baris bawahnya auto keisi. Body merah di Stock Unit di-skip. Abis A68 balik ke A47. Jam ga boleh sama di Depok, ga boleh sama di Bandara - walau ketik manual ditolak.</p>
 <div id="wrapDatalistRencana"></div>
 <table class="rencana-table"><thead><tr><th style="width:28px">No</th><th class="depok-h" colspan="2">DEPOK</th><th class="bandara-h" colspan="2">BANDARA</th></tr>
 <tr><th></th><th class="depok-h">No.Body</th><th class="depok-h">Jam</th><th class="bandara-h">No.Body</th><th class="bandara-h">Jam</th></tr></thead>
@@ -808,7 +807,7 @@ function hapusInfo(i){
   if(infoData[tgl].length===0) infoData[tgl]=[""];
   simpanStock(); renderInfo();
 }
-/* === PERENCANAAN OPS - 7 BARIS PER BLOK, SKIP MERAH, MUTER A68 -> A47, JAM HILANG KALO KEPAKE === */
+/* === PERENCANAAN OPS - 7 BARIS PER BLOK, SKIP MERAH, MUTER A68 -> A47, JAM ANTI DUPLIKAT === */
 let rencanaData=JSON.parse(localStorage.getItem('jac_rencana')||'{}');
 function getRencana(tgl){
   if(!rencanaData[tgl]){
@@ -880,7 +879,18 @@ function ubahRencana(sisi,idx,field,val){
   let tgl=document.getElementById('tanggalRencana').value;
   let arr=getRencana(tgl)[sisi];
   if(field==='body' && val!=='' && isMerahRencana(tgl,val)){ alert('Body '+val+' lagi '+statusBodyRencana(tgl,val)+' di Stock Unit tanggal ini Aa, ga bisa dipilih.'); renderRencana(); return; }
-  if(field==='jam') val=val.trim();
+  if(field==='jam'){
+    val=val.trim();
+    if(val!==''){
+      let duplikatIdx=arr.findIndex((x,i)=>i!==idx && x.jam===val);
+      if(duplikatIdx!==-1){
+        let labelSisi=sisi==='depok'?'DEPOK':'BANDARA';
+        alert('Jam '+val+' di '+labelSisi+' SUDAH TERPAKAI di Baris '+(duplikatIdx+1)+' Aa! Pilih jam lain yang masih sisa.');
+        renderRencana();
+        return;
+      }
+    }
+  }
   arr[idx][field]=val;
   if(field==='body' && val!==''){
     let awalBlok=Math.floor(idx/7)*7;
@@ -1011,4 +1021,4 @@ hapusBaris = function(tgl,rute,jam,body){
 if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js'); }
 </script>
 </body>
-</html>
+  </html>
