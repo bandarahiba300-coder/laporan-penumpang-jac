@@ -266,9 +266,8 @@ input.rencana-inp{width:100%;padding:4px 2px;border:1px solid #ccc;border-radius
 <div class="tanggal-wrap" onclick="bukaKalender('tanggalRencana')"><span class="tanggal-teks" id="tampilTanggalRencana">-</span><span class="tanggal-panah">⌄</span></div>
 <input type="date" id="tanggalRencana" class="tanggal-asli" onchange="onTanggalRencanaGanti()">
 </div>
-<p class="hint" style="text-align:center">Isi 2 baris pertama yg urut, 5 baris bawahnya auto keisi. Body merah di Stock Unit di-skip. Abis A68 balik ke A47. Jam ketik manual / pilih saran.</p>
-<datalist id="listJamDepokRencana"></datalist>
-<datalist id="listJamBandaraRencana"></datalist>
+<p class="hint" style="text-align:center">Isi 2 baris pertama yg urut, 5 baris bawahnya auto keisi. Body merah di Stock Unit di-skip. Abis A68 balik ke A47. Jam yg udah kepake hilang dari saran, tapi tetep bisa ketik manual.</p>
+<div id="wrapDatalistRencana"></div>
 <table class="rencana-table"><thead><tr><th style="width:28px">No</th><th class="depok-h" colspan="2">DEPOK</th><th class="bandara-h" colspan="2">BANDARA</th></tr>
 <tr><th></th><th class="depok-h">No.Body</th><th class="depok-h">Jam</th><th class="bandara-h">No.Body</th><th class="bandara-h">Jam</th></tr></thead>
 <tbody id="listRencana"></tbody></table>
@@ -809,7 +808,7 @@ function hapusInfo(i){
   if(infoData[tgl].length===0) infoData[tgl]=[""];
   simpanStock(); renderInfo();
 }
-/* === PERENCANAAN OPS - 7 BARIS PER BLOK, SKIP MERAH, MUTER A68 -> A47 === */
+/* === PERENCANAAN OPS - 7 BARIS PER BLOK, SKIP MERAH, MUTER A68 -> A47, JAM HILANG KALO KEPAKE === */
 let rencanaData=JSON.parse(localStorage.getItem('jac_rencana')||'{}');
 function getRencana(tgl){
   if(!rencanaData[tgl]){
@@ -848,9 +847,20 @@ function optBodyRencana(tgl,val){
 }
 function renderRencana(){
   let tgl=document.getElementById('tanggalRencana').value; if(!tgl) return;
-  document.getElementById('listJamDepokRencana').innerHTML=jadwal.Depok.map(j=>`<option value="${j}">`).join('');
-  document.getElementById('listJamBandaraRencana').innerHTML=jadwal.Bandara.map(j=>`<option value="${j}">`).join('');
-  let r=getRencana(tgl); let h=''; let cD=0,cB=0;
+  let r=getRencana(tgl);
+  let jamDepokTerpakai=r.depok.map(x=>x.jam).filter(j=>j);
+  let jamBandaraTerpakai=r.bandara.map(x=>x.jam).filter(j=>j);
+  let dlHtml='';
+  for(let i=0;i<45;i++){
+    let d=r.depok[i]||{body:"",jam:""};
+    let b=r.bandara[i]||{body:"",jam:""};
+    let sisaD=jadwal.Depok.filter(j=>j===d.jam || !jamDepokTerpakai.includes(j));
+    let sisaB=jadwal.Bandara.filter(j=>j===b.jam || !jamBandaraTerpakai.includes(j));
+    dlHtml+='<datalist id="dlD'+i+'">'+sisaD.map(j=>'<option value="'+j+'">').join('')+'</datalist>';
+    dlHtml+='<datalist id="dlB'+i+'">'+sisaB.map(j=>'<option value="'+j+'">').join('')+'</datalist>';
+  }
+  document.getElementById('wrapDatalistRencana').innerHTML=dlHtml;
+  let h=''; let cD=0,cB=0;
   for(let i=0;i<45;i++){
     let d=r.depok[i]||{body:"",jam:""}; let b=r.bandara[i]||{body:"",jam:""};
     if(d.body||d.jam) cD++; if(b.body||b.jam) cB++;
@@ -858,9 +868,9 @@ function renderRencana(){
     let escB=(b.jam||'').replace(/"/g,'&quot;');
     h+=`<tr><td class="no">${i+1}</td>`
       +`<td><select class="rencana-sel ${d.body?'':'kosong'}" onchange="ubahRencana('depok',${i},'body',this.value)">${optBodyRencana(tgl,d.body)}</select></td>`
-      +`<td><input class="rencana-inp" type="text" list="listJamDepokRencana" placeholder="-" value="${escD}" onchange="ubahRencana('depok',${i},'jam',this.value)"></td>`
+      +`<td><input class="rencana-inp" type="text" list="dlD${i}" placeholder="-" value="${escD}" onchange="ubahRencana('depok',${i},'jam',this.value)"></td>`
       +`<td><select class="rencana-sel ${b.body?'':'kosong'}" onchange="ubahRencana('bandara',${i},'body',this.value)">${optBodyRencana(tgl,b.body)}</select></td>`
-      +`<td><input class="rencana-inp" type="text" list="listJamBandaraRencana" placeholder="-" value="${escB}" onchange="ubahRencana('bandara',${i},'jam',this.value)"></td></tr>`;
+      +`<td><input class="rencana-inp" type="text" list="dlB${i}" placeholder="-" value="${escB}" onchange="ubahRencana('bandara',${i},'jam',this.value)"></td></tr>`;
   }
   document.getElementById('listRencana').innerHTML=h;
   document.getElementById('totRencanaDepok').innerText='Depok: '+cD+' / 45';
@@ -906,10 +916,7 @@ function ubahRencana(sisi,idx,field,val){
     }
   }
   simpanRencana();
-  let cD=getRencana(tgl).depok.filter(x=>x.body||x.jam).length;
-  let cB=getRencana(tgl).bandara.filter(x=>x.body||x.jam).length;
-  document.getElementById('totRencanaDepok').innerText='Depok: '+cD+' / 45';
-  document.getElementById('totRencanaBandara').innerText='Bandara: '+cB+' / 45';
+  renderRencana();
 }
 function resetRencana(){
   let tgl=document.getElementById('tanggalRencana').value;
