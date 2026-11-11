@@ -1,21 +1,15 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Download Data</title></head>
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Restore REST</title></head>
 <body style="font-family:sans-serif;padding:15px;text-align:center">
-<h2>DOWNLOAD 53 DATA</h2>
-<p id="info">Lagi siapin file...</p>
-<a id="dl" download="data-jac.json" style="display:none;padding:15px;background:#16a34a;color:#fff;border-radius:10px;font-weight:bold;text-decoration:none">DOWNLOAD FILE DATA</a>
-<p id="err" style="color:red;font-size:13px"></p>
-<textarea id="txt" style="width:100%;height:150px;margin-top:15px"></textarea>
+<h2>RESTORE VIA REST</h2>
+<p id="info">Lagi nyoba nyambung...</p>
+<p id="err" style="color:red"></p>
 <script>
-try{
 let data=JSON.parse(localStorage.getItem('jac')||'[]');
 let limo=JSON.parse(localStorage.getItem('jac_limo')||'{}');
-let gabung={data:data,limo:limo};
-let str=JSON.stringify(gabung);
-document.getElementById('info').innerText='Ketemu '+data.length+' laporan! Pencet DOWNLOAD di bawah, kirim file-nya ke Mita, Mita yang masukin ke Firebase!';
-let blob=new Blob([str],{type:'application/json'});
-let url=URL.createObjectURL(blob);
-let a=document.getElementById('dl');
-a.href=url; a.style.display='inline-block';
-document.getElementById('txt').value=str.substring(0,2000)+'... (ini potongan, file lengkapnya di tombol download)';
-}catch(e){ document.getElementById('err').innerText='Error: '+e.message; }
+document.getElementById('info').innerText='Ketemu '+data.length+' laporan, lagi upload...';
+fetch('https://laporan-jac-baru-default-rtdb.firebaseio.com/laporan.json',{method:'PUT',body:JSON.stringify({data:data,limo:limo})})
+.then(r=>r.text()).then(t=>{
+  document.getElementById('info').innerText='BERHASIL! 53 data udah masuk Firebase! Buka link utama sekarang!';
+  alert('BERHASIL Aa! Cek link utama!');
+}).catch(e=>{ document.getElementById('err').innerText='Gagal: '+e.message; });
 </script></body></html>
