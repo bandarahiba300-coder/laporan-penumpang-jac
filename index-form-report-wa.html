@@ -807,7 +807,6 @@ function hapusInfo(i){
   if(infoData[tgl].length===0) infoData[tgl]=[""];
   simpanStock(); renderInfo();
 }
-/* === PERENCANAAN OPS - 7 BARIS PER BLOK, SKIP MERAH, MUTER A68 -> A47, JAM ANTI DUPLIKAT === */
 let rencanaData=JSON.parse(localStorage.getItem('jac_rencana')||'{}');
 function getRencana(tgl){
   if(!rencanaData[tgl]){
@@ -963,6 +962,73 @@ function gabungData(lokal, remote){
   (remote||[]).forEach(d=>{ map[kunciData(d)] = d; });
   return Object.values(map).sort((a,b)=> (a.tgl+a.rute+a.jam).localeCompare(b.tgl+b.rute+b.jam));
 }
+/* === FIX SYNC: STOCK per BODY, RENCANA per BARIS, INFO per BARIS - REKAP TIDAK DIUBAH === */
+function gabungStock(lokal, remote){
+  let hasil = {};
+  let semuaTgl = new Set([...Object.keys(remote||{}), ...Object.keys(lokal||{})]);
+  semuaTgl.forEach(tgl=>{
+    hasil[tgl] = {};
+    let r = remote[tgl]||{};
+    let l = lokal[tgl]||{};
+    let semuaBody = new Set([...Object.keys(r), ...Object.keys(l), ...listBodyBus]);
+    semuaBody.forEach(body=>{
+      let itemR = r[body];
+      let itemL = l[body];
+      if(itemL && itemR){
+        // Kalau 2 HP ubah body yang beda, 2-2nya ke-merge. Kalau body yang sama diubah 2 HP, yang beda dari READY yang menang, biar SERVICE / INAP ga hilang ketimpa READY
+        if(JSON.stringify(itemL)===JSON.stringify(itemR)){ hasil[tgl][body]=itemL; }
+        else if(itemL.status==="READY" && itemR.status!=="READY"){ hasil[tgl][body]=itemR; }
+        else if(itemR.status==="READY" && itemL.status!=="READY"){ hasil[tgl][body]=itemL; }
+        else { hasil[tgl][body]=itemL; }
+      } else if(itemL){ hasil[tgl][body]=itemL; }
+      else if(itemR){ hasil[tgl][body]=itemR; }
+      else { hasil[tgl][body]={status:"READY",ket:"READY"}; }
+    });
+  });
+  return hasil;
+}
+function gabungSatuBarisRencana(a,b){
+  let A=a||{body:"",jam:""};
+  let B=b||{body:"",jam:""};
+  if(!A.body && !A.jam) return B;
+  if(!B.body && !B.jam) return A;
+  // Kalau 1 sisi kosong di 1 HP, ambil yang isi dari HP lain. Kalau 2-2nya isi tapi beda, ambil yang lokal (HP ini) biar ga kedip-kedip
+  return {
+    body: A.body || B.body,
+    jam: A.jam || B.jam
+  };
+}
+function gabungRencana(lokal, remote){
+  let hasil = {};
+  let semuaTgl = new Set([...Object.keys(remote||{}), ...Object.keys(lokal||{})]);
+  semuaTgl.forEach(tgl=>{
+    let r = remote[tgl]||{depok:[],bandara:[]};
+    let l = lokal[tgl]||{depok:[],bandara:[]};
+    hasil[tgl]={depok:[],bandara:[]};
+    ['depok','bandara'].forEach(sisi=>{
+      for(let i=0;i<45;i++){
+        hasil[tgl][sisi].push(gabungSatuBarisRencana(l[sisi] && l[sisi][i], r[sisi] && r[sisi][i]));
+      }
+    });
+  });
+  return hasil;
+}
+function gabungInfo(lokal, remote){
+  let hasil = {};
+  let semuaTgl = new Set([...Object.keys(remote||{}), ...Object.keys(lokal||{})]);
+  semuaTgl.forEach(tgl=>{
+    let r = remote[tgl]||[];
+    let l = lokal[tgl]||[];
+    let n = Math.max(r.length, l.length, 1);
+    hasil[tgl]=[];
+    for(let i=0;i<n;i++){
+      let a = l[i]||"";
+      let b = r[i]||"";
+      hasil[tgl].push(a!=="" ? a : b);
+    }
+  });
+  return hasil;
+}
 async function syncFirebase(){
   if(sedangSync) return; sedangSync = true;
   try{
@@ -980,9 +1046,10 @@ async function syncFirebase(){
     let rencanaRemote = (j && j.rencana) ? j.rencana : {};
     let gabung = gabungData(lokal, remote);
     let limoGabung = Object.assign({}, limoLokal, limoRemote);
-    let stockGabung = Object.assign({}, stockRemote, stockLokal);
-    let infoGabung = Object.assign({}, infoRemote, infoLokal);
-    let rencanaGabung = Object.assign({}, rencanaRemote, rencanaLokal);
+    // FIX: Stock, Rencana, Info digabung per item, bukan per tanggal
+    let stockGabung = gabungStock(stockLokal, stockRemote);
+    let infoGabung = gabungInfo(infoLokal, infoRemote);
+    let rencanaGabung = gabungRencana(rencanaLokal, rencanaRemote);
     if(Date.now() - hapusTerakhir < 60000){
       gabung = lokal;
       limoGabung = limoLokal;
