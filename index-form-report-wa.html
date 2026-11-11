@@ -637,5 +637,40 @@ document.getElementById('bulan').value=today.slice(0,7);
 updateSemuaTampilTanggal();
 gantiRute();render();renderBulanan();renderFormat();
 </script>
+ <script>
+// === FIREBASE SYNC - TEMPEL DISINI ===
+const FB_URL = 'https://laporan-jac-baru-default-rtdb.asia-southeast1.firebasedatabase.app/laporan.json';
+
+function kirimKeFirebase(){
+  let d = JSON.parse(localStorage.getItem('jac')||'[]');
+  let l = JSON.parse(localStorage.getItem('jac_limo')||'{}');
+  if(!d.length) return;
+let payload = {};
+payload.data = d;
+payload.limo = l;
+fetch(FB_URL,{method:'PUT',body:JSON.stringify(payload)});  
+}
+
+function ambilDariFirebase(){
+  fetch(FB_URL).then(r=>r.json()).then(j=>{
+    if(j && j.data && j.data.length){
+      let lokal = JSON.parse(localStorage.getItem('jac')||'[]');
+      // Kalau HP ini kosong, ambil dari Firebase biar orang lain bisa liat
+      if(!lokal.length){
+        localStorage.setItem('jac', JSON.stringify(j.data));
+        if(j.limo) localStorage.setItem('jac_limo', JSON.stringify(j.limo));
+        location.reload();
+      }
+    }
+  }).catch(e=>{});
+}
+
+// Pas dibuka, coba ambil dari Firebase dulu
+ambilDariFirebase();
+// Tiap 10 detik, kirim ke Firebase otomatis
+setInterval(kirimKeFirebase, 10000);
+// Tiap abis input / simpan, langsung kirim juga
+window.addEventListener('click', ()=>{ setTimeout(kirimKeFirebase, 500); });
+</script> 
 </body>
 </html>
