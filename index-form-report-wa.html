@@ -266,7 +266,7 @@ input.rencana-inp{width:100%;padding:4px 2px;border:1px solid #ccc;border-radius
 <div class="tanggal-wrap" onclick="bukaKalender('tanggalRencana')"><span class="tanggal-teks" id="tampilTanggalRencana">-</span><span class="tanggal-panah">⌄</span></div>
 <input type="date" id="tanggalRencana" class="tanggal-asli" onchange="onTanggalRencanaGanti()">
 </div>
-<p class="hint" style="text-align:center">Isi 2 baris pertama yg urut, 5 baris bawahnya auto keisi. Body merah di Stock Unit di-skip. Jam ketik manual / pilih saran.</p>
+<p class="hint" style="text-align:center">Isi 2 baris pertama yg urut, 5 baris bawahnya auto keisi. Body merah di Stock Unit di-skip. Abis A68 balik ke A47. Jam ketik manual / pilih saran.</p>
 <datalist id="listJamDepokRencana"></datalist>
 <datalist id="listJamBandaraRencana"></datalist>
 <table class="rencana-table"><thead><tr><th style="width:28px">No</th><th class="depok-h" colspan="2">DEPOK</th><th class="bandara-h" colspan="2">BANDARA</th></tr>
@@ -809,7 +809,7 @@ function hapusInfo(i){
   if(infoData[tgl].length===0) infoData[tgl]=[""];
   simpanStock(); renderInfo();
 }
-/* === PERENCANAAN OPS - 7 BARIS PER BLOK, SKIP MERAH, JAM INPUT SARAN === */
+/* === PERENCANAAN OPS - 7 BARIS PER BLOK, SKIP MERAH, MUTER A68 -> A47 === */
 let rencanaData=JSON.parse(localStorage.getItem('jac_rencana')||'{}');
 function getRencana(tgl){
   if(!rencanaData[tgl]){
@@ -829,6 +829,13 @@ function isMerahRencana(tgl,body){
 function statusBodyRencana(tgl,body){
   let st=stockData[tgl] && stockData[tgl][body];
   return st ? st.status : "READY";
+}
+function nextReadyPos(tgl, dariPos){
+  for(let step=1; step<=listBodyBus.length; step++){
+    let p=(dariPos+step)%listBodyBus.length;
+    if(!isMerahRencana(tgl, listBodyBus[p])) return p;
+  }
+  return -1;
 }
 function optBodyRencana(tgl,val){
   let h='<option value="">-</option>';
@@ -874,14 +881,16 @@ function ubahRencana(sisi,idx,field,val){
       let pos1=listBodyBus.indexOf(body1);
       let pos2=listBodyBus.indexOf(body2);
       if(pos1!==-1 && pos2!==-1){
-        let nextPos=pos1+1;
-        while(nextPos<listBodyBus.length && isMerahRencana(tgl,listBodyBus[nextPos])) nextPos++;
+        let nextPos=nextReadyPos(tgl, pos1);
         if(pos2===nextPos){
           let collected=[];
-          let p=pos2+1;
-          while(collected.length<5 && p<listBodyBus.length){
-            if(!isMerahRencana(tgl,listBodyBus[p])) collected.push(listBodyBus[p]);
-            p++;
+          let p=pos2;
+          for(let k=0;k<5;k++){
+            let np=nextReadyPos(tgl, p);
+            if(np===-1) break;
+            if(np===pos1 || np===pos2) break;
+            collected.push(listBodyBus[np]);
+            p=np;
           }
           for(let k=0;k<collected.length;k++){
             let targetIdx=awalBlok+2+k;
@@ -995,4 +1004,4 @@ hapusBaris = function(tgl,rute,jam,body){
 if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js'); }
 </script>
 </body>
-  </html>
+</html>
