@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Laporan Penumpang JAC - Hiba Bandara</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2563eb">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Laporan JAC">
+<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3448/3448339.png">
 <style>
 :root{--warna:#2563eb}
 body.depok{--warna:#2563eb}
@@ -655,7 +662,6 @@ function ambilDariFirebase(){
   fetch(FB_URL).then(r=>r.json()).then(j=>{
     if(j && j.data && j.data.length){
       let lokal = JSON.parse(localStorage.getItem('jac')||'[]');
-      // Kalau HP ini kosong, ambil dari Firebase biar orang lain bisa liat
       if(!lokal.length){
         localStorage.setItem('jac', JSON.stringify(j.data));
         if(j.limo) localStorage.setItem('jac_limo', JSON.stringify(j.limo));
@@ -664,13 +670,12 @@ function ambilDariFirebase(){
     }
   }).catch(e=>{});
 }
-
-// Pas dibuka, coba ambil dari Firebase dulu
 ambilDariFirebase();
-// Tiap 10 detik, kirim ke Firebase otomatis
 setInterval(kirimKeFirebase, 10000);
-// Tiap abis input / simpan, langsung kirim juga
 window.addEventListener('click', ()=>{ setTimeout(kirimKeFirebase, 500); });
-</script> 
+</script>
+<script>
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js'); }
+</script>
 </body>
 </html>
