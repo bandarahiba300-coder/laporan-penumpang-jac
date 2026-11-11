@@ -1,14 +1,19 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Recovery</title></head>
-<body style="font-family:sans-serif;padding:15px">
-<h2>RECOVERY DATA LAMA</h2>
-<p id="info">Lagi cek...</p>
-<textarea id="hasil" style="width:100%;height:300px"></textarea><br><br>
-<button onclick="copyData()" style="padding:12px;width:100%;background:#16a34a;color:#fff;border:none;border-radius:10px;font-weight:bold">SALIN DATA LAMA</button>
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Pindah Data</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+</head><body style="font-family:sans-serif;padding:15px;text-align:center">
+<h2>PINDAH 53 DATA KE FIREBASE</h2>
+<p id="info">Siap pindah...</p>
+<button onclick="pindah()" style="padding:15px;width:100%;background:#16a34a;color:#fff;border:none;border-radius:10px;font-weight:bold;font-size:16px">PINDAHKAN SEKARANG</button>
 <script>
-let d = localStorage.getItem('jac') || '[]';
-let l = localStorage.getItem('jac_limo') || '{}';
-let arr = JSON.parse(d);
-document.getElementById('info').innerText = 'Ketemu: ' + arr.length + ' laporan lama! Kalau 0 berarti salah browser.';
-document.getElementById('hasil').value = 'DATA:' + d + '\n\nLIMO:' + l;
-function copyData(){ document.getElementById('hasil').select(); document.execCommand('copy'); alert('Udah ke-copy! Kirim ke Mita di WA'); }
+const firebaseConfig={apiKey:"AIzaSyAtnlbo4x3i4IEzSpT_X28zhGT4lSRp1Uw",authDomain:"laporan-jac-baru.firebaseapp.com",databaseURL:"https://laporan-jac-baru-default-rtdb.firebaseio.com",projectId:"laporan-jac-baru",storageBucket:"laporan-jac-baru.firebasestorage.app",messagingSenderId:"893123722329",appId:"1:893123722329:web:3f7d56b5ac0cbddfc0e30d8"};
+firebase.initializeApp(firebaseConfig);
+let data=JSON.parse(localStorage.getItem('jac')||'[]');
+let limo=JSON.parse(localStorage.getItem('jac_limo')||'{}');
+document.getElementById('info').innerText='Ketemu: '+data.length+' laporan, siap dipindah!';
+function pindah(){
+  firebase.database().ref('laporan/data').set(data).then(()=>{
+    return firebase.database().ref('laporan/limo').set(limo);
+  }).then(()=>{ document.getElementById('info').innerText='BERHASIL! 53 data udah pindah ke Firebase!'; alert('BERHASIL Aa! 53 data udah pindah! Sekarang buka link utama, data udah balik semua!'); }).catch(e=>{ alert('Gagal: '+e.message); });
+}
 </script></body></html>
