@@ -1,0 +1,15 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="font-family:sans-serif;padding:15px;text-align:center">
+<h2>DORONG HP KE FIREBASE</h2>
+<p id="info">Lagi dorong...</p>
+<script>
+let d=JSON.parse(localStorage.getItem('jac')||'[]');
+let l=JSON.parse(localStorage.getItem('jac_limo')||'{}');
+document.getElementById('info').innerText='HP ada '+d.length+' laporan, lagi dorong ke Firebase... JANGAN BUKA APLIKASI DULU!';
+fetch('https://laporan-jac-baru-default-rtdb.firebaseio.com/laporan.json',{method:'PUT',body:JSON.stringify({data:d,limo:l})})
+.then(r=>r.text()).then(t=>{
+  document.getElementById('info').innerText='BERHASIL DORONG! Firebase udah keisi '+d.length+' laporan. JANGAN BUKA APLIKASI DULU, CEK DULU DI cek.html!';
+  alert('BERHASIL DORONG! Sekarang buka cek.html, harusnya Firebase udah 53!');
+})
+.catch(e=>{ document.getElementById('info').innerText='Gagal dorong: '+e.message; });
+</script></body></html>
