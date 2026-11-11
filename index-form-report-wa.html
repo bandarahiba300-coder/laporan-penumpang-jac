@@ -143,6 +143,8 @@ input.ket-input:disabled{background:#f8fafc;color:#666}
 .rencana-table td.no{width:28px;font-size:11px;color:#888}
 select.rencana-sel{width:100%;padding:4px 1px;border:1px solid #ccc;border-radius:6px;font-size:12px;margin:0;text-align:center;background:#fff}
 select.rencana-sel.kosong{color:#aaa}
+select.rencana-sel option:disabled{color:#ccc;background:#f1f5f9}
+input.rencana-inp{width:100%;padding:4px 2px;border:1px solid #ccc;border-radius:6px;font-size:12px;margin:0;text-align:center;background:#fff}
 .rencana-total{display:flex;gap:6px;margin-top:8px}
 .rencana-total div{flex:1;text-align:center;padding:7px 2px;border-radius:8px;font-weight:bold;font-size:12px}
 </style>
@@ -264,7 +266,9 @@ select.rencana-sel.kosong{color:#aaa}
 <div class="tanggal-wrap" onclick="bukaKalender('tanggalRencana')"><span class="tanggal-teks" id="tampilTanggalRencana">-</span><span class="tanggal-panah">⌄</span></div>
 <input type="date" id="tanggalRencana" class="tanggal-asli" onchange="onTanggalRencanaGanti()">
 </div>
-<p class="hint" style="text-align:center">Isi 2 baris pertama yg urut, 8 baris bawahnya auto keisi. Jam isi manual.</p>
+<p class="hint" style="text-align:center">Isi 2 baris pertama yg urut, 5 baris bawahnya auto keisi. Body merah di Stock Unit di-skip. Jam ketik manual / pilih saran.</p>
+<datalist id="listJamDepokRencana"></datalist>
+<datalist id="listJamBandaraRencana"></datalist>
 <table class="rencana-table"><thead><tr><th style="width:28px">No</th><th class="depok-h" colspan="2">DEPOK</th><th class="bandara-h" colspan="2">BANDARA</th></tr>
 <tr><th></th><th class="depok-h">No.Body</th><th class="depok-h">Jam</th><th class="bandara-h">No.Body</th><th class="bandara-h">Jam</th></tr></thead>
 <tbody id="listRencana"></tbody></table>
@@ -805,7 +809,7 @@ function hapusInfo(i){
   if(infoData[tgl].length===0) infoData[tgl]=[""];
   simpanStock(); renderInfo();
 }
-/* === PERENCANAAN OPS - 45 BARIS + AUTO 10 BLOK === */
+/* === PERENCANAAN OPS - 7 BARIS PER BLOK, SKIP MERAH, JAM INPUT SARAN === */
 let rencanaData=JSON.parse(localStorage.getItem('jac_rencana')||'{}');
 function getRencana(tgl){
   if(!rencanaData[tgl]){
@@ -817,19 +821,39 @@ function getRencana(tgl){
   return rencanaData[tgl];
 }
 function simpanRencana(){ localStorage.setItem('jac_rencana',JSON.stringify(rencanaData)); setTimeout(syncFirebase,300); }
-function optBody(val){ let h='<option value="">-</option>'; listBodyBus.forEach(b=>{ h+=`<option value="${b}" ${b===val?'selected':''}>${b}</option>`; }); return h; }
-function optJam(rute,val){ let h='<option value="">-</option>'; jadwal[rute].forEach(j=>{ h+=`<option value="${j}" ${j===val?'selected':''}>${j}</option>`; }); return h; }
+function isMerahRencana(tgl,body){
+  let st=stockData[tgl] && stockData[tgl][body];
+  if(!st) return false;
+  return st.status!=="READY" && st.status!=="INAP BANDARA";
+}
+function statusBodyRencana(tgl,body){
+  let st=stockData[tgl] && stockData[tgl][body];
+  return st ? st.status : "READY";
+}
+function optBodyRencana(tgl,val){
+  let h='<option value="">-</option>';
+  listBodyBus.forEach(b=>{
+    let merah=isMerahRencana(tgl,b);
+    let label=merah ? b+' - '+statusBodyRencana(tgl,b) : b;
+    h+=`<option value="${b}" ${b===val?'selected':''} ${merah && b!==val ? 'disabled' : ''}>${label}</option>`;
+  });
+  return h;
+}
 function renderRencana(){
   let tgl=document.getElementById('tanggalRencana').value; if(!tgl) return;
+  document.getElementById('listJamDepokRencana').innerHTML=jadwal.Depok.map(j=>`<option value="${j}">`).join('');
+  document.getElementById('listJamBandaraRencana').innerHTML=jadwal.Bandara.map(j=>`<option value="${j}">`).join('');
   let r=getRencana(tgl); let h=''; let cD=0,cB=0;
   for(let i=0;i<45;i++){
     let d=r.depok[i]||{body:"",jam:""}; let b=r.bandara[i]||{body:"",jam:""};
     if(d.body||d.jam) cD++; if(b.body||b.jam) cB++;
+    let escD=(d.jam||'').replace(/"/g,'&quot;');
+    let escB=(b.jam||'').replace(/"/g,'&quot;');
     h+=`<tr><td class="no">${i+1}</td>`
-      +`<td><select class="rencana-sel ${d.body?'':'kosong'}" onchange="ubahRencana('depok',${i},'body',this.value)">${optBody(d.body)}</select></td>`
-      +`<td><select class="rencana-sel ${d.jam?'':'kosong'}" onchange="ubahRencana('depok',${i},'jam',this.value)">${optJam('Depok',d.jam)}</select></td>`
-      +`<td><select class="rencana-sel ${b.body?'':'kosong'}" onchange="ubahRencana('bandara',${i},'body',this.value)">${optBody(b.body)}</select></td>`
-      +`<td><select class="rencana-sel ${b.jam?'':'kosong'}" onchange="ubahRencana('bandara',${i},'jam',this.value)">${optJam('Bandara',b.jam)}</select></td></tr>`;
+      +`<td><select class="rencana-sel ${d.body?'':'kosong'}" onchange="ubahRencana('depok',${i},'body',this.value)">${optBodyRencana(tgl,d.body)}</select></td>`
+      +`<td><input class="rencana-inp" type="text" list="listJamDepokRencana" placeholder="-" value="${escD}" onchange="ubahRencana('depok',${i},'jam',this.value)"></td>`
+      +`<td><select class="rencana-sel ${b.body?'':'kosong'}" onchange="ubahRencana('bandara',${i},'body',this.value)">${optBodyRencana(tgl,b.body)}</select></td>`
+      +`<td><input class="rencana-inp" type="text" list="listJamBandaraRencana" placeholder="-" value="${escB}" onchange="ubahRencana('bandara',${i},'jam',this.value)"></td></tr>`;
   }
   document.getElementById('listRencana').innerHTML=h;
   document.getElementById('totRencanaDepok').innerText='Depok: '+cD+' / 45';
@@ -838,27 +862,37 @@ function renderRencana(){
 function ubahRencana(sisi,idx,field,val){
   let tgl=document.getElementById('tanggalRencana').value;
   let arr=getRencana(tgl)[sisi];
+  if(field==='body' && val!=='' && isMerahRencana(tgl,val)){ alert('Body '+val+' lagi '+statusBodyRencana(tgl,val)+' di Stock Unit tanggal ini Aa, ga bisa dipilih.'); renderRencana(); return; }
+  if(field==='jam') val=val.trim();
   arr[idx][field]=val;
   if(field==='body' && val!==''){
-    let awalBlok=Math.floor(idx/10)*10;
+    let awalBlok=Math.floor(idx/7)*7;
     let posisiDiBlok=idx-awalBlok;
     if(posisiDiBlok===1){
       let body1=arr[awalBlok].body;
       let body2=arr[awalBlok+1].body;
       let pos1=listBodyBus.indexOf(body1);
       let pos2=listBodyBus.indexOf(body2);
-      if(pos1!==-1 && pos2===pos1+1){
-        for(let k=2;k<10;k++){
-          let targetIdx=awalBlok+k;
-          if(targetIdx>=45) break;
-          let posTarget=pos1+k;
-          if(posTarget>=listBodyBus.length) break;
-          arr[targetIdx].body=listBodyBus[posTarget];
+      if(pos1!==-1 && pos2!==-1){
+        let nextPos=pos1+1;
+        while(nextPos<listBodyBus.length && isMerahRencana(tgl,listBodyBus[nextPos])) nextPos++;
+        if(pos2===nextPos){
+          let collected=[];
+          let p=pos2+1;
+          while(collected.length<5 && p<listBodyBus.length){
+            if(!isMerahRencana(tgl,listBodyBus[p])) collected.push(listBodyBus[p]);
+            p++;
+          }
+          for(let k=0;k<collected.length;k++){
+            let targetIdx=awalBlok+2+k;
+            if(targetIdx>=awalBlok+7 || targetIdx>=45) break;
+            arr[targetIdx].body=collected[k];
+          }
+          let scrollY=window.scrollY;
+          simpanRencana(); renderRencana();
+          window.scrollTo(0,scrollY);
+          return;
         }
-        let scrollY=window.scrollY;
-        simpanRencana(); renderRencana();
-        window.scrollTo(0,scrollY);
-        return;
       }
     }
   }
@@ -961,4 +995,4 @@ hapusBaris = function(tgl,rute,jam,body){
 if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js'); }
 </script>
 </body>
-</html>
+  </html>
