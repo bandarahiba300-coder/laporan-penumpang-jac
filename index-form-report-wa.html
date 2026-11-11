@@ -111,7 +111,6 @@ input.tanggal-asli{position:absolute;opacity:0;pointer-events:none;width:1px;hei
 .preview-hint{text-align:center;font-size:11px;color:#888;margin-top:6px}
 .btn-wa{background:#25D366;color:#fff;font-size:15px;margin-top:12px}
 .btn-wa:active{background:#1da851}
-/* === STOCK UNIT BARU === */
 .stock-title{font-weight:bold;padding:9px 10px;border-radius:10px 10px 0 0;text-align:center;background:#1e3a8a;color:#fff;font-size:14px}
 .stock-info{font-weight:bold;padding:9px 10px;border-radius:10px 10px 0 0;text-align:center;background:#f59e0b;color:#111;font-size:14px;margin-top:16px}
 .stock-table th{background:#1e3a8a;color:#fff;font-size:13px}
@@ -135,15 +134,24 @@ input.ket-input:disabled{background:#f8fafc;color:#666}
 .btn-hapus-info{width:40px;min-width:40px;padding:10px 0;margin:0;background:#fee2e2;color:#dc2626;border-radius:10px;font-size:16px}
 .btn-tambah-info{background:#f59e0b;color:#111;margin-top:10px}
 .btn-reset-stock{background:#6b7280;margin-top:8px}
+/* === PERENCANAAN OPS - 45 BARIS RAPET === */
+.rencana-table{font-size:12px}
+.rencana-table th{padding:4px 2px;font-size:11px}
+.rencana-table th.depok-h{background:#5aa9e6;color:#000}
+.rencana-table th.bandara-h{background:#6fbf6f;color:#000}
+.rencana-table td{padding:2px 2px}
+.rencana-table td.no{width:28px;font-size:11px;color:#888}
+select.rencana-sel{width:100%;padding:4px 1px;border:1px solid #ccc;border-radius:6px;font-size:12px;margin:0;text-align:center;background:#fff}
+select.rencana-sel.kosong{color:#aaa}
+.rencana-total{display:flex;gap:6px;margin-top:8px}
+.rencana-total div{flex:1;text-align:center;padding:7px 2px;border-radius:8px;font-weight:bold;font-size:12px}
 </style>
 </head>
 <body class="depok">
-
 <div class="topbar">
 <button class="hamburger" onclick="bukaMenu()">☰</button>
 <div class="top-title">Laporan Penumpang JAC<br><span style="font-size:11px;color:#666;font-weight:normal">JAC - Hiba Bandara</span></div>
 </div>
-
 <div class="overlay" id="overlay" onclick="tutupMenu()"></div>
 <div class="sidebar" id="sidebar">
 <button class="close-btn" onclick="tutupMenu()">X</button>
@@ -153,9 +161,9 @@ input.ket-input:disabled{background:#f8fafc;color:#666}
 <button class="menu-btn" id="btn-bulanan" onclick="pindah('bulanan')">📊 Report Bulanan<small>Rekap per tanggal 1 bulan</small></button>
 <button class="menu-btn" id="btn-format" onclick="pindah('format')">📋 Format Laporan Grup<small>Shift 1, Shift 2 & Total Harian</small></button>
 <button class="menu-btn" id="btn-stock" onclick="pindah('stock')">🚌 Stock Unit<small>1. Stock Unit & 2. Info Tambahan</small></button>
+<button class="menu-btn" id="btn-rencana" onclick="pindah('rencana')">📋 Perencanaan OPS<small>Jadwal Bus Depok & Bandara</small></button>
 <div class="sidebar-footer"><div class="copy">© <b>Bagja Eka Aprianto</b></div><div class="unit">JAC - Hiba Bandara</div></div>
 </div>
-
 <div class="card page active" id="page-form">
 <h2>Laporan Penumpang JAC</h2>
 <p class="sub">JAC - Hiba Bandara - Input Harian &nbsp;<span class="badge" id="badgeRute">DEPOK - BIRU</span></p>
@@ -176,7 +184,6 @@ input.ket-input:disabled{background:#f8fafc;color:#666}
 <button id="btnBatalEdit" onclick="batalEdit()" style="display:none;background:#6b7280;margin-top:8px">Batal Edit - Balik ke Input Baru</button>
 <p style="text-align:center;font-size:12px;color:#666;margin-top:12px">Setelah tambah, cek di Menu > Rekap Laporan</p>
 </div>
-
 <div class="card page" id="page-rekap">
 <h3>📋 REKAP LAPORAN</h3>
 <label>Tanggal Rekap</label>
@@ -207,7 +214,6 @@ input.ket-input:disabled{background:#f8fafc;color:#666}
 <div class="total-box"><div class="t-all" id="totAll">Total Semua: 0 Pnp</div></div>
 <button onclick="pindah('form')">+ Input Lagi</button>
 </div>
-
 <div class="card page" id="page-bulanan">
 <h3>📊 REPORT BULANAN</h3>
 <label>Pilih Bulan</label><input type="month" id="bulan" onchange="renderBulanan()">
@@ -231,7 +237,6 @@ input.ket-input:disabled{background:#f8fafc;color:#666}
 <div id="grafikBulanan"></div>
 </div>
 </div>
-
 <div class="card page" id="page-format">
 <h3>📋 FORMAT LAPORAN GRUP</h3>
 <label>Tanggal</label>
@@ -252,7 +257,24 @@ input.ket-input:disabled{background:#f8fafc;color:#666}
 <div class="preview-hint">Pencet ✏️ di pojok kanan atas buat edit manual teksnya</div>
 <button class="btn-wa" onclick="shareWA()">📲 Share ke WA</button>
 </div>
-
+<div class="card page" id="page-rencana">
+<h3>📋 PERENCANAAN OPS</h3>
+<label>Tanggal Rencana</label>
+<div style="position:relative">
+<div class="tanggal-wrap" onclick="bukaKalender('tanggalRencana')"><span class="tanggal-teks" id="tampilTanggalRencana">-</span><span class="tanggal-panah">⌄</span></div>
+<input type="date" id="tanggalRencana" class="tanggal-asli" onchange="onTanggalRencanaGanti()">
+</div>
+<p class="hint" style="text-align:center">Isi 2 baris pertama yg urut, 8 baris bawahnya auto keisi. Jam isi manual.</p>
+<table class="rencana-table"><thead><tr><th style="width:28px">No</th><th class="depok-h" colspan="2">DEPOK</th><th class="bandara-h" colspan="2">BANDARA</th></tr>
+<tr><th></th><th class="depok-h">No.Body</th><th class="depok-h">Jam</th><th class="bandara-h">No.Body</th><th class="bandara-h">Jam</th></tr></thead>
+<tbody id="listRencana"></tbody></table>
+<div class="rencana-total">
+<div class="t-depok" id="totRencanaDepok">Depok: 0</div>
+<div class="t-bandara" id="totRencanaBandara">Bandara: 0</div>
+</div>
+<button onclick="salinRencanaKemarin()" style="background:#f59e0b;color:#111;margin-top:8px">📋 Salin Dari Kemarin</button>
+<button onclick="resetRencana()" style="background:#6b7280;margin-top:8px">↺ Kosongkan Semua</button>
+</div>
 <div class="card page" id="page-stock">
 <h3>🚌 STOCK UNIT</h3>
 <label>Tanggal Stock</label>
@@ -275,7 +297,6 @@ input.ket-input:disabled{background:#f8fafc;color:#666}
 <button class="btn-tambah-info" onclick="tambahInfo()">+ Tambah Info</button>
 <p class="hint" style="text-align:center">Info Tambahan ke-save per tanggal yang dipilih di atas.</p>
 </div>
-
 <script>
 const jadwal = {
 Depok: ["2:00","2:30","3:00","3:30","4:00","4:30","5:00","5:30","6:00","6:30","7:00","7:30","8:00","8:30","9:00","9:30","10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00","18:00","19:00","20:00","21:00"],
@@ -299,6 +320,7 @@ function pindah(hal){
   if(hal==='format') renderFormat();
   if(hal==='form') updateJamList();
   if(hal==='stock') renderStock();
+  if(hal==='rencana') renderRencana();
   window.scrollTo(0,0);
 }
 function gantiRute(){
@@ -331,7 +353,7 @@ function updateTampilTanggal(idInput,idTampil){
   else if(v===isoBesok) label=' <span class="label-besok">[Besok]</span>';
   el.innerHTML=teks+label;
 }
-function updateSemuaTampilTanggal(){updateTampilTanggal('tanggal','tampilTanggalForm');updateTampilTanggal('tanggalRekap','tampilTanggalRekap');updateTampilTanggal('tanggalFormat','tampilTanggalFormat');updateTampilTanggal('tanggalStock','tampilTanggalStock');}
+function updateSemuaTampilTanggal(){updateTampilTanggal('tanggal','tampilTanggalForm');updateTampilTanggal('tanggalRekap','tampilTanggalRekap');updateTampilTanggal('tanggalFormat','tampilTanggalFormat');updateTampilTanggal('tanggalStock','tampilTanggalStock');updateTampilTanggal('tanggalRencana','tampilTanggalRencana');}
 function bukaKalender(id){
   let inp=document.getElementById(id);
   if(inp.showPicker){try{inp.showPicker();return;}catch(e){}}
@@ -341,6 +363,7 @@ function onTanggalFormGanti(){updateTampilTanggal('tanggal','tampilTanggalForm')
 function onTanggalRekapGanti(){updateTampilTanggal('tanggalRekap','tampilTanggalRekap');render();}
 function onTanggalFormatGanti(){updateTampilTanggal('tanggalFormat','tampilTanggalFormat');renderFormat();}
 function onTanggalStockGanti(){updateTampilTanggal('tanggalStock','tampilTanggalStock');renderStock();}
+function onTanggalRencanaGanti(){updateTampilTanggal('tanggalRencana','tampilTanggalRencana');renderRencana();}
 function setTabRekap(t){
   tabRekap=t;
   document.getElementById('tab-semua').classList.toggle('active',t==='semua');
@@ -686,7 +709,6 @@ function tambah(){
   updateJamList();
   render();renderBulanan();renderFormat();
 }
-/* === STOCK UNIT LOGIC === */
 let stockData=JSON.parse(localStorage.getItem('jac_stock')||'{}');
 let infoData=JSON.parse(localStorage.getItem('jac_info')||'{}');
 const STATUS_LIST=["READY","INAP BANDARA","SERVICE","AKAP","STORING","DLL"];
@@ -783,17 +805,94 @@ function hapusInfo(i){
   if(infoData[tgl].length===0) infoData[tgl]=[""];
   simpanStock(); renderInfo();
 }
+/* === PERENCANAAN OPS - 45 BARIS + AUTO 10 BLOK === */
+let rencanaData=JSON.parse(localStorage.getItem('jac_rencana')||'{}');
+function getRencana(tgl){
+  if(!rencanaData[tgl]){
+    rencanaData[tgl]={depok:[],bandara:[]};
+    for(let i=0;i<45;i++){ rencanaData[tgl].depok.push({body:"",jam:""}); rencanaData[tgl].bandara.push({body:"",jam:""}); }
+  }
+  while(rencanaData[tgl].depok.length<45) rencanaData[tgl].depok.push({body:"",jam:""});
+  while(rencanaData[tgl].bandara.length<45) rencanaData[tgl].bandara.push({body:"",jam:""});
+  return rencanaData[tgl];
+}
+function simpanRencana(){ localStorage.setItem('jac_rencana',JSON.stringify(rencanaData)); setTimeout(syncFirebase,300); }
+function optBody(val){ let h='<option value="">-</option>'; listBodyBus.forEach(b=>{ h+=`<option value="${b}" ${b===val?'selected':''}>${b}</option>`; }); return h; }
+function optJam(rute,val){ let h='<option value="">-</option>'; jadwal[rute].forEach(j=>{ h+=`<option value="${j}" ${j===val?'selected':''}>${j}</option>`; }); return h; }
+function renderRencana(){
+  let tgl=document.getElementById('tanggalRencana').value; if(!tgl) return;
+  let r=getRencana(tgl); let h=''; let cD=0,cB=0;
+  for(let i=0;i<45;i++){
+    let d=r.depok[i]||{body:"",jam:""}; let b=r.bandara[i]||{body:"",jam:""};
+    if(d.body||d.jam) cD++; if(b.body||b.jam) cB++;
+    h+=`<tr><td class="no">${i+1}</td>`
+      +`<td><select class="rencana-sel ${d.body?'':'kosong'}" onchange="ubahRencana('depok',${i},'body',this.value)">${optBody(d.body)}</select></td>`
+      +`<td><select class="rencana-sel ${d.jam?'':'kosong'}" onchange="ubahRencana('depok',${i},'jam',this.value)">${optJam('Depok',d.jam)}</select></td>`
+      +`<td><select class="rencana-sel ${b.body?'':'kosong'}" onchange="ubahRencana('bandara',${i},'body',this.value)">${optBody(b.body)}</select></td>`
+      +`<td><select class="rencana-sel ${b.jam?'':'kosong'}" onchange="ubahRencana('bandara',${i},'jam',this.value)">${optJam('Bandara',b.jam)}</select></td></tr>`;
+  }
+  document.getElementById('listRencana').innerHTML=h;
+  document.getElementById('totRencanaDepok').innerText='Depok: '+cD+' / 45';
+  document.getElementById('totRencanaBandara').innerText='Bandara: '+cB+' / 45';
+}
+function ubahRencana(sisi,idx,field,val){
+  let tgl=document.getElementById('tanggalRencana').value;
+  let arr=getRencana(tgl)[sisi];
+  arr[idx][field]=val;
+  if(field==='body' && val!==''){
+    let awalBlok=Math.floor(idx/10)*10;
+    let posisiDiBlok=idx-awalBlok;
+    if(posisiDiBlok===1){
+      let body1=arr[awalBlok].body;
+      let body2=arr[awalBlok+1].body;
+      let pos1=listBodyBus.indexOf(body1);
+      let pos2=listBodyBus.indexOf(body2);
+      if(pos1!==-1 && pos2===pos1+1){
+        for(let k=2;k<10;k++){
+          let targetIdx=awalBlok+k;
+          if(targetIdx>=45) break;
+          let posTarget=pos1+k;
+          if(posTarget>=listBodyBus.length) break;
+          arr[targetIdx].body=listBodyBus[posTarget];
+        }
+        let scrollY=window.scrollY;
+        simpanRencana(); renderRencana();
+        window.scrollTo(0,scrollY);
+        return;
+      }
+    }
+  }
+  simpanRencana();
+  let cD=getRencana(tgl).depok.filter(x=>x.body||x.jam).length;
+  let cB=getRencana(tgl).bandara.filter(x=>x.body||x.jam).length;
+  document.getElementById('totRencanaDepok').innerText='Depok: '+cD+' / 45';
+  document.getElementById('totRencanaBandara').innerText='Bandara: '+cB+' / 45';
+}
+function resetRencana(){
+  let tgl=document.getElementById('tanggalRencana').value;
+  if(!confirm('Kosongkan semua rencana tanggal '+tgl.split('-').reverse().join('/')+' ?')) return;
+  delete rencanaData[tgl]; simpanRencana(); renderRencana();
+}
+function salinRencanaKemarin(){
+  let tgl=document.getElementById('tanggalRencana').value;
+  let d=new Date(tgl); d.setDate(d.getDate()-1);
+  let tglKemarin=toISO(d);
+  if(!rencanaData[tglKemarin]){ alert('Kemarin ('+tglKemarin.split('-').reverse().join('/')+') belum ada rencana Aa'); return; }
+  if(!confirm('Salin rencana kemarin ke hari ini? Data hari ini akan ketimpa.')) return;
+  rencanaData[tgl]=JSON.parse(JSON.stringify(rencanaData[tglKemarin]));
+  simpanRencana(); renderRencana(); alert('Berhasil disalin dari kemarin!');
+}
 let today=new Date().toISOString().slice(0,10);
 document.getElementById('tanggal').value=today;
 document.getElementById('tanggalRekap').value=today;
 document.getElementById('tanggalFormat').value=today;
 document.getElementById('tanggalStock').value=today;
+document.getElementById('tanggalRencana').value=today;
 document.getElementById('bulan').value=today.slice(0,7);
 updateSemuaTampilTanggal();
-gantiRute();render();renderBulanan();renderFormat();renderStock();
+gantiRute();render();renderBulanan();renderFormat();renderStock();renderRencana();
 </script>
 <script>
-// === FIREBASE SYNC FIX - GABUNG BUKAN TIMPA ===
 const FB_URL = 'https://laporan-jac-baru-default-rtdb.asia-southeast1.firebasedatabase.app/laporan.json';
 let sedangSync = false;
 let hapusTerakhir = 0;
@@ -811,32 +910,36 @@ async function syncFirebase(){
     let limoLokal = JSON.parse(localStorage.getItem('jac_limo')||'{}');
     let stockLokal = JSON.parse(localStorage.getItem('jac_stock')||'{}');
     let infoLokal = JSON.parse(localStorage.getItem('jac_info')||'{}');
+    let rencanaLokal = JSON.parse(localStorage.getItem('jac_rencana')||'{}');
     let res = await fetch(FB_URL);
     let j = await res.json();
     let remote = (j && j.data) ? j.data : [];
     let limoRemote = (j && j.limo) ? j.limo : {};
     let stockRemote = (j && j.stock) ? j.stock : {};
     let infoRemote = (j && j.infoTambahan) ? j.infoTambahan : {};
+    let rencanaRemote = (j && j.rencana) ? j.rencana : {};
     let gabung = gabungData(lokal, remote);
     let limoGabung = Object.assign({}, limoLokal, limoRemote);
     let stockGabung = Object.assign({}, stockRemote, stockLokal);
     let infoGabung = Object.assign({}, infoRemote, infoLokal);
+    let rencanaGabung = Object.assign({}, rencanaRemote, rencanaLokal);
     if(Date.now() - hapusTerakhir < 60000){
       gabung = lokal;
       limoGabung = limoLokal;
     }
-    let berubah = JSON.stringify(gabung) !== JSON.stringify(lokal) || JSON.stringify(limoGabung) !== JSON.stringify(limoLokal) || JSON.stringify(stockGabung) !== JSON.stringify(stockLokal) || JSON.stringify(infoGabung) !== JSON.stringify(infoLokal);
+    let berubah = JSON.stringify(gabung) !== JSON.stringify(lokal) || JSON.stringify(limoGabung) !== JSON.stringify(limoLokal) || JSON.stringify(stockGabung) !== JSON.stringify(stockLokal) || JSON.stringify(infoGabung) !== JSON.stringify(infoLokal) || JSON.stringify(rencanaGabung) !== JSON.stringify(rencanaLokal);
     if(berubah){
       localStorage.setItem('jac', JSON.stringify(gabung));
       localStorage.setItem('jac_limo', JSON.stringify(limoGabung));
       localStorage.setItem('jac_stock', JSON.stringify(stockGabung));
       localStorage.setItem('jac_info', JSON.stringify(infoGabung));
-      data = gabung; limo = limoGabung; stockData = stockGabung; infoData = infoGabung;
-      render(); renderBulanan(); renderFormat(); updateJamList(); renderStock();
+      localStorage.setItem('jac_rencana', JSON.stringify(rencanaGabung));
+      data = gabung; limo = limoGabung; stockData = stockGabung; infoData = infoGabung; rencanaData = rencanaGabung;
+      render(); renderBulanan(); renderFormat(); updateJamList(); renderStock(); renderRencana();
     }
-    let perluKirim = JSON.stringify(gabung) !== JSON.stringify(remote) || JSON.stringify(limoGabung) !== JSON.stringify(limoRemote) || JSON.stringify(stockGabung) !== JSON.stringify(stockRemote) || JSON.stringify(infoGabung) !== JSON.stringify(infoRemote);
+    let perluKirim = JSON.stringify(gabung) !== JSON.stringify(remote) || JSON.stringify(limoGabung) !== JSON.stringify(limoRemote) || JSON.stringify(stockGabung) !== JSON.stringify(stockRemote) || JSON.stringify(infoGabung) !== JSON.stringify(infoRemote) || JSON.stringify(rencanaGabung) !== JSON.stringify(rencanaRemote);
     if(perluKirim){
-      await fetch(FB_URL,{method:'PUT',body:JSON.stringify({data:gabung, limo:limoGabung, stock:stockGabung, infoTambahan:infoGabung})});
+      await fetch(FB_URL,{method:'PUT',body:JSON.stringify({data:gabung, limo:limoGabung, stock:stockGabung, infoTambahan:infoGabung, rencana:rencanaGabung})});
     }
   }catch(e){}
   sedangSync = false;
@@ -858,4 +961,4 @@ hapusBaris = function(tgl,rute,jam,body){
 if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js'); }
 </script>
 </body>
-  </html>
+</html>
