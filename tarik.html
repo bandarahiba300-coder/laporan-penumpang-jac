@@ -1,0 +1,13 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="font-family:sans-serif;padding:15px;text-align:center">
+<h2>NARIK DATA DARI FIREBASE...</h2>
+<p id="info">Tunggu...</p>
+<script>
+fetch('https://laporan-jac-baru-default-rtdb.firebaseio.com/laporan.json')
+.then(r=>r.json()).then(j=>{
+  localStorage.setItem('jac', JSON.stringify(j.data||[]));
+  localStorage.setItem('jac_limo', JSON.stringify(j.limo||{}));
+  document.getElementById('info').innerText='BERHASIL NARIK '+(j.data||[]).length+' laporan! Lagi buka halaman utama...';
+  setTimeout(()=>{ location.href='./index.html'; },1500);
+}).catch(e=>{ document.getElementById('info').innerText='Gagal: '+e.message; });
+</script></body></html>
