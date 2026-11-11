@@ -1,0 +1,13 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="font-family:sans-serif;padding:15px">
+<h2>CEK DATA</h2>
+<p id="a">Cek HP...</p>
+<p id="b">Cek Firebase...</p>
+<script>
+let d=JSON.parse(localStorage.getItem('jac')||'[]');
+let l=JSON.parse(localStorage.getItem('jac_limo')||'{}');
+document.getElementById('a').innerText='HP (localStorage): '+d.length+' laporan, limo: '+Object.keys(l).length;
+fetch('https://laporan-jac-baru-default-rtdb.firebaseio.com/laporan.json').then(r=>r.json()).then(j=>{
+  document.getElementById('b').innerText='Firebase: '+(j&&j.data?j.data.length:0)+' laporan';
+});
+</script></body></html>
