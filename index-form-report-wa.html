@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Laporan Penumpang JAC - Hiba Bandara</title>
-<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#2563eb">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -146,6 +145,8 @@ select.rencana-sel option:disabled{color:#ccc;background:#f1f5f9}
 input.rencana-inp{width:100%;padding:4px 2px;border:1px solid #ccc;border-radius:6px;font-size:12px;margin:0;text-align:center;background:#fff}
 .rencana-total{display:flex;gap:6px;margin-top:8px}
 .rencana-total div{flex:1;text-align:center;padding:7px 2px;border-radius:8px;font-weight:bold;font-size:12px}
+.status-online{text-align:center;font-size:11px;font-weight:bold;padding:6px;border-radius:20px;margin:0 0 8px;background:#dcfce7;color:#166534}
+.status-offline{text-align:center;font-size:11px;font-weight:bold;padding:6px;border-radius:20px;margin:0 0 8px;background:#fee2e2;color:#991b1b}
 </style>
 </head>
 <body class="depok">
@@ -166,6 +167,7 @@ input.rencana-inp{width:100%;padding:4px 2px;border:1px solid #ccc;border-radius
 <div class="sidebar-footer"><div class="copy">© <b>Bagja Eka Aprianto</b></div><div class="unit">JAC - Hiba Bandara</div></div>
 </div>
 <div class="card page active" id="page-form">
+<div id="statusSync" class="status-offline">● MENGHUBUNGKAN...</div>
 <h2>Laporan Penumpang JAC</h2>
 <p class="sub">JAC - Hiba Bandara - Input Harian &nbsp;<span class="badge" id="badgeRute">DEPOK - BIRU</span></p>
 <div class="edit-banner" id="editBanner">✏️ MODE EDIT - Aa lagi benerin data lama</div>
@@ -284,7 +286,7 @@ input.rencana-inp{width:100%;padding:4px 2px;border:1px solid #ccc;border-radius
 <div class="tanggal-wrap" onclick="bukaKalender('tanggalStock')"><span class="tanggal-teks" id="tampilTanggalStock">-</span><span class="tanggal-panah">⌄</span></div>
 <input type="date" id="tanggalStock" class="tanggal-asli" onchange="onTanggalStockGanti()">
 </div>
-<p class="hint" style="text-align:center">1. STOCK UNIT - Pilih status per unit, otomatis ke-save & ke-sync</p>
+<p class="hint" style="text-align:center">1. STOCK UNIT - Pilih status per unit, otomatis ke-save & ke-sync realtime ke semua tim</p>
 <div class="stock-title">1. STOCK UNIT</div>
 <table class="stock-table"><thead><tr><th>No Body</th><th>Kotak Status</th><th>Keterangan</th></tr></thead>
 <tbody id="listStock"></tbody></table>
@@ -299,6 +301,8 @@ input.rencana-inp{width:100%;padding:4px 2px;border:1px solid #ccc;border-radius
 <button class="btn-tambah-info" onclick="tambahInfo()">+ Tambah Info</button>
 <p class="hint" style="text-align:center">Info Tambahan ke-save per tanggal yang dipilih di atas.</p>
 </div>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <script>
 const jadwal = {
 Depok: ["2:00","2:30","3:00","3:30","4:00","4:30","5:00","5:30","6:00","6:30","7:00","7:30","8:00","8:30","9:00","9:30","10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00","18:00","19:00","20:00","21:00"],
@@ -307,7 +311,7 @@ Bandara: ["5:20","6:20","7:20","7:50","8:20","8:50","9:20","9:50","10:20","10:50
 const listBodyBus = ["A47","A48","A50","A51","A52","A53","A54","A55","A56","A57","A58","A59","A60","A61","A62","A63","A64","A65","A66","A67","A68"];
 const namaHariArr=["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
 const namaBulanArr=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
-function nilaiJam(s){let p=s.split(':');let h=parseInt(p[0],10);let m=parseInt(p[1]||'0',10);if(h===0)h=24;return h*60+m;}
+function nilaiJam(s){let p=String(s).split(':');let h=parseInt(p[0],10);let m=parseInt(p[1]||'0',10);if(h===0)h=24;return h*60+m;}
 function urutJam(a,b){return nilaiJam(a.jam)-nilaiJam(b.jam);}
 function bukaMenu(){document.getElementById('sidebar').classList.add('open');document.getElementById('overlay').style.display='block';}
 function tutupMenu(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').style.display='none';}
@@ -332,12 +336,9 @@ function gantiRute(){
   if(editIndex===-1) document.getElementById('jam').value='';
   updateJamList();
 }
-let data=JSON.parse(localStorage.getItem('jac')||'[]');
-let limo=JSON.parse(localStorage.getItem('jac_limo')||'{}');
-let tabRekap='semua';
-let editIndex=-1;
-let editKeyLimoLama='';
-let teksFormatTerakhir='';
+let data=[]; let limo={}; let stockData={}; let infoData={}; let rencanaData={};
+let tabRekap='semua'; let editIndex=-1; let editKeyLimoLama=''; let teksFormatTerakhir='';
+let sedangMenerima=false;
 function tampilTanggal(t){return t.split('-').reverse().join('/');}
 function toISO(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function updateTampilTanggal(idInput,idTampil){
@@ -347,20 +348,15 @@ function updateTampilTanggal(idInput,idTampil){
   let today=new Date(); today.setHours(0,0,0,0);
   let kemarin=new Date(today); kemarin.setDate(kemarin.getDate()-1);
   let besok=new Date(today); besok.setDate(besok.getDate()+1);
-  let isoHariIni=toISO(today), isoKemarin=toISO(kemarin), isoBesok=toISO(besok);
   let teks=tampilTanggal(v);
   let label='';
-  if(v===isoHariIni) label=' <span class="label-hariini">[Hari Ini]</span>';
-  else if(v===isoKemarin) label=' <span class="label-kemarin">[Kemarin]</span>';
-  else if(v===isoBesok) label=' <span class="label-besok">[Besok]</span>';
+  if(v===toISO(today)) label=' <span class="label-hariini">[Hari Ini]</span>';
+  else if(v===toISO(kemarin)) label=' <span class="label-kemarin">[Kemarin]</span>';
+  else if(v===toISO(besok)) label=' <span class="label-besok">[Besok]</span>';
   el.innerHTML=teks+label;
 }
 function updateSemuaTampilTanggal(){updateTampilTanggal('tanggal','tampilTanggalForm');updateTampilTanggal('tanggalRekap','tampilTanggalRekap');updateTampilTanggal('tanggalFormat','tampilTanggalFormat');updateTampilTanggal('tanggalStock','tampilTanggalStock');updateTampilTanggal('tanggalRencana','tampilTanggalRencana');}
-function bukaKalender(id){
-  let inp=document.getElementById(id);
-  if(inp.showPicker){try{inp.showPicker();return;}catch(e){}}
-  inp.click();
-}
+function bukaKalender(id){let inp=document.getElementById(id); if(inp.showPicker){try{inp.showPicker();return;}catch(e){}} inp.click();}
 function onTanggalFormGanti(){updateTampilTanggal('tanggal','tampilTanggalForm');updateJamList();}
 function onTanggalRekapGanti(){updateTampilTanggal('tanggalRekap','tampilTanggalRekap');render();}
 function onTanggalFormatGanti(){updateTampilTanggal('tanggalFormat','tampilTanggalFormat');renderFormat();}
@@ -374,85 +370,47 @@ function setTabRekap(t){
   document.getElementById('boxDepok').style.display=(t==='semua'||t==='depok')?'block':'none';
   document.getElementById('boxBandara').style.display=(t==='semua'||t==='bandara')?'block':'none';
 }
-let startX=0;
-let swipeEl=document.getElementById('swipeArea');
+let startX=0; let swipeEl=document.getElementById('swipeArea');
 swipeEl.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;},{passive:true});
 swipeEl.addEventListener('touchend',e=>{
   let dx=e.changedTouches[0].clientX-startX;
   if(Math.abs(dx)<50) return;
   if(document.querySelector('.menu-aksi[style*="block"]')) return;
-  if(dx<0){
-    if(tabRekap==='semua') setTabRekap('depok');
-    else if(tabRekap==='depok') setTabRekap('bandara');
-    else if(tabRekap==='bandara') setTabRekap('semua');
-  } else {
-    if(tabRekap==='semua') setTabRekap('bandara');
-    else if(tabRekap==='bandara') setTabRekap('depok');
-    else if(tabRekap==='depok') setTabRekap('semua');
-  }
+  if(dx<0){ if(tabRekap==='semua') setTabRekap('depok'); else if(tabRekap==='depok') setTabRekap('bandara'); else if(tabRekap==='bandara') setTabRekap('semua'); }
+  else { if(tabRekap==='semua') setTabRekap('bandara'); else if(tabRekap==='bandara') setTabRekap('depok'); else if(tabRekap==='depok') setTabRekap('semua'); }
 },{passive:true});
-function jamTerpakai(tgl,rute){
-  return data.filter((d,idx)=>d.tgl===tgl && d.rute===rute && idx!==editIndex).map(d=>d.jam);
-}
+function jamTerpakai(tgl,rute){ return data.filter((d,idx)=>d.tgl===tgl && d.rute===rute && idx!==editIndex).map(d=>d.jam); }
 function updateJamList(){
-  let tgl=document.getElementById('tanggal').value;
-  let rute=document.getElementById('rute').value;
+  let tgl=document.getElementById('tanggal').value; let rute=document.getElementById('rute').value;
   let terpakai=jamTerpakai(tgl,rute);
   let sisa=jadwal[rute].filter(j=>!terpakai.includes(j));
-  if(editIndex!==-1){
-    let d=data[editIndex];
-    if(d && d.tgl===tgl && d.rute===rute && !sisa.includes(d.jam)){
-      sisa.push(d.jam);
-      sisa.sort((a,b)=>nilaiJam(a)-nilaiJam(b));
-    }
-  }
+  if(editIndex!==-1){ let d=data[editIndex]; if(d && d.tgl===tgl && d.rute===rute && !sisa.includes(d.jam)){ sisa.push(d.jam); sisa.sort((a,b)=>nilaiJam(a)-nilaiJam(b)); } }
   document.getElementById('listJam').innerHTML=sisa.map(j=>`<option value="${j}">`).join('');
   document.getElementById('listBody').innerHTML=listBodyBus.map(b=>`<option value="${b}">`).join('');
 }
 function kunciLimo(tgl,rute,jam){return tgl+'|'+rute+'|'+jam;}
-function simpanLimo(tgl,rute,jam,val){
-  limo[kunciLimo(tgl,rute,jam)]=val;
-  localStorage.setItem('jac_limo',JSON.stringify(limo));
-  render();renderBulanan();renderFormat();
-}
-function toggleMenu(btn){
-  let menu=btn.nextElementSibling;
-  let lagiBuka=menu.style.display==='block';
-  document.querySelectorAll('.menu-aksi').forEach(m=>m.style.display='none');
-  menu.style.display=lagiBuka?'none':'block';
-  event.stopPropagation();
-}
+function kunciData(d){return d.tgl+'|'+d.rute+'|'+d.jam;}
+function keyAman(k){return String(k).replace(/[.#$\[\]\/]/g,'_');}
+function toggleMenu(btn){ let menu=btn.nextElementSibling; let lagiBuka=menu.style.display==='block'; document.querySelectorAll('.menu-aksi').forEach(m=>m.style.display='none'); menu.style.display=lagiBuka?'none':'block'; event.stopPropagation(); }
 document.addEventListener('click',()=>{document.querySelectorAll('.menu-aksi').forEach(m=>m.style.display='none');});
-function cariIndex(tgl,rute,jam){
-  return data.findIndex(d=>d.tgl===tgl && d.rute===rute && d.jam===jam);
-}
+function cariIndex(tgl,rute,jam){ return data.findIndex(d=>d.tgl===tgl && d.rute===rute && d.jam===jam); }
 function editBaris(tgl,rute,jam){
-  let idx=cariIndex(tgl,rute,jam);
-  if(idx===-1) return;
-  let d=data[idx];
-  editIndex=idx;
-  editKeyLimoLama=kunciLimo(d.tgl,d.rute,d.jam);
-  document.getElementById('tanggal').value=d.tgl;
-  document.getElementById('rute').value=d.rute;
+  let idx=cariIndex(tgl,rute,jam); if(idx===-1) return; let d=data[idx];
+  editIndex=idx; editKeyLimoLama=kunciLimo(d.tgl,d.rute,d.jam);
+  document.getElementById('tanggal').value=d.tgl; document.getElementById('rute').value=d.rute;
   document.body.className=d.rute.toLowerCase();
   document.getElementById('badgeRute').innerText=d.rute.toUpperCase()+(d.rute==='Depok'?' - BIRU':' - HIJAU');
-  document.getElementById('jam').value=d.jam;
-  document.getElementById('body').value=d.body||'';
-  document.getElementById('penumpang').value=d.pnp;
-  document.getElementById('ket').value=d.ket||'';
+  document.getElementById('jam').value=d.jam; document.getElementById('body').value=d.body||'';
+  document.getElementById('penumpang').value=d.pnp; document.getElementById('ket').value=d.ket||'';
   document.getElementById('editBanner').style.display='block';
   document.getElementById('btnSimpan').innerText='💾 Simpan Perubahan';
   document.getElementById('btnSimpan').style.background='#f59e0b';
   document.getElementById('btnBatalEdit').style.display='block';
-  document.getElementById('tanggalRekap').value=d.tgl;
-  document.getElementById('tanggalFormat').value=d.tgl;
-  updateSemuaTampilTanggal();
-  updateJamList();
-  pindah('form');
+  document.getElementById('tanggalRekap').value=d.tgl; document.getElementById('tanggalFormat').value=d.tgl;
+  updateSemuaTampilTanggal(); updateJamList(); pindah('form');
 }
 function batalEdit(){
-  editIndex=-1;
-  editKeyLimoLama='';
+  editIndex=-1; editKeyLimoLama='';
   document.getElementById('editBanner').style.display='none';
   document.getElementById('btnSimpan').innerText='+ Tambah Laporan';
   document.getElementById('btnSimpan').style.background='var(--warna)';
@@ -462,16 +420,15 @@ function batalEdit(){
 }
 function hapusBaris(tgl,rute,jam,body){
   if(!confirm('Yakin hapus?\n'+rute+' | '+jam+' | Body '+body+'\nJam ini nanti bisa di-input lagi.')) return;
-  let idx=cariIndex(tgl,rute,jam);
-  if(idx===-1) return;
+  let idx=cariIndex(tgl,rute,jam); if(idx===-1) return;
   let k=kunciLimo(tgl,rute,jam);
   delete limo[k];
-  localStorage.setItem('jac_limo',JSON.stringify(limo));
   data.splice(idx,1);
-  localStorage.setItem('jac',JSON.stringify(data));
-  if(editIndex===idx) batalEdit();
-  else if(editIndex>idx) editIndex--;
-  render();renderBulanan();renderFormat();updateJamList();
+  if(editIndex===idx) batalEdit(); else if(editIndex>idx) editIndex--;
+  // TIM: hapus per-petak, bukan kirim ulang semua
+  fbHapus('data/'+keyAman(kunciData({tgl,rute,jam})));
+  fbHapus('limo/'+keyAman(k));
+  simpanLokal(); render();renderBulanan();renderFormat();updateJamList();
   alert('Baris dihapus. Jam '+jam+' sekarang bisa di-input lagi.');
 }
 function render(){
@@ -481,23 +438,17 @@ function render(){
   let bandara=filtered.filter(d=>d.rute==='Bandara').sort(urutJam);
   let tD=0,tB=0,tDL=0,tKL=0;
   depok.forEach(d=>tD+=Number(d.pnp)); bandara.forEach(d=>tB+=Number(d.pnp));
-  let hD='';
-  let rowsD=Math.max(depok.length,1);
+  let hD=''; let rowsD=Math.max(depok.length,1);
   for(let i=0;i<rowsD;i++){
-    let d=depok[i];
-    let key=d?kunciLimo(d.tgl,'Depok',d.jam):(tglFilter+'|Depok|baris-'+(i+1));
-    let v=limo[key]||'';
+    let d=depok[i]; let key=d?kunciLimo(d.tgl,'Depok',d.jam):(tglFilter+'|Depok|baris-'+(i+1)); let v=limo[key]||'';
     if(v!=='') tDL+=Number(v);
     let aksi=d?`<td class="depok aksi"><button class="btn-titik" onclick="toggleMenu(this)">⋮</button><div class="menu-aksi"><button class="edit" onclick="editBaris('${d.tgl}','Depok','${d.jam}')">✏️ Edit Baris</button><button class="hapus" onclick="hapusBaris('${d.tgl}','Depok','${d.jam}','${d.body}')">🗑️ Hapus Baris</button></div></td>`:`<td class="depok"></td>`;
     hD+=`<tr><td class="depok">${i+1}</td><td class="depok">${d?d.body:''}</td><td class="depok">${d?d.jam:''}</td><td class="depok">${d?d.pnp:''}</td><td class="depok"><input class="limo" type="number" placeholder="0" value="${v}" onchange="simpanLimo('${tglFilter}','Depok','${d?d.jam:'baris-'+(i+1)}',this.value)"></td>${aksi}</tr>`;
   }
   document.getElementById('listDepok').innerHTML=hD;
-  let hB='';
-  let rowsB=Math.max(bandara.length,1);
+  let hB=''; let rowsB=Math.max(bandara.length,1);
   for(let i=0;i<rowsB;i++){
-    let b=bandara[i];
-    let key=b?kunciLimo(b.tgl,'Bandara',b.jam):(tglFilter+'|Bandara|baris-'+(i+1));
-    let v=limo[key]||'';
+    let b=bandara[i]; let key=b?kunciLimo(b.tgl,'Bandara',b.jam):(tglFilter+'|Bandara|baris-'+(i+1)); let v=limo[key]||'';
     if(v!=='') tKL+=Number(v);
     let aksi=b?`<td class="bandara aksi"><button class="btn-titik" onclick="toggleMenu(this)">⋮</button><div class="menu-aksi"><button class="edit" onclick="editBaris('${b.tgl}','Bandara','${b.jam}')">✏️ Edit Baris</button><button class="hapus" onclick="hapusBaris('${b.tgl}','Bandara','${b.jam}','${b.body}')">🗑️ Hapus Baris</button></div></td>`:`<td class="bandara"></td>`;
     hB+=`<tr><td class="bandara">${i+1}</td><td class="bandara">${b?b.body:''}</td><td class="bandara">${b?b.jam:''}</td><td class="bandara">${b?b.pnp:''}</td><td class="bandara"><input class="limo" type="number" placeholder="0" value="${v}" onchange="simpanLimo('${tglFilter}','Bandara','${b?b.jam:'baris-'+(i+1)}',this.value)"></td>${aksi}</tr>`;
@@ -510,70 +461,34 @@ function render(){
   document.getElementById('totKeLimo').innerText='Ke Limo: '+tKL;
   setTabRekap(tabRekap);
 }
+function simpanLimo(tgl,rute,jam,val){
+  let k=kunciLimo(tgl,rute,jam);
+  if(val===''||val===null){ delete limo[k]; fbHapus('limo/'+keyAman(k)); }
+  else { limo[k]=val; fbSet('limo/'+keyAman(k), {k:k, v:val, ts:Date.now()}); }
+  simpanLokal(); render();renderBulanan();renderFormat();
+}
 function totalLimoPerTanggal(tgl,rute){
-  let total=0;
-  Object.keys(limo).forEach(k=>{
-    let parts=k.split('|');
-    if(parts[0]===tgl && parts[1]===rute){
-      total+=Number(limo[k]||0);
-    }
-  });
-  return total;
+  let total=0; Object.keys(limo).forEach(k=>{ let parts=k.split('|'); if(parts[0]===tgl && parts[1]===rute){ total+=Number(limo[k]||0); } }); return total;
 }
 function hitungBulanan(bln){
   let grouped={};
-  data.forEach(d=>{
-    if(bln && !d.tgl.startsWith(bln)) return;
-    if(!grouped[d.tgl]) grouped[d.tgl]={depokKotor:0,bandaraKotor:0};
-    if(d.rute==='Depok') grouped[d.tgl].depokKotor+=Number(d.pnp);
-    else grouped[d.tgl].bandaraKotor+=Number(d.pnp);
-  });
-  Object.keys(limo).forEach(k=>{
-    let tgl=k.split('|')[0];
-    if(bln && !tgl.startsWith(bln)) return;
-    if(!grouped[tgl]) grouped[tgl]={depokKotor:0,bandaraKotor:0};
-  });
-  let keys=Object.keys(grouped).sort();
-  let rows=[];
-  let tDepok=0,tDariLimo=0,tBandara=0,tKeLimo=0,tTotal=0;
-  keys.forEach(k=>{
-    let g=grouped[k];
-    let dariLimo=totalLimoPerTanggal(k,'Depok');
-    let keLimo=totalLimoPerTanggal(k,'Bandara');
-    let depok=g.depokKotor-dariLimo;
-    let bandara=g.bandaraKotor-keLimo;
-    let total=depok+dariLimo+bandara+keLimo;
-    tDepok+=depok; tDariLimo+=dariLimo; tBandara+=bandara; tKeLimo+=keLimo; tTotal+=total;
-    rows.push({tgl:k,tampil:k.split('-').reverse().join('/'),depok,dariLimo,bandara,keLimo,total,db:depok+bandara,limoTotal:dariLimo+keLimo});
-  });
+  data.forEach(d=>{ if(bln && !d.tgl.startsWith(bln)) return; if(!grouped[d.tgl]) grouped[d.tgl]={depokKotor:0,bandaraKotor:0}; if(d.rute==='Depok') grouped[d.tgl].depokKotor+=Number(d.pnp); else grouped[d.tgl].bandaraKotor+=Number(d.pnp); });
+  Object.keys(limo).forEach(k=>{ let tgl=k.split('|')[0]; if(bln && !tgl.startsWith(bln)) return; if(!grouped[tgl]) grouped[tgl]={depokKotor:0,bandaraKotor:0}; });
+  let keys=Object.keys(grouped).sort(); let rows=[]; let tDepok=0,tDariLimo=0,tBandara=0,tKeLimo=0,tTotal=0;
+  keys.forEach(k=>{ let g=grouped[k]; let dariLimo=totalLimoPerTanggal(k,'Depok'); let keLimo=totalLimoPerTanggal(k,'Bandara'); let depok=g.depokKotor-dariLimo; let bandara=g.bandaraKotor-keLimo; let total=depok+dariLimo+bandara+keLimo; tDepok+=depok; tDariLimo+=dariLimo; tBandara+=bandara; tKeLimo+=keLimo; tTotal+=total; rows.push({tgl:k,tampil:k.split('-').reverse().join('/'),depok,dariLimo,bandara,keLimo,total,db:depok+bandara,limoTotal:dariLimo+keLimo}); });
   return {rows,tDepok,tDariLimo,tBandara,tKeLimo,tTotal};
 }
 function renderGrafik(rows){
   let el=document.getElementById('grafikBulanan');
   if(!rows.length){el.innerHTML='<div class="grafik-kosong">Belum ada data - Grafik muncul setelah ada data di bulan ini</div>';return;}
-  let maxVal=0;
-  rows.forEach(x=>{maxVal=Math.max(maxVal,x.db,x.limoTotal);});
-  if(maxVal===0) maxVal=1;
+  let maxVal=0; rows.forEach(x=>{maxVal=Math.max(maxVal,x.db,x.limoTotal);}); if(maxVal===0) maxVal=1;
   let h='<div class="grafik-chart">';
-  rows.forEach(x=>{
-    let hDB=Math.max(4,Math.round(x.db/maxVal*150));
-    let hL=Math.max(4,Math.round(x.limoTotal/maxVal*150));
-    let tglPendek=x.tampil.slice(0,5);
-    h+='<div class="grafik-col"><div class="grafik-bars">'
-      +'<div class="grafik-bar-wrap"><div class="grafik-nilai">'+x.db+'</div><div class="grafik-bar bar-db" style="height:'+hDB+'px"></div></div>'
-      +'<div class="grafik-bar-wrap"><div class="grafik-nilai">'+x.limoTotal+'</div><div class="grafik-bar bar-l" style="height:'+hL+'px"></div></div>'
-      +'</div><div class="grafik-tgl">'+tglPendek+'</div></div>';
-  });
-  h+='</div>';
-  el.innerHTML=h;
+  rows.forEach(x=>{ let hDB=Math.max(4,Math.round(x.db/maxVal*150)); let hL=Math.max(4,Math.round(x.limoTotal/maxVal*150)); let tglPendek=x.tampil.slice(0,5); h+='<div class="grafik-col"><div class="grafik-bars"><div class="grafik-bar-wrap"><div class="grafik-nilai">'+x.db+'</div><div class="grafik-bar bar-db" style="height:'+hDB+'px"></div></div><div class="grafik-bar-wrap"><div class="grafik-nilai">'+x.limoTotal+'</div><div class="grafik-bar bar-l" style="height:'+hL+'px"></div></div></div><div class="grafik-tgl">'+tglPendek+'</div></div>'; });
+  h+='</div>'; el.innerHTML=h;
 }
 function renderBulanan(){
-  let bln=document.getElementById('bulan').value;
-  let r=hitungBulanan(bln);
-  let h='';
-  r.rows.forEach(x=>{
-    h+=`<tr><td>${x.tampil}</td><td>${x.depok}</td><td>${x.dariLimo}</td><td>${x.bandara}</td><td>${x.keLimo}</td><td><b>${x.total}</b></td></tr>`;
-  });
+  let bln=document.getElementById('bulan').value; let r=hitungBulanan(bln); let h='';
+  r.rows.forEach(x=>{ h+=`<tr><td>${x.tampil}</td><td>${x.depok}</td><td>${x.dariLimo}</td><td>${x.bandara}</td><td>${x.keLimo}</td><td><b>${x.total}</b></td></tr>`; });
   if(!r.rows.length) h='<tr><td colspan="6">Belum ada data di bulan ini</td></tr>';
   document.getElementById('listBulanan').innerHTML=h;
   document.getElementById('totBDepok').innerText='Depok: '+r.tDepok;
@@ -584,168 +499,99 @@ function renderBulanan(){
   renderGrafik(r.rows);
 }
 function exportBulanan(){
-  let bln=document.getElementById('bulan').value;
-  if(!bln){alert('Pilih bulan dulu Aa');return;}
-  let r=hitungBulanan(bln);
-  if(!r.rows.length){alert('Belum ada data di bulan ini Aa');return;}
+  let bln=document.getElementById('bulan').value; if(!bln){alert('Pilih bulan dulu Aa');return;}
+  let r=hitungBulanan(bln); if(!r.rows.length){alert('Belum ada data di bulan ini Aa');return;}
   let namaBulan=new Date(bln+'-01').toLocaleDateString('id-ID',{month:'long',year:'numeric'}).replace(/ /g,'_');
-  let csv='\uFEFFLaporan Penumpang JAC - Hiba Bandara\n';
-  csv+='Bulan,'+namaBulan.replace(/_/g,' ')+'\n\n';
-  csv+='Tanggal,Depok,Dari Limo,Bandara,Ke Limo,Total\n';
-  r.rows.forEach(x=>{
-    csv+=x.tampil+','+x.depok+','+x.dariLimo+','+x.bandara+','+x.keLimo+','+x.total+'\n';
-  });
+  let csv='\uFEFFLaporan Penumpang JAC - Hiba Bandara\n'; csv+='Bulan,'+namaBulan.replace(/_/g,' ')+'\n\n'; csv+='Tanggal,Depok,Dari Limo,Bandara,Ke Limo,Total\n';
+  r.rows.forEach(x=>{ csv+=x.tampil+','+x.depok+','+x.dariLimo+','+x.bandara+','+x.keLimo+','+x.total+'\n'; });
   csv+='TOTAL,'+r.tDepok+','+r.tDariLimo+','+r.tBandara+','+r.tKeLimo+','+r.tTotal+'\n';
-  let blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-  let a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='Laporan_JAC_'+namaBulan+'.csv';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  let blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); let a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='Laporan_JAC_'+namaBulan+'.csv'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
   alert('Berhasil export Aa! File Laporan_JAC_'+namaBulan+'.csv sudah ke-download, bisa dibuka di Excel / Spreadsheet.');
 }
-function namaHariDanTanggalPanjang(tgl){
-  let p=tgl.split('-');
-  let d=new Date(Number(p[0]),Number(p[1])-1,Number(p[2]));
-  return {hari:namaHariArr[d.getDay()],panjang:Number(p[2])+' '+namaBulanArr[Number(p[1])-1]+' '+p[0]};
-}
+function namaHariDanTanggalPanjang(tgl){ let p=tgl.split('-'); let d=new Date(Number(p[0]),Number(p[1])-1,Number(p[2])); return {hari:namaHariArr[d.getDay()],panjang:Number(p[2])+' '+namaBulanArr[Number(p[1])-1]+' '+p[0]}; }
 function hitungShift(tgl,shift){
   let list=data.filter(d=>d.tgl===tgl && d.rute==='Bandara');
   if(shift===1) list=list.filter(d=>nilaiJam(d.jam)<nilaiJam('15:20'));
   if(shift===2) list=list.filter(d=>nilaiJam(d.jam)>=nilaiJam('15:20'));
-  let total=0, keLimo=0;
-  list.forEach(d=>{
-    total+=Number(d.pnp);
-    keLimo+=Number(limo[kunciLimo(d.tgl,'Bandara',d.jam)]||0);
-  });
+  let total=0, keLimo=0; list.forEach(d=>{ total+=Number(d.pnp); keLimo+=Number(limo[kunciLimo(d.tgl,'Bandara',d.jam)]||0); });
   return {total,keLimo,depok:total-keLimo,ritase:list.length};
 }
 function hitungTotalHarian(tgl){
-  let depokList=data.filter(d=>d.tgl===tgl && d.rute==='Depok');
-  let bandaraList=data.filter(d=>d.tgl===tgl && d.rute==='Bandara');
+  let depokList=data.filter(d=>d.tgl===tgl && d.rute==='Depok'); let bandaraList=data.filter(d=>d.tgl===tgl && d.rute==='Bandara');
   let totalDepokKotor=0, totalBandaraKotor=0, dariLimo=0, keLimo=0;
   depokList.forEach(d=>{totalDepokKotor+=Number(d.pnp); dariLimo+=Number(limo[kunciLimo(d.tgl,'Depok',d.jam)]||0);});
   bandaraList.forEach(d=>{totalBandaraKotor+=Number(d.pnp); keLimo+=Number(limo[kunciLimo(d.tgl,'Bandara',d.jam)]||0);});
-  let depokBandara=totalDepokKotor-dariLimo;
-  let bandaraDepok=totalBandaraKotor-keLimo;
+  let depokBandara=totalDepokKotor-dariLimo; let bandaraDepok=totalBandaraKotor-keLimo;
   return {depokBandara,dariLimo,totalDepok:totalDepokKotor,bandaraDepok,keLimo,totalBandara:totalBandaraKotor,ritase:depokList.length+bandaraList.length,totalHarian:totalDepokKotor+totalBandaraKotor};
 }
 function renderFormat(){
-  let tgl=document.getElementById('tanggalFormat').value;
-  let jenis=document.getElementById('jenisLaporan').value;
+  let tgl=document.getElementById('tanggalFormat').value; let jenis=document.getElementById('jenisLaporan').value;
   if(!tgl){document.getElementById('previewFormat').textContent='Pilih tanggal dulu Aa';teksFormatTerakhir='';return;}
-  let info=namaHariDanTanggalPanjang(tgl);
-  let teks='';
+  let info=namaHariDanTanggalPanjang(tgl); let teks='';
   if(jenis==='shift1' || jenis==='shift2'){
-    let s=jenis==='shift1'?1:2;
-    let h=hitungShift(tgl,s);
-    let salam=s===1?'Selamat sore Team':'Selamat malam Team';
-    let jamRange=s===1?'*Dari Jam : 05:20 - 14:50*':'*Dari Jam : 15:20 - 00:20*';
+    let s=jenis==='shift1'?1:2; let h=hitungShift(tgl,s); let salam=s===1?'Selamat sore Team':'Selamat malam Team'; let jamRange=s===1?'*Dari Jam : 05:20 - 14:50*':'*Dari Jam : 15:20 - 00:20*';
     teks='*LAPORAN SHIFT '+s+'*\n\n'+salam+'\n\nLaporan Harian\nJAC Hiba Utama\nBANDARA SOETTA\n*Hari : '+info.hari+'*\n*Tanggal : '+info.panjang+'*\n'+jamRange+'\n--------------------------------\nBsh - Depok = '+h.depok+' pnp\nBsh - Limo = '+h.keLimo+' pnp\nTotal Pnp = '+h.total+' pnp\nRitase = '+h.ritase+'\n--------------------------------\nDemikian laporan harian yang dapat disampaikan.\n\n*Terima Kasih*';
   } else {
     let t=hitungTotalHarian(tgl);
     teks='*LAPORAN HARIAN*\n\n*Hari : '+info.hari+'*\n*Tanggal : '+info.panjang+'*\n\n*1. DEPOK*\n- Depok - Bandara (Pnp) = '+t.depokBandara+'\n- Limo - Bandara (Pnp) = '+t.dariLimo+'\n- _TOTAL DEPOK (Pnp) = '+t.totalDepok+'_\n\n*2. BANDARA*\n- Bandara - Depok (Pnp) = '+t.bandaraDepok+'\n- Bandara - Limo (Pnp) = '+t.keLimo+'\n- _TOTAL BANDARA (Pnp) = '+t.totalBandara+'_\n- Ritase/KR = '+t.ritase+'\n\n___________________________\n\n- *_TOTAL Harian (Pnp) = '+t.totalHarian+'_*\n\nDemikian laporan harian yang dapat disampaikan.\n\n*Terima Kasih*';
   }
-  teksFormatTerakhir=teks;
-  document.getElementById('previewFormat').textContent=teks;
+  teksFormatTerakhir=teks; document.getElementById('previewFormat').textContent=teks;
 }
-function editPreview(){
-  let el=document.getElementById('previewFormat');
-  el.focus();
-  let range=document.createRange();
-  range.selectNodeContents(el);
-  range.collapse(false);
-  let sel=window.getSelection();
-  sel.removeAllRanges();
-  sel.addRange(range);
-  el.scrollTop=el.scrollHeight;
-}
-function onPreviewEdit(){
-  teksFormatTerakhir=document.getElementById('previewFormat').innerText.replace(/\n\n+/g,'\n\n');
-}
-function shareWA(){
-  let isi=document.getElementById('previewFormat').innerText;
-  if(!isi || isi==='Pilih tanggal dulu Aa'){renderFormat(); isi=document.getElementById('previewFormat').innerText;}
-  if(!isi){alert('Pilih tanggal dulu Aa');return;}
-  window.open('https://wa.me/?text='+encodeURIComponent(isi),'_blank');
-}
+function editPreview(){ let el=document.getElementById('previewFormat'); el.focus(); let range=document.createRange(); range.selectNodeContents(el); range.collapse(false); let sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(range); el.scrollTop=el.scrollHeight; }
+function onPreviewEdit(){ teksFormatTerakhir=document.getElementById('previewFormat').innerText.replace(/\n\n+/g,'\n\n'); }
+function shareWA(){ let isi=document.getElementById('previewFormat').innerText; if(!isi || isi==='Pilih tanggal dulu Aa'){renderFormat(); isi=document.getElementById('previewFormat').innerText;} if(!isi){alert('Pilih tanggal dulu Aa');return;} window.open('https://wa.me/?text='+encodeURIComponent(isi),'_blank'); }
 function tambah(){
-  let tgl=document.getElementById('tanggal').value;
-  let rute=document.getElementById('rute').value;
-  let jam=document.getElementById('jam').value.trim();
-  let body=document.getElementById('body').value.trim().toUpperCase();
-  let pnp=document.getElementById('penumpang').value;
-  let ket=document.getElementById('ket').value;
+  let tgl=document.getElementById('tanggal').value; let rute=document.getElementById('rute').value;
+  let jam=document.getElementById('jam').value.trim(); let body=document.getElementById('body').value.trim().toUpperCase();
+  let pnp=document.getElementById('penumpang').value; let ket=document.getElementById('ket').value;
   if(!tgl||!jam||!pnp){alert('Isi tanggal, jam & penumpang dulu Aa');return;}
-  if(jamTerpakai(tgl,rute).includes(jam)){
-    alert('Jam '+jam+' di '+rute+' tanggal '+tgl.split('-').reverse().join('/')+' SUDAH TERPAKAI Aa! Pilih jam lain yang masih sisa.');
-    updateJamList();
-    return;
-  }
+  if(jamTerpakai(tgl,rute).includes(jam)){ alert('Jam '+jam+' di '+rute+' tanggal '+tgl.split('-').reverse().join('/')+' SUDAH TERPAKAI Aa! Pilih jam lain yang masih sisa.'); updateJamList(); return; }
   if(editIndex!==-1){
     let keyBaru=kunciLimo(tgl,rute,jam);
+    let dLama=data[editIndex];
     if(editKeyLimoLama && editKeyLimoLama!==keyBaru && limo[editKeyLimoLama]!==undefined){
-      limo[keyBaru]=limo[editKeyLimoLama];
-      delete limo[editKeyLimoLama];
-      localStorage.setItem('jac_limo',JSON.stringify(limo));
+      limo[keyBaru]=limo[editKeyLimoLama]; delete limo[editKeyLimoLama];
+      fbSet('limo/'+keyAman(keyBaru), {k:keyBaru, v:limo[keyBaru], ts:Date.now()}); fbHapus('limo/'+keyAman(editKeyLimoLama));
     }
-    data[editIndex]={tgl,rute,jam,body,pnp,ket};
-    localStorage.setItem('jac',JSON.stringify(data));
-    alert('Perubahan disimpan!');
-    batalEdit();
-    document.getElementById('tanggalRekap').value=tgl;
-    document.getElementById('tanggalFormat').value=tgl;
-    updateSemuaTampilTanggal();
-    render();renderBulanan();renderFormat();
-    pindah('rekap');
-    return;
+    // Hapus kunci lama kalau jam/rute berubah
+    let kunciLama=kunciData(dLama);
+    let obj={tgl,rute,jam,body,pnp,ket,ts:Date.now()};
+    data[editIndex]=obj;
+    if(kunciLama!==kunciData(obj)) fbHapus('data/'+keyAman(kunciLama));
+    fbSet('data/'+keyAman(kunciData(obj)), obj);
+    simpanLokal(); alert('Perubahan disimpan!'); batalEdit();
+    document.getElementById('tanggalRekap').value=tgl; document.getElementById('tanggalFormat').value=tgl;
+    updateSemuaTampilTanggal(); render();renderBulanan();renderFormat(); pindah('rekap'); return;
   }
-  data.push({tgl,rute,jam,body,pnp,ket});
-  localStorage.setItem('jac',JSON.stringify(data));
+  let obj={tgl,rute,jam,body,pnp,ket,ts:Date.now()};
+  data.push(obj);
+  fbSet('data/'+keyAman(kunciData(obj)), obj);
+  simpanLokal();
   document.getElementById('penumpang').value='';document.getElementById('body').value='';document.getElementById('jam').value='';document.getElementById('ket').value='';
-  document.getElementById('tanggalRekap').value=tgl;
-  document.getElementById('tanggalFormat').value=tgl;
-  updateSemuaTampilTanggal();
-  alert('Berhasil! Cek di Rekap Laporan');
-  updateJamList();
-  render();renderBulanan();renderFormat();
+  document.getElementById('tanggalRekap').value=tgl; document.getElementById('tanggalFormat').value=tgl;
+  updateSemuaTampilTanggal(); alert('Berhasil! Cek di Rekap Laporan'); updateJamList(); render();renderBulanan();renderFormat();
 }
-let stockData=JSON.parse(localStorage.getItem('jac_stock')||'{}');
-let infoData=JSON.parse(localStorage.getItem('jac_info')||'{}');
+/* ===== STOCK - TIM: ts menang, bukan status ===== */
 const STATUS_LIST=["READY","INAP BANDARA","SERVICE","AKAP","STORING","DLL"];
-function kelasStatus(s){
-  if(s==="READY") return "st-ready";
-  if(s==="INAP BANDARA") return "st-inap";
-  return "st-merah";
-}
-function defaultKet(s,ketLama){
-  if(s==="DLL") return ketLama||"";
-  return s;
-}
+function kelasStatus(s){ if(s==="READY") return "st-ready"; if(s==="INAP BANDARA") return "st-inap"; return "st-merah"; }
+function defaultKet(s,ketLama){ if(s==="DLL") return ketLama||""; return s; }
 function getStockTanggal(tgl){
-  if(!stockData[tgl]){
-    stockData[tgl]={};
-    listBodyBus.forEach(b=>{ stockData[tgl][b]={status:"READY",ket:"READY"}; });
-  }
+  if(!stockData[tgl]){ stockData[tgl]={}; listBodyBus.forEach(b=>{ stockData[tgl][b]={status:"READY",ket:"READY",ts:0}; }); }
   return stockData[tgl];
 }
-function simpanStock(){
-  localStorage.setItem('jac_stock',JSON.stringify(stockData));
-  localStorage.setItem('jac_info',JSON.stringify(infoData));
-  setTimeout(syncFirebase,300);
+function tsBaruStock(){
+  let mx=0; Object.keys(stockData||{}).forEach(t=>{ Object.keys(stockData[t]||{}).forEach(b=>{ let v=(stockData[t][b]||{}).ts||0; if(v>mx) mx=v; }); });
+  return Math.max(Date.now(), mx+1);
+}
+function simpanLokal(){
+  try{ localStorage.setItem('jac_tim_cache', JSON.stringify({data,limo,stock:stockData,info:infoData,rencana:rencanaData})); }catch(e){}
 }
 function renderStock(){
-  let tgl=document.getElementById('tanggalStock').value;
-  if(!tgl) return;
-  let st=getStockTanggal(tgl);
-  let h='';
-  let cReady=0,cInap=0,cMerah=0;
+  let tgl=document.getElementById('tanggalStock').value; if(!tgl) return;
+  let st=getStockTanggal(tgl); let h=''; let cReady=0,cInap=0,cMerah=0;
   listBodyBus.forEach(body=>{
-    let item=st[body]||{status:"READY",ket:"READY"};
-    if(item.status==="READY") cReady++;
-    else if(item.status==="INAP BANDARA") cInap++;
-    else cMerah++;
+    let item=st[body]||{status:"READY",ket:"READY",ts:0};
+    if(item.status==="READY") cReady++; else if(item.status==="INAP BANDARA") cInap++; else cMerah++;
     let opts=STATUS_LIST.map(s=>`<option value="${s}" ${s===item.status?'selected':''}>${s}</option>`).join('');
     let isDLL=item.status==="DLL";
     h+=`<tr><td class="no-body">${body}</td><td><select class="status-select ${kelasStatus(item.status)}" onchange="ubahStatusStock('${body}',this.value)">${opts}</select></td><td><input class="ket-input" type="text" value="${(item.ket||'').replace(/"/g,'&quot;')}" ${isDLL?'':'disabled'} placeholder="${isDLL?'Ketik keterangan...':'Otomatis'}" onchange="ubahKetStock('${body}',this.value)"></td></tr>`;
@@ -757,101 +603,56 @@ function renderStock(){
   renderInfo();
 }
 function ubahStatusStock(body,status){
-  let tgl=document.getElementById('tanggalStock').value;
-  let st=getStockTanggal(tgl);
-  let lama=st[body]||{status:"READY",ket:"READY"};
+  let tgl=document.getElementById('tanggalStock').value; let st=getStockTanggal(tgl);
+  let lama=st[body]||{status:"READY",ket:"READY",ts:0};
   let ketBaru=defaultKet(status, status==="DLL" ? (lama.status==="DLL"?lama.ket:"") : "");
-  st[body]={status:status,ket:ketBaru};
-  simpanStock(); renderStock();
+  let obj={status:status,ket:ketBaru,ts:tsBaruStock()};
+  st[body]=obj; simpanLokal(); fbSet('stock/'+tgl+'/'+body, obj); renderStock();
 }
 function ubahKetStock(body,val){
-  let tgl=document.getElementById('tanggalStock').value;
-  let st=getStockTanggal(tgl);
-  st[body].ket=val;
-  simpanStock();
+  let tgl=document.getElementById('tanggalStock').value; let st=getStockTanggal(tgl);
+  st[body].ket=val; st[body].ts=tsBaruStock(); simpanLokal(); fbSet('stock/'+tgl+'/'+body, st[body]);
 }
 function resetStock(){
-  let tgl=document.getElementById('tanggalStock').value;
+  let tgl=document.getElementById('tanggalStock').value; if(!tgl){alert('Pilih tanggal dulu Aa');return;}
   if(!confirm('Reset semua unit tanggal '+tgl.split('-').reverse().join('/')+' jadi READY?')) return;
-  listBodyBus.forEach(b=>{ stockData[tgl][b]={status:"READY",ket:"READY"}; });
-  simpanStock(); renderStock();
+  let st=getStockTanggal(tgl); let ts=tsBaruStock();
+  let updates={};
+  listBodyBus.forEach(b=>{ st[b]={status:"READY",ket:"READY",ts:ts}; updates['stock/'+tgl+'/'+b]=st[b]; });
+  stockData[tgl]=st; simpanLokal(); fbUpdate(updates); renderStock();
+  alert('Berhasil di-reset jadi READY semua Aa, semua tim langsung ikut READY.');
 }
 function renderInfo(){
-  let tgl=document.getElementById('tanggalStock').value;
-  if(!infoData[tgl]) infoData[tgl]=[];
-  let arr=infoData[tgl];
-  if(arr.length===0) arr=[""];
-  let h='';
-  arr.forEach((txt,i)=>{
-    h+=`<div class="info-row"><span class="no-info">${i+1}.</span><input type="text" value="${txt.replace(/"/g,'&quot;')}" placeholder="Ketik info tambahan..." onchange="ubahInfo(${i},this.value)"><button class="btn-hapus-info" onclick="hapusInfo(${i})">✕</button></div>`;
-  });
+  let tgl=document.getElementById('tanggalStock').value; if(!infoData[tgl]) infoData[tgl]=[];
+  let arr=infoData[tgl]; if(arr.length===0) arr=[""];
+  let h=''; arr.forEach((txt,i)=>{ h+=`<div class="info-row"><span class="no-info">${i+1}.</span><input type="text" value="${String(txt).replace(/"/g,'&quot;')}" placeholder="Ketik info tambahan..." onchange="ubahInfo(${i},this.value)"><button class="btn-hapus-info" onclick="hapusInfo(${i})">✕</button></div>`; });
   document.getElementById('listInfoTambahan').innerHTML=h;
 }
-function ubahInfo(i,val){
-  let tgl=document.getElementById('tanggalStock').value;
-  if(!infoData[tgl]) infoData[tgl]=[];
-  infoData[tgl][i]=val;
-  simpanStock();
-}
-function tambahInfo(){
-  let tgl=document.getElementById('tanggalStock').value;
-  if(!infoData[tgl]) infoData[tgl]=[];
-  infoData[tgl].push("");
-  simpanStock(); renderInfo();
-  let inputs=document.querySelectorAll('#listInfoTambahan input');
-  if(inputs.length) inputs[inputs.length-1].focus();
-}
-function hapusInfo(i){
-  let tgl=document.getElementById('tanggalStock').value;
-  infoData[tgl].splice(i,1);
-  if(infoData[tgl].length===0) infoData[tgl]=[""];
-  simpanStock(); renderInfo();
-}
-let rencanaData=JSON.parse(localStorage.getItem('jac_rencana')||'{}');
+function ubahInfo(i,val){ let tgl=document.getElementById('tanggalStock').value; if(!infoData[tgl]) infoData[tgl]=[]; infoData[tgl][i]=val; simpanLokal(); fbSet('info/'+tgl+'/'+i, {v:val, ts:Date.now()}); }
+function tambahInfo(){ let tgl=document.getElementById('tanggalStock').value; if(!infoData[tgl]) infoData[tgl]=[]; infoData[tgl].push(""); simpanLokal(); renderInfo(); let inputs=document.querySelectorAll('#listInfoTambahan input'); if(inputs.length) inputs[inputs.length-1].focus(); }
+function hapusInfo(i){ let tgl=document.getElementById('tanggalStock').value; infoData[tgl].splice(i,1); if(infoData[tgl].length===0) infoData[tgl]=[""]; simpanLokal(); fbHapus('info/'+tgl+'/'+i); renderInfo(); }
+/* ===== RENCANA ===== */
 function getRencana(tgl){
-  if(!rencanaData[tgl]){
-    rencanaData[tgl]={depok:[],bandara:[]};
-    for(let i=0;i<45;i++){ rencanaData[tgl].depok.push({body:"",jam:""}); rencanaData[tgl].bandara.push({body:"",jam:""}); }
-  }
-  while(rencanaData[tgl].depok.length<45) rencanaData[tgl].depok.push({body:"",jam:""});
-  while(rencanaData[tgl].bandara.length<45) rencanaData[tgl].bandara.push({body:"",jam:""});
+  if(!rencanaData[tgl]){ rencanaData[tgl]={depok:[],bandara:[]}; for(let i=0;i<45;i++){ rencanaData[tgl].depok.push({body:"",jam:"",ts:0}); rencanaData[tgl].bandara.push({body:"",jam:"",ts:0}); } }
+  while(rencanaData[tgl].depok.length<45) rencanaData[tgl].depok.push({body:"",jam:"",ts:0});
+  while(rencanaData[tgl].bandara.length<45) rencanaData[tgl].bandara.push({body:"",jam:"",ts:0});
   return rencanaData[tgl];
 }
-function simpanRencana(){ localStorage.setItem('jac_rencana',JSON.stringify(rencanaData)); setTimeout(syncFirebase,300); }
-function isMerahRencana(tgl,body){
-  let st=stockData[tgl] && stockData[tgl][body];
-  if(!st) return false;
-  return st.status!=="READY" && st.status!=="INAP BANDARA";
+function tsBaruRencana(){
+  let mx=0; Object.keys(rencanaData||{}).forEach(t=>{ ['depok','bandara'].forEach(s=>{ (rencanaData[t][s]||[]).forEach(c=>{ let v=(c||{}).ts||0; if(v>mx) mx=v; }); }); });
+  return Math.max(Date.now(), mx+1);
 }
-function statusBodyRencana(tgl,body){
-  let st=stockData[tgl] && stockData[tgl][body];
-  return st ? st.status : "READY";
-}
-function nextReadyPos(tgl, dariPos){
-  for(let step=1; step<=listBodyBus.length; step++){
-    let p=(dariPos+step)%listBodyBus.length;
-    if(!isMerahRencana(tgl, listBodyBus[p])) return p;
-  }
-  return -1;
-}
-function optBodyRencana(tgl,val){
-  let h='<option value="">-</option>';
-  listBodyBus.forEach(b=>{
-    let merah=isMerahRencana(tgl,b);
-    let label=merah ? b+' - '+statusBodyRencana(tgl,b) : b;
-    h+=`<option value="${b}" ${b===val?'selected':''} ${merah && b!==val ? 'disabled' : ''}>${label}</option>`;
-  });
-  return h;
-}
+function isMerahRencana(tgl,body){ let st=stockData[tgl] && stockData[tgl][body]; if(!st) return false; return st.status!=="READY" && st.status!=="INAP BANDARA"; }
+function statusBodyRencana(tgl,body){ let st=stockData[tgl] && stockData[tgl][body]; return st ? st.status : "READY"; }
+function nextReadyPos(tgl, dariPos){ for(let step=1; step<=listBodyBus.length; step++){ let p=(dariPos+step)%listBodyBus.length; if(!isMerahRencana(tgl, listBodyBus[p])) return p; } return -1; }
+function optBodyRencana(tgl,val){ let h='<option value="">-</option>'; listBodyBus.forEach(b=>{ let merah=isMerahRencana(tgl,b); let label=merah ? b+' - '+statusBodyRencana(tgl,b) : b; h+=`<option value="${b}" ${b===val?'selected':''} ${merah && b!==val ? 'disabled' : ''}>${label}</option>`; }); return h; }
 function renderRencana(){
   let tgl=document.getElementById('tanggalRencana').value; if(!tgl) return;
   let r=getRencana(tgl);
-  let jamDepokTerpakai=r.depok.map(x=>x.jam).filter(j=>j);
-  let jamBandaraTerpakai=r.bandara.map(x=>x.jam).filter(j=>j);
+  let jamDepokTerpakai=r.depok.map(x=>x.jam).filter(j=>j); let jamBandaraTerpakai=r.bandara.map(x=>x.jam).filter(j=>j);
   let dlHtml='';
   for(let i=0;i<45;i++){
-    let d=r.depok[i]||{body:"",jam:""};
-    let b=r.bandara[i]||{body:"",jam:""};
+    let d=r.depok[i]||{body:"",jam:""}; let b=r.bandara[i]||{body:"",jam:""};
     let sisaD=jadwal.Depok.filter(j=>j===d.jam || !jamDepokTerpakai.includes(j));
     let sisaB=jadwal.Bandara.filter(j=>j===b.jam || !jamBandaraTerpakai.includes(j));
     dlHtml+='<datalist id="dlD'+i+'">'+sisaD.map(j=>'<option value="'+j+'">').join('')+'</datalist>';
@@ -862,8 +663,7 @@ function renderRencana(){
   for(let i=0;i<45;i++){
     let d=r.depok[i]||{body:"",jam:""}; let b=r.bandara[i]||{body:"",jam:""};
     if(d.body||d.jam) cD++; if(b.body||b.jam) cB++;
-    let escD=(d.jam||'').replace(/"/g,'&quot;');
-    let escB=(b.jam||'').replace(/"/g,'&quot;');
+    let escD=(d.jam||'').replace(/"/g,'&quot;'); let escB=(b.jam||'').replace(/"/g,'&quot;');
     h+=`<tr><td class="no">${i+1}</td>`
       +`<td><select class="rencana-sel ${d.body?'':'kosong'}" onchange="ubahRencana('depok',${i},'body',this.value)">${optBodyRencana(tgl,d.body)}</select></td>`
       +`<td><input class="rencana-inp" type="text" list="dlD${i}" placeholder="-" value="${escD}" onchange="ubahRencana('depok',${i},'jam',this.value)"></td>`
@@ -875,71 +675,54 @@ function renderRencana(){
   document.getElementById('totRencanaBandara').innerText='Bandara: '+cB+' / 45';
 }
 function ubahRencana(sisi,idx,field,val){
-  let tgl=document.getElementById('tanggalRencana').value;
-  let arr=getRencana(tgl)[sisi];
+  let tgl=document.getElementById('tanggalRencana').value; let arr=getRencana(tgl)[sisi];
   if(field==='body' && val!=='' && isMerahRencana(tgl,val)){ alert('Body '+val+' lagi '+statusBodyRencana(tgl,val)+' di Stock Unit tanggal ini Aa, ga bisa dipilih.'); renderRencana(); return; }
   if(field==='jam'){
     val=val.trim();
     if(val!==''){
       let duplikatIdx=arr.findIndex((x,i)=>i!==idx && x.jam===val);
-      if(duplikatIdx!==-1){
-        let labelSisi=sisi==='depok'?'DEPOK':'BANDARA';
-        alert('Jam '+val+' di '+labelSisi+' SUDAH TERPAKAI di Baris '+(duplikatIdx+1)+' Aa! Pilih jam lain yang masih sisa.');
-        renderRencana();
-        return;
-      }
+      if(duplikatIdx!==-1){ let labelSisi=sisi==='depok'?'DEPOK':'BANDARA'; alert('Jam '+val+' di '+labelSisi+' SUDAH TERPAKAI di Baris '+(duplikatIdx+1)+' Aa! Pilih jam lain yang masih sisa.'); renderRencana(); return; }
     }
   }
-  arr[idx][field]=val;
+  arr[idx][field]=val; arr[idx].ts=tsBaruRencana();
+  fbSet('rencana/'+tgl+'/'+sisi+'/'+idx, arr[idx]);
   if(field==='body' && val!==''){
-    let awalBlok=Math.floor(idx/7)*7;
-    let posisiDiBlok=idx-awalBlok;
+    let awalBlok=Math.floor(idx/7)*7; let posisiDiBlok=idx-awalBlok;
     if(posisiDiBlok===1){
-      let body1=arr[awalBlok].body;
-      let body2=arr[awalBlok+1].body;
-      let pos1=listBodyBus.indexOf(body1);
-      let pos2=listBodyBus.indexOf(body2);
+      let body1=arr[awalBlok].body; let body2=arr[awalBlok+1].body;
+      let pos1=listBodyBus.indexOf(body1); let pos2=listBodyBus.indexOf(body2);
       if(pos1!==-1 && pos2!==-1){
         let nextPos=nextReadyPos(tgl, pos1);
         if(pos2===nextPos){
-          let collected=[];
-          let p=pos2;
-          for(let k=0;k<5;k++){
-            let np=nextReadyPos(tgl, p);
-            if(np===-1) break;
-            if(np===pos1 || np===pos2) break;
-            collected.push(listBodyBus[np]);
-            p=np;
-          }
+          let collected=[]; let p=pos2;
+          for(let k=0;k<5;k++){ let np=nextReadyPos(tgl, p); if(np===-1) break; if(np===pos1 || np===pos2) break; collected.push(listBodyBus[np]); p=np; }
+          let updates={};
           for(let k=0;k<collected.length;k++){
-            let targetIdx=awalBlok+2+k;
-            if(targetIdx>=awalBlok+7 || targetIdx>=45) break;
-            arr[targetIdx].body=collected[k];
+            let targetIdx=awalBlok+2+k; if(targetIdx>=awalBlok+7 || targetIdx>=45) break;
+            arr[targetIdx].body=collected[k]; arr[targetIdx].ts=tsBaruRencana();
+            updates['rencana/'+tgl+'/'+sisi+'/'+targetIdx]=arr[targetIdx];
           }
-          let scrollY=window.scrollY;
-          simpanRencana(); renderRencana();
-          window.scrollTo(0,scrollY);
-          return;
+          simpanLokal(); fbUpdate(updates); renderRencana(); return;
         }
       }
     }
   }
-  simpanRencana();
-  renderRencana();
+  simpanLokal(); renderRencana();
 }
 function resetRencana(){
   let tgl=document.getElementById('tanggalRencana').value;
   if(!confirm('Kosongkan semua rencana tanggal '+tgl.split('-').reverse().join('/')+' ?')) return;
-  delete rencanaData[tgl]; simpanRencana(); renderRencana();
+  delete rencanaData[tgl]; simpanLokal(); fbHapus('rencana/'+tgl); renderRencana();
 }
 function salinRencanaKemarin(){
-  let tgl=document.getElementById('tanggalRencana').value;
-  let d=new Date(tgl); d.setDate(d.getDate()-1);
-  let tglKemarin=toISO(d);
+  let tgl=document.getElementById('tanggalRencana').value; let d=new Date(tgl); d.setDate(d.getDate()-1); let tglKemarin=toISO(d);
   if(!rencanaData[tglKemarin]){ alert('Kemarin ('+tglKemarin.split('-').reverse().join('/')+') belum ada rencana Aa'); return; }
   if(!confirm('Salin rencana kemarin ke hari ini? Data hari ini akan ketimpa.')) return;
   rencanaData[tgl]=JSON.parse(JSON.stringify(rencanaData[tglKemarin]));
-  simpanRencana(); renderRencana(); alert('Berhasil disalin dari kemarin!');
+  simpanLokal();
+  let updates={};
+  ['depok','bandara'].forEach(s=>{ for(let i=0;i<45;i++){ let c=rencanaData[tgl][s][i]; c.ts=tsBaruRencana(); updates['rencana/'+tgl+'/'+s+'/'+i]=c; } });
+  fbUpdate(updates); renderRencana(); alert('Berhasil disalin dari kemarin!');
 }
 let today=new Date().toISOString().slice(0,10);
 document.getElementById('tanggal').value=today;
@@ -949,143 +732,111 @@ document.getElementById('tanggalStock').value=today;
 document.getElementById('tanggalRencana').value=today;
 document.getElementById('bulan').value=today.slice(0,7);
 updateSemuaTampilTanggal();
-gantiRute();render();renderBulanan();renderFormat();renderStock();renderRencana();
+gantiRute();
 </script>
 <script>
-const FB_URL = 'https://laporan-jac-baru-default-rtdb.asia-southeast1.firebasedatabase.app/laporan.json';
-let sedangSync = false;
-let hapusTerakhir = 0;
-function kunciData(d){ return d.tgl+'|'+d.rute+'|'+d.jam; }
-function gabungData(lokal, remote){
-  let map = {};
-  (lokal||[]).forEach(d=>{ map[kunciData(d)] = d; });
-  (remote||[]).forEach(d=>{ map[kunciData(d)] = d; });
-  return Object.values(map).sort((a,b)=> (a.tgl+a.rute+a.jam).localeCompare(b.tgl+b.rute+b.jam));
+/* ===== VERSI TIM - FIREBASE REALTIME, PER-PETAK, BUKAN PUT GEDE ===== */
+const FB_CONFIG = { databaseURL: 'https://laporan-jac-baru-default-rtdb.asia-southeast1.firebasedatabase.app' };
+firebase.initializeApp(FB_CONFIG);
+const db = firebase.database();
+const rootRef = db.ref('team_v1');
+let sudahDapatAwal=false;
+function setStatusOnline(ok){
+  let el=document.getElementById('statusSync');
+  if(!el) return;
+  if(ok){ el.className='status-online'; el.innerText='● ONLINE - Realtime 1 Tim - Siapapun input, semua langsung update'; }
+  else { el.className='status-offline'; el.innerText='● OFFLINE - Cek internet Aa, data tersimpan di HP dulu'; }
 }
-/* === FIX SYNC: STOCK per BODY, RENCANA per BARIS, INFO per BARIS - REKAP TIDAK DIUBAH === */
-function gabungStock(lokal, remote){
-  let hasil = {};
-  let semuaTgl = new Set([...Object.keys(remote||{}), ...Object.keys(lokal||{})]);
-  semuaTgl.forEach(tgl=>{
-    hasil[tgl] = {};
-    let r = remote[tgl]||{};
-    let l = lokal[tgl]||{};
-    let semuaBody = new Set([...Object.keys(r), ...Object.keys(l), ...listBodyBus]);
-    semuaBody.forEach(body=>{
-      let itemR = r[body];
-      let itemL = l[body];
-      if(itemL && itemR){
-        // Kalau 2 HP ubah body yang beda, 2-2nya ke-merge. Kalau body yang sama diubah 2 HP, yang beda dari READY yang menang, biar SERVICE / INAP ga hilang ketimpa READY
-        if(JSON.stringify(itemL)===JSON.stringify(itemR)){ hasil[tgl][body]=itemL; }
-        else if(itemL.status==="READY" && itemR.status!=="READY"){ hasil[tgl][body]=itemR; }
-        else if(itemR.status==="READY" && itemL.status!=="READY"){ hasil[tgl][body]=itemL; }
-        else { hasil[tgl][body]=itemL; }
-      } else if(itemL){ hasil[tgl][body]=itemL; }
-      else if(itemR){ hasil[tgl][body]=itemR; }
-      else { hasil[tgl][body]={status:"READY",ket:"READY"}; }
-    });
+function fbSet(path, val){
+  if(sedangMenerima) return;
+  rootRef.child(path).set(val).catch(e=>{});
+}
+function fbUpdate(updates){
+  if(sedangMenerima) return;
+  rootRef.update(updates).catch(e=>{});
+}
+function fbHapus(path){
+  if(sedangMenerima) return;
+  rootRef.child(path).remove().catch(e=>{});
+}
+// Cache lokal biar buka langsung muncul walau offline
+try{
+  let cache=JSON.parse(localStorage.getItem('jac_tim_cache')||'null');
+  if(cache){ data=cache.data||[]; limo=cache.limo||{}; stockData=cache.stock||{}; infoData=cache.info||{}; rencanaData=cache.rencana||{}; }
+}catch(e){}
+render(); renderBulanan(); renderFormat(); renderStock(); renderRencana();
+// MIGRASI 1x dari versi lama (laporan.json) kalau tim masih punya data lama - jalan sekali, ga ganggu
+async function migrasiLama(){
+  try{
+    let snap=await rootRef.child('_migrated').get();
+    if(snap.val()) return;
+    let res=await fetch('https://laporan-jac-baru-default-rtdb.asia-southeast1.firebasedatabase.app/laporan.json');
+    let j=await res.json(); if(!j) return;
+    let updates={};
+    (j.data||[]).forEach(d=>{ updates['data/'+keyAman(kunciData(d))]=Object.assign({},d,{ts:d.ts||Date.now()}); });
+    Object.keys(j.limo||{}).forEach(k=>{ updates['limo/'+keyAman(k)]={k:k,v:j.limo[k],ts:Date.now()}; });
+    Object.keys(j.stock||{}).forEach(t=>{ Object.keys(j.stock[t]||{}).forEach(b=>{ let it=j.stock[t][b]; updates['stock/'+t+'/'+b]={status:it.status,ket:it.ket,ts:it.ts||Date.now()}; }); });
+    Object.keys(j.infoTambahan||{}).forEach(t=>{ (j.infoTambahan[t]||[]).forEach((v,i)=>{ updates['info/'+t+'/'+i]={v:v,ts:Date.now()}; }); });
+    Object.keys(j.rencana||{}).forEach(t=>{ ['depok','bandara'].forEach(s=>{ (j.rencana[t][s]||[]).forEach((c,i)=>{ updates['rencana/'+t+'/'+s+'/'+i]={body:c.body||'',jam:c.jam||'',ts:c.ts||Date.now()}; }); }); });
+    if(Object.keys(updates).length){ updates['_migrated']=Date.now(); await rootRef.update(updates); }
+  }catch(e){}
+}
+migrasiLama();
+// LISTENER REALTIME - ini kuncinya 1 tim
+rootRef.on('value', (snap)=>{
+  let v=snap.val()||{};
+  sedangMenerima=true;
+  // Data rekap
+  let arrData=[];
+  Object.values(v.data||{}).forEach(d=>{ if(d && d.tgl) arrData.push(d); });
+  arrData.sort((a,b)=> (a.tgl+a.rute+a.jam).localeCompare(b.tgl+b.rute+b.jam));
+  // Limo - ambil yang paling baru per kunci
+  let limoBaru={};
+  Object.values(v.limo||{}).forEach(it=>{ if(it && it.k) limoBaru[it.k]=it.v; });
+  // Stock - ts paling baru menang (sudah per-petak, jadi ga rebutan)
+  let stockBaru={};
+  Object.keys(v.stock||{}).forEach(t=>{
+    stockBaru[t]={};
+    Object.keys(v.stock[t]||{}).forEach(b=>{ stockBaru[t][b]=v.stock[t][b]; });
   });
-  return hasil;
-}
-function gabungSatuBarisRencana(a,b){
-  let A=a||{body:"",jam:""};
-  let B=b||{body:"",jam:""};
-  if(!A.body && !A.jam) return B;
-  if(!B.body && !B.jam) return A;
-  // Kalau 1 sisi kosong di 1 HP, ambil yang isi dari HP lain. Kalau 2-2nya isi tapi beda, ambil yang lokal (HP ini) biar ga kedip-kedip
-  return {
-    body: A.body || B.body,
-    jam: A.jam || B.jam
-  };
-}
-function gabungRencana(lokal, remote){
-  let hasil = {};
-  let semuaTgl = new Set([...Object.keys(remote||{}), ...Object.keys(lokal||{})]);
-  semuaTgl.forEach(tgl=>{
-    let r = remote[tgl]||{depok:[],bandara:[]};
-    let l = lokal[tgl]||{depok:[],bandara:[]};
-    hasil[tgl]={depok:[],bandara:[]};
-    ['depok','bandara'].forEach(sisi=>{
+  // Info
+  let infoBaru={};
+  Object.keys(v.info||{}).forEach(t=>{
+    infoBaru[t]=[];
+    Object.keys(v.info[t]||{}).forEach(i=>{ infoBaru[t][Number(i)]= (v.info[t][i]||{}).v||''; });
+  });
+  // Rencana - ts paling baru per baris
+  let rencanaBaru={};
+  Object.keys(v.rencana||{}).forEach(t=>{
+    rencanaBaru[t]={depok:[],bandara:[]};
+    ['depok','bandara'].forEach(s=>{
       for(let i=0;i<45;i++){
-        hasil[tgl][sisi].push(gabungSatuBarisRencana(l[sisi] && l[sisi][i], r[sisi] && r[sisi][i]));
+        let c=(v.rencana[t]||{})[s] ? (v.rencana[t][s]||{})[i] : null;
+        rencanaBaru[t][s].push(c||{body:"",jam:"",ts:0});
       }
     });
   });
-  return hasil;
-}
-function gabungInfo(lokal, remote){
-  let hasil = {};
-  let semuaTgl = new Set([...Object.keys(remote||{}), ...Object.keys(lokal||{})]);
-  semuaTgl.forEach(tgl=>{
-    let r = remote[tgl]||[];
-    let l = lokal[tgl]||[];
-    let n = Math.max(r.length, l.length, 1);
-    hasil[tgl]=[];
-    for(let i=0;i<n;i++){
-      let a = l[i]||"";
-      let b = r[i]||"";
-      hasil[tgl].push(a!=="" ? a : b);
-    }
-  });
-  return hasil;
-}
-async function syncFirebase(){
-  if(sedangSync) return; sedangSync = true;
-  try{
-    let lokal = JSON.parse(localStorage.getItem('jac')||'[]');
-    let limoLokal = JSON.parse(localStorage.getItem('jac_limo')||'{}');
-    let stockLokal = JSON.parse(localStorage.getItem('jac_stock')||'{}');
-    let infoLokal = JSON.parse(localStorage.getItem('jac_info')||'{}');
-    let rencanaLokal = JSON.parse(localStorage.getItem('jac_rencana')||'{}');
-    let res = await fetch(FB_URL);
-    let j = await res.json();
-    let remote = (j && j.data) ? j.data : [];
-    let limoRemote = (j && j.limo) ? j.limo : {};
-    let stockRemote = (j && j.stock) ? j.stock : {};
-    let infoRemote = (j && j.infoTambahan) ? j.infoTambahan : {};
-    let rencanaRemote = (j && j.rencana) ? j.rencana : {};
-    let gabung = gabungData(lokal, remote);
-    let limoGabung = Object.assign({}, limoLokal, limoRemote);
-    // FIX: Stock, Rencana, Info digabung per item, bukan per tanggal
-    let stockGabung = gabungStock(stockLokal, stockRemote);
-    let infoGabung = gabungInfo(infoLokal, infoRemote);
-    let rencanaGabung = gabungRencana(rencanaLokal, rencanaRemote);
-    if(Date.now() - hapusTerakhir < 60000){
-      gabung = lokal;
-      limoGabung = limoLokal;
-    }
-    let berubah = JSON.stringify(gabung) !== JSON.stringify(lokal) || JSON.stringify(limoGabung) !== JSON.stringify(limoLokal) || JSON.stringify(stockGabung) !== JSON.stringify(stockLokal) || JSON.stringify(infoGabung) !== JSON.stringify(infoLokal) || JSON.stringify(rencanaGabung) !== JSON.stringify(rencanaLokal);
-    if(berubah){
-      localStorage.setItem('jac', JSON.stringify(gabung));
-      localStorage.setItem('jac_limo', JSON.stringify(limoGabung));
-      localStorage.setItem('jac_stock', JSON.stringify(stockGabung));
-      localStorage.setItem('jac_info', JSON.stringify(infoGabung));
-      localStorage.setItem('jac_rencana', JSON.stringify(rencanaGabung));
-      data = gabung; limo = limoGabung; stockData = stockGabung; infoData = infoGabung; rencanaData = rencanaGabung;
-      render(); renderBulanan(); renderFormat(); updateJamList(); renderStock(); renderRencana();
-    }
-    let perluKirim = JSON.stringify(gabung) !== JSON.stringify(remote) || JSON.stringify(limoGabung) !== JSON.stringify(limoRemote) || JSON.stringify(stockGabung) !== JSON.stringify(stockRemote) || JSON.stringify(infoGabung) !== JSON.stringify(infoRemote) || JSON.stringify(rencanaGabung) !== JSON.stringify(rencanaRemote);
-    if(perluKirim){
-      await fetch(FB_URL,{method:'PUT',body:JSON.stringify({data:gabung, limo:limoGabung, stock:stockGabung, infoTambahan:infoGabung, rencana:rencanaGabung})});
-    }
-  }catch(e){}
-  sedangSync = false;
-}
-function kirimKeFirebase(){ syncFirebase(); }
-function ambilDariFirebase(){ syncFirebase(); }
-syncFirebase();
-setInterval(syncFirebase, 5000);
-document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) syncFirebase(); });
-window.addEventListener('click', ()=>{ setTimeout(syncFirebase, 800); });
-let _hapusAsli = hapusBaris;
-hapusBaris = function(tgl,rute,jam,body){
-  let sebelum = data.length;
-  _hapusAsli(tgl,rute,jam,body);
-  if(data.length < sebelum){ hapusTerakhir = Date.now(); setTimeout(syncFirebase, 500); }
-};
-</script>
-<script>
-if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js'); }
+  // Kalau ada data lokal yang belum ke-push tapi firebase kosong (HP baru buka pertama kali), jangan hapus lokal
+  if(!sudahDapatAwal && arrData.length===0 && data.length>0){
+    // Push lokal 1x ke firebase per-petak
+    sudahDapatAwal=true; sedangMenerima=false;
+    let updates={};
+    data.forEach(d=>{ updates['data/'+keyAman(kunciData(d))]=d; });
+    Object.keys(limo).forEach(k=>{ updates['limo/'+keyAman(k)]={k:k,v:limo[k],ts:Date.now()}; });
+    Object.keys(stockData).forEach(t=>{ Object.keys(stockData[t]||{}).forEach(b=>{ updates['stock/'+t+'/'+b]=stockData[t][b]; }); });
+    if(Object.keys(updates).length) rootRef.update(updates);
+    setStatusOnline(true); return;
+  }
+  sudahDapatAwal=true;
+  data=arrData; limo=limoBaru; stockData=stockBaru; infoData=infoBaru; rencanaData=rencanaBaru;
+  simpanLokal();
+  // Jaga edit yang lagi jalan biar ga ke-reset pas ada yang input dari HP lain
+  let lagiEdit = editIndex!==-1;
+  render(); renderBulanan(); renderFormat(); renderStock(); renderRencana(); updateJamList();
+  if(lagiEdit){ /* biarin form edit tetap */ }
+  sedangMenerima=false; setStatusOnline(true);
+}, (err)=>{ setStatusOnline(false); });
+db.ref('.info/connected').on('value', s=>{ setStatusOnline(!!s.val()); });
 </script>
 </body>
-  </html>
+</html>
