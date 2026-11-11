@@ -61,7 +61,6 @@ td input.limo{width:56px;padding:7px;text-align:center;border:1px solid #999;bor
 .tab-wrap{display:flex;gap:6px;margin:12px 0 4px;overflow-x:auto;padding-bottom:4px}
 .tab-btn{flex:1;white-space:nowrap;padding:10px 6px;border-radius:20px;border:1px solid #ddd;background:#f1f5f9;font-weight:bold;font-size:13px;color:#333}
 .tab-btn.active{background:#1e3a8a;color:#fff;border-color:#1e3a8a}
-.swipe-hint{text-align:center;font-size:11px;color:#888;margin:2px 0 10px}
 .rekap-box{margin-bottom:16px}
 .rekap-title{font-weight:bold;padding:8px 10px;border-radius:10px 10px 0 0;text-align:center}
 .rekap-title.depok-t{background:#5aa9e6}
@@ -159,11 +158,11 @@ input.rencana-inp{width:100%;padding:4px 2px;border:1px solid #ccc;border-radius
 <button class="close-btn" onclick="tutupMenu()">X</button>
 <h3>☰ MENU</h3>
 <button class="menu-btn active" id="btn-form" onclick="pindah('form')">📝 Form Laporan<small>Input penumpang harian</small></button>
-<button class="menu-btn" id="btn-rekap" onclick="pindah('rekap')">📋 Rekap Laporan<small>Depok & Bandara ditumpuk</small></button>
-<button class="menu-btn" id="btn-bulanan" onclick="pindah('bulanan')">📊 Report Bulanan<small>Rekap per tanggal 1 bulan</small></button>
-<button class="menu-btn" id="btn-format" onclick="pindah('format')">📋 Format Laporan Grup<small>Shift 1, Shift 2 & Total Harian</small></button>
-<button class="menu-btn" id="btn-stock" onclick="pindah('stock')">🚌 Stock Unit<small>1. Stock Unit & 2. Info Tambahan</small></button>
-<button class="menu-btn" id="btn-rencana" onclick="pindah('rencana')">📋 Perencanaan OPS<small>Jadwal Bus Depok & Bandara</small></button>
+<button class="menu-btn" id="btn-rekap" onclick="pindah('rekap')">📋 Rekap Laporan</button>
+<button class="menu-btn" id="btn-bulanan" onclick="pindah('bulanan')">📊 Report Bulanan</button>
+<button class="menu-btn" id="btn-format" onclick="pindah('format')">📋 Format Laporan Grup</button>
+<button class="menu-btn" id="btn-stock" onclick="pindah('stock')">🚌 Stock Unit</button>
+<button class="menu-btn" id="btn-rencana" onclick="pindah('rencana')">📋 Perencanaan OPS</button>
 <div class="sidebar-footer"><div class="copy">© <b>Bagja Eka Aprianto</b></div><div class="unit">JAC - Hiba Bandara</div></div>
 </div>
 <div class="card page active" id="page-form">
@@ -199,7 +198,6 @@ input.rencana-inp{width:100%;padding:4px 2px;border:1px solid #ccc;border-radius
 <button class="tab-btn" id="tab-depok" onclick="setTabRekap('depok')">🔵 Depok</button>
 <button class="tab-btn" id="tab-bandara" onclick="setTabRekap('bandara')">🟢 Bandara</button>
 </div>
-<p class="swipe-hint">👈 Geser kiri-kanan di tabel untuk pindah Depok ↔ Bandara 👉</p>
 <div id="swipeArea">
 <div class="rekap-box" id="boxDepok">
 <div class="rekap-title depok-t">🔵 DEPOK</div>
@@ -267,7 +265,6 @@ input.rencana-inp{width:100%;padding:4px 2px;border:1px solid #ccc;border-radius
 <div class="tanggal-wrap" onclick="bukaKalender('tanggalRencana')"><span class="tanggal-teks" id="tampilTanggalRencana">-</span><span class="tanggal-panah">⌄</span></div>
 <input type="date" id="tanggalRencana" class="tanggal-asli" onchange="onTanggalRencanaGanti()">
 </div>
-<p class="hint" style="text-align:center">Isi 2 baris pertama yg urut, 5 baris bawahnya auto keisi. Body merah di Stock Unit di-skip. Abis A68 balik ke A47. Jam ga boleh sama di Depok, ga boleh sama di Bandara - walau ketik manual ditolak.</p>
 <div id="wrapDatalistRencana"></div>
 <table class="rencana-table"><thead><tr><th style="width:28px">No</th><th class="depok-h" colspan="2">DEPOK</th><th class="bandara-h" colspan="2">BANDARA</th></tr>
 <tr><th></th><th class="depok-h">No.Body</th><th class="depok-h">Jam</th><th class="bandara-h">No.Body</th><th class="bandara-h">Jam</th></tr></thead>
@@ -370,15 +367,6 @@ function setTabRekap(t){
   document.getElementById('boxDepok').style.display=(t==='semua'||t==='depok')?'block':'none';
   document.getElementById('boxBandara').style.display=(t==='semua'||t==='bandara')?'block':'none';
 }
-let startX=0; let swipeEl=document.getElementById('swipeArea');
-swipeEl.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;},{passive:true});
-swipeEl.addEventListener('touchend',e=>{
-  let dx=e.changedTouches[0].clientX-startX;
-  if(Math.abs(dx)<50) return;
-  if(document.querySelector('.menu-aksi[style*="block"]')) return;
-  if(dx<0){ if(tabRekap==='semua') setTabRekap('depok'); else if(tabRekap==='depok') setTabRekap('bandara'); else if(tabRekap==='bandara') setTabRekap('semua'); }
-  else { if(tabRekap==='semua') setTabRekap('bandara'); else if(tabRekap==='bandara') setTabRekap('depok'); else if(tabRekap==='depok') setTabRekap('semua'); }
-},{passive:true});
 function jamTerpakai(tgl,rute){ return data.filter((d,idx)=>d.tgl===tgl && d.rute===rute && idx!==editIndex).map(d=>d.jam); }
 function updateJamList(){
   let tgl=document.getElementById('tanggal').value; let rute=document.getElementById('rute').value;
@@ -425,7 +413,6 @@ function hapusBaris(tgl,rute,jam,body){
   delete limo[k];
   data.splice(idx,1);
   if(editIndex===idx) batalEdit(); else if(editIndex>idx) editIndex--;
-  // TIM: hapus per-petak, bukan kirim ulang semua
   fbHapus('data/'+keyAman(kunciData({tgl,rute,jam})));
   fbHapus('limo/'+keyAman(k));
   simpanLokal(); render();renderBulanan();renderFormat();updateJamList();
@@ -553,7 +540,6 @@ function tambah(){
       limo[keyBaru]=limo[editKeyLimoLama]; delete limo[editKeyLimoLama];
       fbSet('limo/'+keyAman(keyBaru), {k:keyBaru, v:limo[keyBaru], ts:Date.now()}); fbHapus('limo/'+keyAman(editKeyLimoLama));
     }
-    // Hapus kunci lama kalau jam/rute berubah
     let kunciLama=kunciData(dLama);
     let obj={tgl,rute,jam,body,pnp,ket,ts:Date.now()};
     data[editIndex]=obj;
@@ -571,7 +557,6 @@ function tambah(){
   document.getElementById('tanggalRekap').value=tgl; document.getElementById('tanggalFormat').value=tgl;
   updateSemuaTampilTanggal(); alert('Berhasil! Cek di Rekap Laporan'); updateJamList(); render();renderBulanan();renderFormat();
 }
-/* ===== STOCK - TIM: ts menang, bukan status ===== */
 const STATUS_LIST=["READY","INAP BANDARA","SERVICE","AKAP","STORING","DLL"];
 function kelasStatus(s){ if(s==="READY") return "st-ready"; if(s==="INAP BANDARA") return "st-inap"; return "st-merah"; }
 function defaultKet(s,ketLama){ if(s==="DLL") return ketLama||""; return s; }
@@ -631,7 +616,6 @@ function renderInfo(){
 function ubahInfo(i,val){ let tgl=document.getElementById('tanggalStock').value; if(!infoData[tgl]) infoData[tgl]=[]; infoData[tgl][i]=val; simpanLokal(); fbSet('info/'+tgl+'/'+i, {v:val, ts:Date.now()}); }
 function tambahInfo(){ let tgl=document.getElementById('tanggalStock').value; if(!infoData[tgl]) infoData[tgl]=[]; infoData[tgl].push(""); simpanLokal(); renderInfo(); let inputs=document.querySelectorAll('#listInfoTambahan input'); if(inputs.length) inputs[inputs.length-1].focus(); }
 function hapusInfo(i){ let tgl=document.getElementById('tanggalStock').value; infoData[tgl].splice(i,1); if(infoData[tgl].length===0) infoData[tgl]=[""]; simpanLokal(); fbHapus('info/'+tgl+'/'+i); renderInfo(); }
-/* ===== RENCANA ===== */
 function getRencana(tgl){
   if(!rencanaData[tgl]){ rencanaData[tgl]={depok:[],bandara:[]}; for(let i=0;i<45;i++){ rencanaData[tgl].depok.push({body:"",jam:"",ts:0}); rencanaData[tgl].bandara.push({body:"",jam:"",ts:0}); } }
   while(rencanaData[tgl].depok.length<45) rencanaData[tgl].depok.push({body:"",jam:"",ts:0});
@@ -735,7 +719,6 @@ updateSemuaTampilTanggal();
 gantiRute();
 </script>
 <script>
-/* ===== VERSI TIM - FIREBASE REALTIME, PER-PETAK, BUKAN PUT GEDE ===== */
 const FB_CONFIG = { databaseURL: 'https://laporan-jac-baru-default-rtdb.asia-southeast1.firebasedatabase.app' };
 firebase.initializeApp(FB_CONFIG);
 const db = firebase.database();
@@ -744,8 +727,8 @@ let sudahDapatAwal=false;
 function setStatusOnline(ok){
   let el=document.getElementById('statusSync');
   if(!el) return;
-  if(ok){ el.className='status-online'; el.innerText='● ONLINE - Realtime 1 Tim - Siapapun input, semua langsung update'; }
-  else { el.className='status-offline'; el.innerText='● OFFLINE - Cek internet Aa, data tersimpan di HP dulu'; }
+  if(ok){ el.className='status-online'; el.innerText='● ONLINE - Realtime'; }
+  else { el.className='status-offline'; el.innerText='● OFFLINE'; }
 }
 function fbSet(path, val){
   if(sedangMenerima) return;
@@ -759,13 +742,11 @@ function fbHapus(path){
   if(sedangMenerima) return;
   rootRef.child(path).remove().catch(e=>{});
 }
-// Cache lokal biar buka langsung muncul walau offline
 try{
   let cache=JSON.parse(localStorage.getItem('jac_tim_cache')||'null');
   if(cache){ data=cache.data||[]; limo=cache.limo||{}; stockData=cache.stock||{}; infoData=cache.info||{}; rencanaData=cache.rencana||{}; }
 }catch(e){}
 render(); renderBulanan(); renderFormat(); renderStock(); renderRencana();
-// MIGRASI 1x dari versi lama (laporan.json) kalau tim masih punya data lama - jalan sekali, ga ganggu
 async function migrasiLama(){
   try{
     let snap=await rootRef.child('_migrated').get();
@@ -782,30 +763,24 @@ async function migrasiLama(){
   }catch(e){}
 }
 migrasiLama();
-// LISTENER REALTIME - ini kuncinya 1 tim
 rootRef.on('value', (snap)=>{
   let v=snap.val()||{};
   sedangMenerima=true;
-  // Data rekap
   let arrData=[];
   Object.values(v.data||{}).forEach(d=>{ if(d && d.tgl) arrData.push(d); });
   arrData.sort((a,b)=> (a.tgl+a.rute+a.jam).localeCompare(b.tgl+b.rute+b.jam));
-  // Limo - ambil yang paling baru per kunci
   let limoBaru={};
   Object.values(v.limo||{}).forEach(it=>{ if(it && it.k) limoBaru[it.k]=it.v; });
-  // Stock - ts paling baru menang (sudah per-petak, jadi ga rebutan)
   let stockBaru={};
   Object.keys(v.stock||{}).forEach(t=>{
     stockBaru[t]={};
     Object.keys(v.stock[t]||{}).forEach(b=>{ stockBaru[t][b]=v.stock[t][b]; });
   });
-  // Info
   let infoBaru={};
   Object.keys(v.info||{}).forEach(t=>{
     infoBaru[t]=[];
     Object.keys(v.info[t]||{}).forEach(i=>{ infoBaru[t][Number(i)]= (v.info[t][i]||{}).v||''; });
   });
-  // Rencana - ts paling baru per baris
   let rencanaBaru={};
   Object.keys(v.rencana||{}).forEach(t=>{
     rencanaBaru[t]={depok:[],bandara:[]};
@@ -816,9 +791,7 @@ rootRef.on('value', (snap)=>{
       }
     });
   });
-  // Kalau ada data lokal yang belum ke-push tapi firebase kosong (HP baru buka pertama kali), jangan hapus lokal
   if(!sudahDapatAwal && arrData.length===0 && data.length>0){
-    // Push lokal 1x ke firebase per-petak
     sudahDapatAwal=true; sedangMenerima=false;
     let updates={};
     data.forEach(d=>{ updates['data/'+keyAman(kunciData(d))]=d; });
@@ -830,13 +803,11 @@ rootRef.on('value', (snap)=>{
   sudahDapatAwal=true;
   data=arrData; limo=limoBaru; stockData=stockBaru; infoData=infoBaru; rencanaData=rencanaBaru;
   simpanLokal();
-  // Jaga edit yang lagi jalan biar ga ke-reset pas ada yang input dari HP lain
   let lagiEdit = editIndex!==-1;
   render(); renderBulanan(); renderFormat(); renderStock(); renderRencana(); updateJamList();
-  if(lagiEdit){ /* biarin form edit tetap */ }
   sedangMenerima=false; setStatusOnline(true);
 }, (err)=>{ setStatusOnline(false); });
 db.ref('.info/connected').on('value', s=>{ setStatusOnline(!!s.val()); });
 </script>
 </body>
-</html>
+  </html>
