@@ -111,6 +111,30 @@ input.tanggal-asli{position:absolute;opacity:0;pointer-events:none;width:1px;hei
 .preview-hint{text-align:center;font-size:11px;color:#888;margin-top:6px}
 .btn-wa{background:#25D366;color:#fff;font-size:15px;margin-top:12px}
 .btn-wa:active{background:#1da851}
+/* === STOCK UNIT BARU === */
+.stock-title{font-weight:bold;padding:9px 10px;border-radius:10px 10px 0 0;text-align:center;background:#1e3a8a;color:#fff;font-size:14px}
+.stock-info{font-weight:bold;padding:9px 10px;border-radius:10px 10px 0 0;text-align:center;background:#f59e0b;color:#111;font-size:14px;margin-top:16px}
+.stock-table th{background:#1e3a8a;color:#fff;font-size:13px}
+.stock-table td{padding:5px 4px}
+.stock-table td.no-body{font-weight:900;font-size:15px}
+select.status-select{width:100%;padding:9px 4px;border:1px solid #999;border-radius:8px;font-size:12px;font-weight:900;text-align:center;margin:0;cursor:pointer}
+select.status-select.st-ready{background:#fff;color:#111}
+select.status-select.st-inap{background:#fde047;color:#111}
+select.status-select.st-merah{background:#dc2626;color:#fff}
+select.status-select.st-merah option{background:#fff;color:#111}
+input.ket-input{width:100%;padding:9px 6px;border:1px solid #ddd;border-radius:8px;font-size:13px;margin:0;text-align:left}
+input.ket-input:disabled{background:#f8fafc;color:#666}
+.stock-total{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.stock-total div{flex:1;min-width:80px;text-align:center;padding:9px 4px;border-radius:10px;font-weight:bold;font-size:12px}
+.st-t-ready{background:#f1f5f9;color:#111;border:1px solid #ddd}
+.st-t-inap{background:#fef9c3;color:#854d0e}
+.st-t-merah{background:#fee2e2;color:#991b1b}
+.info-row{display:flex;gap:6px;margin-top:8px;align-items:center}
+.info-row .no-info{font-weight:bold;font-size:13px;min-width:22px;text-align:center}
+.info-row input{flex:1;margin:0}
+.btn-hapus-info{width:40px;min-width:40px;padding:10px 0;margin:0;background:#fee2e2;color:#dc2626;border-radius:10px;font-size:16px}
+.btn-tambah-info{background:#f59e0b;color:#111;margin-top:10px}
+.btn-reset-stock{background:#6b7280;margin-top:8px}
 </style>
 </head>
 <body class="depok">
@@ -128,6 +152,7 @@ input.tanggal-asli{position:absolute;opacity:0;pointer-events:none;width:1px;hei
 <button class="menu-btn" id="btn-rekap" onclick="pindah('rekap')">📋 Rekap Laporan<small>Depok & Bandara ditumpuk</small></button>
 <button class="menu-btn" id="btn-bulanan" onclick="pindah('bulanan')">📊 Report Bulanan<small>Rekap per tanggal 1 bulan</small></button>
 <button class="menu-btn" id="btn-format" onclick="pindah('format')">📋 Format Laporan Grup<small>Shift 1, Shift 2 & Total Harian</small></button>
+<button class="menu-btn" id="btn-stock" onclick="pindah('stock')">🚌 Stock Unit<small>1. Stock Unit & 2. Info Tambahan</small></button>
 <div class="sidebar-footer"><div class="copy">© <b>Bagja Eka Aprianto</b></div><div class="unit">JAC - Hiba Bandara</div></div>
 </div>
 
@@ -228,6 +253,29 @@ input.tanggal-asli{position:absolute;opacity:0;pointer-events:none;width:1px;hei
 <button class="btn-wa" onclick="shareWA()">📲 Share ke WA</button>
 </div>
 
+<div class="card page" id="page-stock">
+<h3>🚌 STOCK UNIT</h3>
+<label>Tanggal Stock</label>
+<div style="position:relative">
+<div class="tanggal-wrap" onclick="bukaKalender('tanggalStock')"><span class="tanggal-teks" id="tampilTanggalStock">-</span><span class="tanggal-panah">⌄</span></div>
+<input type="date" id="tanggalStock" class="tanggal-asli" onchange="onTanggalStockGanti()">
+</div>
+<p class="hint" style="text-align:center">1. STOCK UNIT - Pilih status per unit, otomatis ke-save & ke-sync</p>
+<div class="stock-title">1. STOCK UNIT</div>
+<table class="stock-table"><thead><tr><th>No Body</th><th>Kotak Status</th><th>Keterangan</th></tr></thead>
+<tbody id="listStock"></tbody></table>
+<div class="stock-total">
+<div class="st-t-ready" id="totReady">READY: 0</div>
+<div class="st-t-inap" id="totInap">INAP: 0</div>
+<div class="st-t-merah" id="totMerah">SERVICE / DLL: 0</div>
+</div>
+<button class="btn-reset-stock" onclick="resetStock()">↺ Reset Semua Jadi READY</button>
+<div class="stock-info">2. INFO TAMBAHAN</div>
+<div id="listInfoTambahan"></div>
+<button class="btn-tambah-info" onclick="tambahInfo()">+ Tambah Info</button>
+<p class="hint" style="text-align:center">Info Tambahan ke-save per tanggal yang dipilih di atas.</p>
+</div>
+
 <script>
 const jadwal = {
 Depok: ["2:00","2:30","3:00","3:30","4:00","4:30","5:00","5:30","6:00","6:30","7:00","7:30","8:00","8:30","9:00","9:30","10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00","18:00","19:00","20:00","21:00"],
@@ -250,6 +298,7 @@ function pindah(hal){
   if(hal==='bulanan') renderBulanan();
   if(hal==='format') renderFormat();
   if(hal==='form') updateJamList();
+  if(hal==='stock') renderStock();
   window.scrollTo(0,0);
 }
 function gantiRute(){
@@ -282,7 +331,7 @@ function updateTampilTanggal(idInput,idTampil){
   else if(v===isoBesok) label=' <span class="label-besok">[Besok]</span>';
   el.innerHTML=teks+label;
 }
-function updateSemuaTampilTanggal(){updateTampilTanggal('tanggal','tampilTanggalForm');updateTampilTanggal('tanggalRekap','tampilTanggalRekap');updateTampilTanggal('tanggalFormat','tampilTanggalFormat');}
+function updateSemuaTampilTanggal(){updateTampilTanggal('tanggal','tampilTanggalForm');updateTampilTanggal('tanggalRekap','tampilTanggalRekap');updateTampilTanggal('tanggalFormat','tampilTanggalFormat');updateTampilTanggal('tanggalStock','tampilTanggalStock');}
 function bukaKalender(id){
   let inp=document.getElementById(id);
   if(inp.showPicker){try{inp.showPicker();return;}catch(e){}}
@@ -291,6 +340,7 @@ function bukaKalender(id){
 function onTanggalFormGanti(){updateTampilTanggal('tanggal','tampilTanggalForm');updateJamList();}
 function onTanggalRekapGanti(){updateTampilTanggal('tanggalRekap','tampilTanggalRekap');render();}
 function onTanggalFormatGanti(){updateTampilTanggal('tanggalFormat','tampilTanggalFormat');renderFormat();}
+function onTanggalStockGanti(){updateTampilTanggal('tanggalStock','tampilTanggalStock');renderStock();}
 function setTabRekap(t){
   tabRekap=t;
   document.getElementById('tab-semua').classList.toggle('active',t==='semua');
@@ -636,24 +686,121 @@ function tambah(){
   updateJamList();
   render();renderBulanan();renderFormat();
 }
+/* === STOCK UNIT LOGIC === */
+let stockData=JSON.parse(localStorage.getItem('jac_stock')||'{}');
+let infoData=JSON.parse(localStorage.getItem('jac_info')||'{}');
+const STATUS_LIST=["READY","INAP BANDARA","SERVICE","AKAP","STORING","DLL"];
+function kelasStatus(s){
+  if(s==="READY") return "st-ready";
+  if(s==="INAP BANDARA") return "st-inap";
+  return "st-merah";
+}
+function defaultKet(s,ketLama){
+  if(s==="DLL") return ketLama||"";
+  return s;
+}
+function getStockTanggal(tgl){
+  if(!stockData[tgl]){
+    stockData[tgl]={};
+    listBodyBus.forEach(b=>{ stockData[tgl][b]={status:"READY",ket:"READY"}; });
+  }
+  return stockData[tgl];
+}
+function simpanStock(){
+  localStorage.setItem('jac_stock',JSON.stringify(stockData));
+  localStorage.setItem('jac_info',JSON.stringify(infoData));
+  setTimeout(syncFirebase,300);
+}
+function renderStock(){
+  let tgl=document.getElementById('tanggalStock').value;
+  if(!tgl) return;
+  let st=getStockTanggal(tgl);
+  let h='';
+  let cReady=0,cInap=0,cMerah=0;
+  listBodyBus.forEach(body=>{
+    let item=st[body]||{status:"READY",ket:"READY"};
+    if(item.status==="READY") cReady++;
+    else if(item.status==="INAP BANDARA") cInap++;
+    else cMerah++;
+    let opts=STATUS_LIST.map(s=>`<option value="${s}" ${s===item.status?'selected':''}>${s}</option>`).join('');
+    let isDLL=item.status==="DLL";
+    h+=`<tr><td class="no-body">${body}</td><td><select class="status-select ${kelasStatus(item.status)}" onchange="ubahStatusStock('${body}',this.value)">${opts}</select></td><td><input class="ket-input" type="text" value="${(item.ket||'').replace(/"/g,'&quot;')}" ${isDLL?'':'disabled'} placeholder="${isDLL?'Ketik keterangan...':'Otomatis'}" onchange="ubahKetStock('${body}',this.value)"></td></tr>`;
+  });
+  document.getElementById('listStock').innerHTML=h;
+  document.getElementById('totReady').innerText='READY: '+cReady;
+  document.getElementById('totInap').innerText='INAP: '+cInap;
+  document.getElementById('totMerah').innerText='SERVICE / DLL: '+cMerah;
+  renderInfo();
+}
+function ubahStatusStock(body,status){
+  let tgl=document.getElementById('tanggalStock').value;
+  let st=getStockTanggal(tgl);
+  let lama=st[body]||{status:"READY",ket:"READY"};
+  let ketBaru=defaultKet(status, status==="DLL" ? (lama.status==="DLL"?lama.ket:"") : "");
+  st[body]={status:status,ket:ketBaru};
+  simpanStock(); renderStock();
+}
+function ubahKetStock(body,val){
+  let tgl=document.getElementById('tanggalStock').value;
+  let st=getStockTanggal(tgl);
+  st[body].ket=val;
+  simpanStock();
+}
+function resetStock(){
+  let tgl=document.getElementById('tanggalStock').value;
+  if(!confirm('Reset semua unit tanggal '+tgl.split('-').reverse().join('/')+' jadi READY?')) return;
+  listBodyBus.forEach(b=>{ stockData[tgl][b]={status:"READY",ket:"READY"}; });
+  simpanStock(); renderStock();
+}
+function renderInfo(){
+  let tgl=document.getElementById('tanggalStock').value;
+  if(!infoData[tgl]) infoData[tgl]=[];
+  let arr=infoData[tgl];
+  if(arr.length===0) arr=[""];
+  let h='';
+  arr.forEach((txt,i)=>{
+    h+=`<div class="info-row"><span class="no-info">${i+1}.</span><input type="text" value="${txt.replace(/"/g,'&quot;')}" placeholder="Ketik info tambahan..." onchange="ubahInfo(${i},this.value)"><button class="btn-hapus-info" onclick="hapusInfo(${i})">✕</button></div>`;
+  });
+  document.getElementById('listInfoTambahan').innerHTML=h;
+}
+function ubahInfo(i,val){
+  let tgl=document.getElementById('tanggalStock').value;
+  if(!infoData[tgl]) infoData[tgl]=[];
+  infoData[tgl][i]=val;
+  simpanStock();
+}
+function tambahInfo(){
+  let tgl=document.getElementById('tanggalStock').value;
+  if(!infoData[tgl]) infoData[tgl]=[];
+  infoData[tgl].push("");
+  simpanStock(); renderInfo();
+  let inputs=document.querySelectorAll('#listInfoTambahan input');
+  if(inputs.length) inputs[inputs.length-1].focus();
+}
+function hapusInfo(i){
+  let tgl=document.getElementById('tanggalStock').value;
+  infoData[tgl].splice(i,1);
+  if(infoData[tgl].length===0) infoData[tgl]=[""];
+  simpanStock(); renderInfo();
+}
 let today=new Date().toISOString().slice(0,10);
 document.getElementById('tanggal').value=today;
 document.getElementById('tanggalRekap').value=today;
 document.getElementById('tanggalFormat').value=today;
+document.getElementById('tanggalStock').value=today;
 document.getElementById('bulan').value=today.slice(0,7);
 updateSemuaTampilTanggal();
-gantiRute();render();renderBulanan();renderFormat();
+gantiRute();render();renderBulanan();renderFormat();renderStock();
 </script>
 <script>
 // === FIREBASE SYNC FIX - GABUNG BUKAN TIMPA ===
 const FB_URL = 'https://laporan-jac-baru-default-rtdb.asia-southeast1.firebasedatabase.app/laporan.json';
 let sedangSync = false;
-let hapusTerakhir = 0; // timestamp hapus terakhir biar ga balik lagi
+let hapusTerakhir = 0;
 function kunciData(d){ return d.tgl+'|'+d.rute+'|'+d.jam; }
 function gabungData(lokal, remote){
   let map = {};
   (lokal||[]).forEach(d=>{ map[kunciData(d)] = d; });
-  // remote menang kalau jam sama (data terbaru dari HP lain)
   (remote||[]).forEach(d=>{ map[kunciData(d)] = d; });
   return Object.values(map).sort((a,b)=> (a.tgl+a.rute+a.jam).localeCompare(b.tgl+b.rute+b.jam));
 }
@@ -662,43 +809,44 @@ async function syncFirebase(){
   try{
     let lokal = JSON.parse(localStorage.getItem('jac')||'[]');
     let limoLokal = JSON.parse(localStorage.getItem('jac_limo')||'{}');
+    let stockLokal = JSON.parse(localStorage.getItem('jac_stock')||'{}');
+    let infoLokal = JSON.parse(localStorage.getItem('jac_info')||'{}');
     let res = await fetch(FB_URL);
     let j = await res.json();
     let remote = (j && j.data) ? j.data : [];
     let limoRemote = (j && j.limo) ? j.limo : {};
-    // 1. GABUNG data + limo
+    let stockRemote = (j && j.stock) ? j.stock : {};
+    let infoRemote = (j && j.infoTambahan) ? j.infoTambahan : {};
     let gabung = gabungData(lokal, remote);
     let limoGabung = Object.assign({}, limoLokal, limoRemote);
-    // Kalau ada yang kehapus di HP ini barusan, jangan dibalikin dari remote
-    // (hapus pakai timestamp: kalau hapus < 60 detik lalu, pakai lokal aja)
+    let stockGabung = Object.assign({}, stockRemote, stockLokal);
+    let infoGabung = Object.assign({}, infoRemote, infoLokal);
     if(Date.now() - hapusTerakhir < 60000){
       gabung = lokal;
       limoGabung = limoLokal;
     }
-    let berubah = JSON.stringify(gabung) !== JSON.stringify(lokal) || JSON.stringify(limoGabung) !== JSON.stringify(limoLokal);
+    let berubah = JSON.stringify(gabung) !== JSON.stringify(lokal) || JSON.stringify(limoGabung) !== JSON.stringify(limoLokal) || JSON.stringify(stockGabung) !== JSON.stringify(stockLokal) || JSON.stringify(infoGabung) !== JSON.stringify(infoLokal);
     if(berubah){
       localStorage.setItem('jac', JSON.stringify(gabung));
       localStorage.setItem('jac_limo', JSON.stringify(limoGabung));
-      data = gabung; limo = limoGabung;
-      render(); renderBulanan(); renderFormat(); updateJamList();
+      localStorage.setItem('jac_stock', JSON.stringify(stockGabung));
+      localStorage.setItem('jac_info', JSON.stringify(infoGabung));
+      data = gabung; limo = limoGabung; stockData = stockGabung; infoData = infoGabung;
+      render(); renderBulanan(); renderFormat(); updateJamList(); renderStock();
     }
-    // 2. KIRIM hasil gabungan balik ke Firebase (biar HP lain ikut ke-update)
-    let perluKirim = JSON.stringify(gabung) !== JSON.stringify(remote) || JSON.stringify(limoGabung) !== JSON.stringify(limoRemote);
+    let perluKirim = JSON.stringify(gabung) !== JSON.stringify(remote) || JSON.stringify(limoGabung) !== JSON.stringify(limoRemote) || JSON.stringify(stockGabung) !== JSON.stringify(stockRemote) || JSON.stringify(infoGabung) !== JSON.stringify(infoRemote);
     if(perluKirim){
-      await fetch(FB_URL,{method:'PUT',body:JSON.stringify({data:gabung, limo:limoGabung})});
+      await fetch(FB_URL,{method:'PUT',body:JSON.stringify({data:gabung, limo:limoGabung, stock:stockGabung, infoTambahan:infoGabung})});
     }
   }catch(e){}
   sedangSync = false;
 }
-// Fungsi lama tetap ada biar ga error kalau dipanggil di tempat lain
 function kirimKeFirebase(){ syncFirebase(); }
 function ambilDariFirebase(){ syncFirebase(); }
-// Jalan pertama kali + tiap 5 detik + tiap klik + tiap balik ke tab
 syncFirebase();
 setInterval(syncFirebase, 5000);
 document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) syncFirebase(); });
 window.addEventListener('click', ()=>{ setTimeout(syncFirebase, 800); });
-// Tandai waktu hapus biar hapusan ga balik lagi dari HP lain
 let _hapusAsli = hapusBaris;
 hapusBaris = function(tgl,rute,jam,body){
   let sebelum = data.length;
@@ -710,4 +858,4 @@ hapusBaris = function(tgl,rute,jam,body){
 if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js'); }
 </script>
 </body>
-</html>
+  </html>
