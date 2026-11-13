@@ -131,7 +131,12 @@ input.rencana-inp{width:100%;padding:4px 2px;border:1px solid #ccc;border-radius
 @keyframes jalanSerah{from{transform:translateX(0)}to{transform:translateX(-100%)}}
 body.ada-serah{padding-top:38px}
 body.ada-serah .sidebar{top:38px}
-.serah-box{background:#fef9c3;border:2px solid #f59e0b;border-radius:12px;padding:12px;margin-bottom:12px}
+.serah-box{background:#fef9c3;border:2px solid #f59e0b;border-radius:10px;padding:8px 10px;margin-bottom:10px}
+.serah-mini{display:flex;gap:6px;align-items:center}
+.serah-mini b{font-size:12px;white-space:nowrap}
+.serah-mini select{flex:1;padding:7px 4px;font-size:12px;margin:0}
+.serah-mini .btn-mini-serah{width:auto;padding:7px 10px;font-size:12px;margin:0;background:#dc2626;white-space:nowrap}
+.serah-detail{margin-top:6px;text-align:center;font-size:11px;color:#666}
 .serah-aktif{background:#fee2e2;border:2px solid #dc2626;border-radius:12px;padding:12px;margin-bottom:12px;text-align:center}
 .btn-serah-tampil{background:#dc2626;margin-top:10px}
 .btn-serah-konfirm{background:#16a34a;margin-top:10px;font-size:13px;padding:8px 18px;width:auto;display:inline-block}
@@ -275,13 +280,14 @@ body.ada-serah .sidebar{top:38px}
 <input type="date" id="tanggalStock" class="tanggal-asli" onchange="onTanggalStockGanti()">
 </div>
 <div class="serah-box">
-<div style="text-align:center;font-weight:900;font-size:15px">📢 SERAH TERIMA SHIFT - TEKS BERJALAN</div>
-<label>Dari Shift</label>
+<div class="serah-mini">
+<b>📢 SERAH:</b>
 <select id="serahDari"><option value="Shift 1">Shift 1</option><option value="Shift 2">Shift 2</option></select>
-<label>Ke Shift</label>
+<span style="font-weight:900">➜</span>
 <select id="serahKe"><option value="Shift 2">Shift 2</option><option value="Shift 1">Shift 1</option></select>
-<div class="hint" style="text-align:center;margin-top:8px">Isi otomatis dari STOCK UNIT + INFO TAMBAHAN di bawah. Ga usah ketik lagi.</div>
-<button class="btn-serah-tampil" onclick="buatSerahTerima()">📢 TAMPILKAN DI SEMUA HALAMAN</button>
+<button class="btn-mini-serah" onclick="buatSerahTerima()">📢 TAMPILKAN</button>
+</div>
+<div class="serah-detail">Otomatis dari STOCK + INFO TAMBAHAN • Ga usah ketik</div>
 </div>
 <div id="boxSerahAktif" style="display:none"></div>
 <div id="boxSerahRiwayat" style="display:none"></div>
@@ -299,7 +305,7 @@ body.ada-serah .sidebar{top:38px}
 <div id="listInfoTambahan"></div>
 <button class="btn-tambah-info" onclick="tambahInfo()">+ Tambah Info</button>
 <p class="hint" style="text-align:center">Info Tambahan ke-save per tanggal yang dipilih di atas.</p>
-  </div>
+</div>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <script>
@@ -425,4 +431,4 @@ rootRef.on('value',(snap)=>{let v=snap.val()||{};sedangMenerima=true;let arr=[];
 db.ref('.info/connected').on('value',s=>{setStatusOnline(!!s.val());});
 </script>
 </body>
-</html>  
+  </html>
