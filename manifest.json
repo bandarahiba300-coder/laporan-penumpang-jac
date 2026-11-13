@@ -2,23 +2,25 @@
   "name": "Laporan Penumpang JAC",
   "short_name": "Laporan JAC",
   "description": "JAC - Hiba Bandara",
+  "id": "./index-form-report-wa.html",
   "start_url": "./index-form-report-wa.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#1a73e8",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3448/3448339.png",
-      "sizes": "512x512",
+      "src": "./icon-192.png",
+      "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3448/3448339.png",
-      "sizes": "192x192",
+      "src": "./icon-512.png",
+      "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     }
   ]
 }
