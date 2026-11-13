@@ -5,36 +5,29 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Laporan Penumpang JAC - Hiba Bandara</title>
 <meta name="theme-color" content="#2563eb">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Laporan JAC">
-<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3448/3448339.png">
 <style>
 :root{--warna:#2563eb}
 body.depok{--warna:#2563eb}
 body.bandara{--warna:#16a34a}
 body{font-family:sans-serif;background:#f0f4ff;margin:0;padding:10px}
 .topbar{display:flex;align-items:center;gap:10px;max-width:780px;margin:0 auto 10px}
-.hamburger{font-size:26px;font-weight:900;line-height:1;background:#111111;color:#ffffff;border:2px solid #111111;border-radius:12px;width:48px;height:48px;box-shadow:0 3px 8px rgba(0,0,0,.35);cursor:pointer;display:flex;align-items:center;justify-content:center}
-.hamburger:active{background:#000000;transform:scale(.95)}
+.hamburger{font-size:26px;font-weight:900;line-height:1;background:#111;color:#fff;border:2px solid #111;border-radius:12px;width:48px;height:48px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .top-title{font-weight:bold;color:#1e3a8a;font-size:15px}
 .card{background:#fff;border-radius:16px;padding:14px;max-width:780px;margin:auto;box-shadow:0 4px 12px rgba(0,0,0,.1)}
 h2{text-align:center;color:var(--warna);margin:0 0 4px;font-size:22px}
 p.sub{text-align:center;color:#666;font-size:13px;margin:0 0 12px}
 label{font-size:13px;font-weight:bold;display:block;margin-top:10px}
 input,select{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;margin-top:5px;box-sizing:border-box;font-size:15px}
-input:focus,select:focus{outline:2px solid var(--warna)}
 button{width:100%;padding:12px;border:none;border-radius:12px;background:var(--warna);color:#fff;font-weight:bold;font-size:15px;margin-top:14px}
 .hint{font-size:11px;color:#888;margin-top:4px}
 h3{margin:6px 0 10px;text-align:center;font-size:16px}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th,td{border:1px solid #999;padding:8px 4px;text-align:center}
-th.depok{background:#5aa9e6;color:#000}
-th.bandara{background:#6fbf6f;color:#000}
+th.depok{background:#5aa9e6}
+th.bandara{background:#6fbf6f}
 td.depok{background:#eaf4ff}
 td.bandara{background:#eefbee}
-td input.limo{width:56px;padding:7px;text-align:center;border:1px solid #999;border-radius:8px;font-size:14px;background:#fff}
+td input.limo{width:56px;padding:7px;text-align:center;border:1px solid #999;border-radius:8px;font-size:14px}
 .total-box{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 .total-box div{flex:1;min-width:100px;text-align:center;padding:10px;border-radius:10px;font-weight:bold;font-size:13px}
 .t-depok{background:#dbeafe;color:#1e3a8a}
@@ -44,86 +37,73 @@ td input.limo{width:56px;padding:7px;text-align:center;border:1px solid #999;bor
 .t-limo-b{background:#bbf7d0;color:#166534}
 .badge{display:inline-block;padding:4px 10px;border-radius:20px;background:var(--warna);color:#fff;font-size:11px;font-weight:bold}
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:90}
-.sidebar{position:fixed;top:0;left:-260px;width:250px;height:100%;background:#fff;z-index:100;transition:.3s;padding:16px 16px 70px;box-shadow:2px 0 12px rgba(0,0,0,.2);box-sizing:border-box}
+.sidebar{position:fixed;top:0;left:-260px;width:250px;height:100%;background:#fff;z-index:100;transition:.3s;padding:16px;box-shadow:2px 0 12px rgba(0,0,0,.2);box-sizing:border-box}
 .sidebar.open{left:0}
-.sidebar h3{color:#1e3a8a;text-align:left;margin:10px 0 16px}
+.sidebar h3{color:#1e3a8a;text-align:left}
 .menu-btn{display:block;width:100%;text-align:left;background:#f1f5f9;color:#111;padding:13px;border:none;border-radius:10px;margin-bottom:8px;font-size:15px;font-weight:bold}
 .menu-btn.active{background:#1e3a8a;color:#fff}
 .menu-btn small{display:block;font-weight:normal;color:#888;font-size:11px}
-.menu-btn.active small{color:#ddd}
 .close-btn{background:#ef4444;color:#fff;border:none;padding:8px 12px;border-radius:8px;float:right}
-.sidebar-footer{position:absolute;left:0;right:0;bottom:0;padding:12px 16px;border-top:1px solid #e5e7eb;text-align:center;background:#fff}
+.sidebar-footer{position:absolute;left:0;right:0;bottom:0;padding:12px;text-align:center;border-top:1px solid #e5e7eb;background:#fff}
 .sidebar-footer .copy{font-size:11px;color:#666}
-.sidebar-footer .copy b{color:#111}
-.sidebar-footer .unit{font-size:11px;color:#888;margin-top:2px}
 .page{display:none}
 .page.active{display:block}
-.tab-wrap{display:flex;gap:6px;margin:12px 0 4px;overflow-x:auto;padding-bottom:4px}
-.tab-btn{flex:1;white-space:nowrap;padding:10px 6px;border-radius:20px;border:1px solid #ddd;background:#f1f5f9;font-weight:bold;font-size:13px;color:#333}
-.tab-btn.active{background:#1e3a8a;color:#fff;border-color:#1e3a8a}
-.rekap-box{margin-bottom:16px}
+.tab-wrap{display:flex;gap:6px;margin:12px 0 4px;overflow-x:auto}
+.tab-btn{flex:1;white-space:nowrap;padding:10px 6px;border-radius:20px;border:1px solid #ddd;background:#f1f5f9;font-weight:bold;font-size:13px}
+.tab-btn.active{background:#1e3a8a;color:#fff}
 .rekap-title{font-weight:bold;padding:8px 10px;border-radius:10px 10px 0 0;text-align:center}
 .rekap-title.depok-t{background:#5aa9e6}
 .rekap-title.bandara-t{background:#6fbf6f}
 td.aksi{position:relative;padding:4px}
-.btn-titik{background:#111111;color:#ffffff;border:2px solid #111111;width:40px;height:40px;border-radius:10px;font-size:22px;font-weight:900;line-height:1;cursor:pointer;padding:0;box-shadow:0 2px 5px rgba(0,0,0,.35)}
-.btn-titik:active{background:#000000;transform:scale(.95)}
+.btn-titik{background:#111;color:#fff;border:2px solid #111;width:40px;height:40px;border-radius:10px;font-size:22px;font-weight:900;cursor:pointer}
 .menu-aksi{display:none;position:absolute;right:4px;top:44px;background:#fff;border:2px solid #111;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,.3);z-index:20;width:160px;overflow:hidden}
 .menu-aksi button{display:block;width:100%;text-align:left;border:none;border-bottom:1px solid #eee;padding:13px 12px;font-size:14px;font-weight:bold;margin:0;border-radius:0}
-.menu-aksi button:last-child{border-bottom:none}
 .menu-aksi button.edit{background:#fef9c3;color:#111}
 .menu-aksi button.hapus{background:#fee2e2;color:#dc2626}
 .edit-banner{display:none;background:#fef3c7;border:1px solid #f59e0b;color:#92400e;padding:10px;border-radius:10px;font-size:13px;text-align:center;font-weight:bold;margin-bottom:10px}
 .wrap-bulanan{overflow-x:auto}
 .wrap-bulanan table{min-width:620px}
-.btn-export{background:#16a34a;color:#fff;font-size:15px;margin-top:12px}
-.btn-export:active{background:#15803d}
+.btn-export{background:#16a34a;margin-top:12px}
 .grafik-wrap{margin-top:18px;border-top:2px solid #e5e7eb;padding-top:12px}
 .grafik-title{text-align:center;font-weight:bold;font-size:15px;margin-bottom:8px}
-.grafik-legend{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;font-size:12px;font-weight:bold;margin-bottom:10px}
-.dot-db{display:inline-block;width:12px;height:12px;background:#1e3a8a;border-radius:3px;vertical-align:middle;margin-right:4px}
-.dot-l{display:inline-block;width:12px;height:12px;background:#f97316;border-radius:3px;vertical-align:middle;margin-right:4px}
+.grafik-legend{display:flex;gap:12px;justify-content:center;font-size:12px;font-weight:bold;margin-bottom:10px}
+.dot-db{display:inline-block;width:12px;height:12px;background:#1e3a8a;border-radius:3px;margin-right:4px}
+.dot-l{display:inline-block;width:12px;height:12px;background:#f97316;border-radius:3px;margin-right:4px}
 .grafik-chart{display:flex;gap:16px;align-items:flex-end;overflow-x:auto;padding:12px 8px 0;background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;min-height:190px}
 .grafik-col{flex:0 0 72px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
 .grafik-bars{display:flex;gap:6px;align-items:flex-end;height:150px}
 .grafik-bar-wrap{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:150px}
-.grafik-nilai{font-size:11px;font-weight:bold;color:#111;margin-bottom:3px}
+.grafik-nilai{font-size:11px;font-weight:bold;margin-bottom:3px}
 .grafik-bar{width:28px;border-radius:6px 6px 0 0;min-height:4px}
 .bar-db{background:#1e3a8a}
 .bar-l{background:#f97316}
-.grafik-tgl{font-size:11px;font-weight:bold;margin-top:6px;color:#333;text-align:center}
+.grafik-tgl{font-size:11px;font-weight:bold;margin-top:6px}
 .grafik-kosong{text-align:center;color:#888;font-size:13px;padding:20px 0}
-.tanggal-wrap{display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;margin-top:5px;box-sizing:border-box;background:#fff;font-size:15px;cursor:pointer}
-.tanggal-wrap:active{outline:2px solid var(--warna)}
-.tanggal-teks{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tanggal-panah{color:#666;font-size:13px;margin-left:8px;flex-shrink:0}
+.tanggal-wrap{display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;margin-top:5px;background:#fff;font-size:15px;cursor:pointer}
+.tanggal-panah{color:#666;font-size:13px}
 .label-hariini{font-size:11px;font-weight:bold;font-style:italic;color:#dc2626;margin-left:6px}
 .label-kemarin{font-size:11px;font-weight:bold;font-style:italic;color:#ea580c;margin-left:6px}
 .label-besok{font-size:11px;font-weight:bold;font-style:italic;color:#16a34a;margin-left:6px}
-input.tanggal-asli{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;padding:0;border:none}
+input.tanggal-asli{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
 .preview-wrap{position:relative;margin-top:12px}
-.preview-box{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:28px 12px 12px;white-space:pre-wrap;font-family:monospace;font-size:12px;line-height:1.5;color:#111;max-height:210px;overflow-y:auto;word-break:break-word;outline:none}
-.preview-box:focus{border-color:#2563eb;background:#fff}
-.btn-edit-preview{position:absolute;top:6px;right:6px;width:32px;height:32px;min-width:32px;padding:0;margin:0;border-radius:8px;background:#fff;border:1px solid #ddd;color:#111;font-size:15px;line-height:1;box-shadow:0 1px 4px rgba(0,0,0,.15);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2}
-.btn-edit-preview:active{background:#f1f5f9;transform:scale(.95)}
+.preview-box{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:28px 12px 12px;white-space:pre-wrap;font-family:monospace;font-size:12px;line-height:1.5;max-height:210px;overflow-y:auto}
+.btn-edit-preview{position:absolute;top:6px;right:6px;width:32px;height:32px;padding:0;margin:0;border-radius:8px;background:#fff;border:1px solid #ddd;color:#111;font-size:15px}
 .preview-hint{text-align:center;font-size:11px;color:#888;margin-top:6px}
-.btn-wa{background:#25D366;color:#fff;font-size:15px;margin-top:12px}
-.btn-wa:active{background:#1da851}
+.btn-wa{background:#25D366;margin-top:12px}
 .stock-title{font-weight:bold;padding:9px 10px;border-radius:10px 10px 0 0;text-align:center;background:#1e3a8a;color:#fff;font-size:14px}
-.stock-info{font-weight:bold;padding:9px 10px;border-radius:10px 10px 0 0;text-align:center;background:#f59e0b;color:#111;font-size:14px;margin-top:16px}
+.stock-info{font-weight:bold;padding:9px 10px;border-radius:10px 10px 0 0;text-align:center;background:#f59e0b;font-size:14px;margin-top:16px}
 .stock-table th{background:#1e3a8a;color:#fff;font-size:13px}
 .stock-table td{padding:5px 4px}
 .stock-table td.no-body{font-weight:900;font-size:15px}
 select.status-select{width:100%;padding:9px 4px;border:1px solid #999;border-radius:8px;font-size:12px;font-weight:900;text-align:center;margin:0;cursor:pointer}
-select.status-select.st-ready{background:#fff;color:#111}
-select.status-select.st-inap{background:#fde047;color:#111}
+select.status-select.st-ready{background:#fff}
+select.status-select.st-inap{background:#fde047}
 select.status-select.st-merah{background:#dc2626;color:#fff}
-select.status-select.st-merah option{background:#fff;color:#111}
 input.ket-input{width:100%;padding:9px 6px;border:1px solid #ddd;border-radius:8px;font-size:13px;margin:0;text-align:left}
 input.ket-input:disabled{background:#f8fafc;color:#666}
 .stock-total{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 .stock-total div{flex:1;min-width:80px;text-align:center;padding:9px 4px;border-radius:10px;font-weight:bold;font-size:12px}
-.st-t-ready{background:#f1f5f9;color:#111;border:1px solid #ddd}
+.st-t-ready{background:#f1f5f9;border:1px solid #ddd}
 .st-t-inap{background:#fef9c3;color:#854d0e}
 .st-t-merah{background:#fee2e2;color:#991b1b}
 .info-row{display:flex;gap:6px;margin-top:8px;align-items:center}
@@ -134,21 +114,32 @@ input.ket-input:disabled{background:#f8fafc;color:#666}
 .btn-reset-stock{background:#6b7280;margin-top:8px}
 .rencana-table{font-size:12px}
 .rencana-table th{padding:4px 2px;font-size:11px}
-.rencana-table th.depok-h{background:#5aa9e6;color:#000}
-.rencana-table th.bandara-h{background:#6fbf6f;color:#000}
-.rencana-table td{padding:2px 2px}
+.rencana-table th.depok-h{background:#5aa9e6}
+.rencana-table th.bandara-h{background:#6fbf6f}
+.rencana-table td{padding:2px}
 .rencana-table td.no{width:28px;font-size:11px;color:#888}
 select.rencana-sel{width:100%;padding:4px 1px;border:1px solid #ccc;border-radius:6px;font-size:12px;margin:0;text-align:center;background:#fff}
 select.rencana-sel.kosong{color:#aaa}
-select.rencana-sel option:disabled{color:#ccc;background:#f1f5f9}
-input.rencana-inp{width:100%;padding:4px 2px;border:1px solid #ccc;border-radius:6px;font-size:12px;margin:0;text-align:center;background:#fff}
+input.rencana-inp{width:100%;padding:4px 2px;border:1px solid #ccc;border-radius:6px;font-size:12px;margin:0;text-align:center}
 .rencana-total{display:flex;gap:6px;margin-top:8px}
 .rencana-total div{flex:1;text-align:center;padding:7px 2px;border-radius:8px;font-weight:bold;font-size:12px}
 .status-online{text-align:center;font-size:11px;font-weight:bold;padding:6px;border-radius:20px;margin:0 0 8px;background:#dcfce7;color:#166534}
 .status-offline{text-align:center;font-size:11px;font-weight:bold;padding:6px;border-radius:20px;margin:0 0 8px;background:#fee2e2;color:#991b1b}
+.marquee-serah{position:fixed;top:0;left:0;right:0;z-index:9999;background:#dc2626;color:#fff;overflow:hidden;white-space:nowrap;border-bottom:3px solid #fde047;display:none}
+.marquee-serah span{display:inline-block;padding:9px 0 9px 100%;font-size:14px;font-weight:900;animation:jalanSerah 22s linear infinite}
+.marquee-serah:active span{animation-play-state:paused}
+@keyframes jalanSerah{from{transform:translateX(0)}to{transform:translateX(-100%)}}
+body.ada-serah{padding-top:38px}
+body.ada-serah .sidebar{top:38px}
+.serah-box{background:#fef9c3;border:2px solid #f59e0b;border-radius:12px;padding:12px;margin-bottom:12px}
+.serah-aktif{background:#fee2e2;border:2px solid #dc2626;border-radius:12px;padding:12px;margin-bottom:12px;text-align:center}
+.btn-serah-tampil{background:#dc2626;margin-top:10px}
+.btn-serah-konfirm{background:#16a34a;margin-top:10px;font-size:16px;padding:14px}
+.serah-riwayat{text-align:center;font-size:12px;color:#166534;font-weight:bold;background:#dcfce7;border-radius:10px;padding:8px;margin-bottom:12px}
 </style>
 </head>
 <body class="depok">
+<div class="marquee-serah" id="marqueeSerah"><span id="teksMarqueeSerah"></span></div>
 <div class="topbar">
 <button class="hamburger" onclick="bukaMenu()">☰</button>
 <div class="top-title">Laporan Penumpang JAC<br><span style="font-size:11px;color:#666;font-weight:normal">JAC - Hiba Bandara</span></div>
@@ -168,7 +159,7 @@ input.rencana-inp{width:100%;padding:4px 2px;border:1px solid #ccc;border-radius
 <div class="card page active" id="page-form">
 <div id="statusSync" class="status-offline">● MENGHUBUNGKAN...</div>
 <h2>Laporan Penumpang JAC</h2>
-<p class="sub">JAC - Hiba Bandara - Input Harian &nbsp;<span class="badge" id="badgeRute">DEPOK - BIRU</span></p>
+<p class="sub">JAC - Hiba Bandara - Input Harian  <span class="badge" id="badgeRute">DEPOK - BIRU</span></p>
 <div class="edit-banner" id="editBanner">✏️ MODE EDIT - Aa lagi benerin data lama</div>
 <label>Tanggal</label>
 <div style="position:relative">
@@ -283,6 +274,19 @@ input.rencana-inp{width:100%;padding:4px 2px;border:1px solid #ccc;border-radius
 <div class="tanggal-wrap" onclick="bukaKalender('tanggalStock')"><span class="tanggal-teks" id="tampilTanggalStock">-</span><span class="tanggal-panah">⌄</span></div>
 <input type="date" id="tanggalStock" class="tanggal-asli" onchange="onTanggalStockGanti()">
 </div>
+<div class="serah-box">
+<div style="text-align:center;font-weight:900;font-size:15px">📢 SERAH TERIMA SHIFT - TEKS BERJALAN</div>
+<label>Dari Shift</label>
+<select id="serahDari"><option value="Shift 1">Shift 1</option><option value="Shift 2">Shift 2</option></select>
+<label>Ke Shift</label>
+<select id="serahKe"><option value="Shift 2">Shift 2</option><option value="Shift 1">Shift 1</option></select>
+<label>Info Serah Terima</label>
+<input type="text" id="serahTeks" placeholder="Contoh: INAP: A55, A56 - Apel pagi jam 07.00">
+<div class="hint" style="text-align:center">Teks ini akan jalan di paling atas di SEMUA halaman, di SEMUA HP tim.</div>
+<button class="btn-serah-tampil" onclick="buatSerahTerima()">📢 TAMPILKAN DI SEMUA HALAMAN</button>
+</div>
+<div id="boxSerahAktif" style="display:none"></div>
+<div id="boxSerahRiwayat" style="display:none"></div>
 <p class="hint" style="text-align:center">1. STOCK UNIT - Pilih status per unit, otomatis ke-save & ke-sync realtime ke semua tim</p>
 <div class="stock-title">1. STOCK UNIT</div>
 <table class="stock-table"><thead><tr><th>No Body</th><th>Kotak Status</th><th>Keterangan</th></tr></thead>
@@ -301,513 +305,98 @@ input.rencana-inp{width:100%;padding:4px 2px;border:1px solid #ccc;border-radius
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <script>
-const jadwal = {
-Depok: ["2:00","2:30","3:00","3:30","4:00","4:30","5:00","5:30","6:00","6:30","7:00","7:30","8:00","8:30","9:00","9:30","10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00","18:00","19:00","20:00","21:00"],
-Bandara: ["5:20","6:20","7:20","7:50","8:20","8:50","9:20","9:50","10:20","10:50","11:20","11:50","12:20","12:50","13:20","13:50","14:20","14:50","15:20","15:50","16:20","16:50","17:20","17:50","18:20","18:50","19:20","19:50","20:20","20:50","21:20","21:50","22:20","23:20","0:20"]
-};
-const listBodyBus = ["A47","A48","A50","A51","A52","A53","A54","A55","A56","A57","A58","A59","A60","A61","A62","A63","A64","A65","A66","A67","A68"];
+const jadwal={Depok:["2:00","2:30","3:00","3:30","4:00","4:30","5:00","5:30","6:00","6:30","7:00","7:30","8:00","8:30","9:00","9:30","10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00","18:00","19:00","20:00","21:00"],Bandara:["5:20","6:20","7:20","7:50","8:20","8:50","9:20","9:50","10:20","10:50","11:20","11:50","12:20","12:50","13:20","13:50","14:20","14:50","15:20","15:50","16:20","16:50","17:20","17:50","18:20","18:50","19:20","19:50","20:20","20:50","21:20","21:50","22:20","23:20","0:20"]};
+const listBodyBus=["A47","A48","A50","A51","A52","A53","A54","A55","A56","A57","A58","A59","A60","A61","A62","A63","A64","A65","A66","A67","A68"];
 const namaHariArr=["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
 const namaBulanArr=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 function nilaiJam(s){let p=String(s).split(':');let h=parseInt(p[0],10);let m=parseInt(p[1]||'0',10);if(h===0)h=24;return h*60+m;}
 function urutJam(a,b){return nilaiJam(a.jam)-nilaiJam(b.jam);}
 function bukaMenu(){document.getElementById('sidebar').classList.add('open');document.getElementById('overlay').style.display='block';}
 function tutupMenu(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').style.display='none';}
-function pindah(hal){
-  document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));
-  document.querySelectorAll('.menu-btn').forEach(e=>e.classList.remove('active'));
-  document.getElementById('page-'+hal).classList.add('active');
-  document.getElementById('btn-'+hal).classList.add('active');
-  tutupMenu();
-  if(hal==='rekap') render();
-  if(hal==='bulanan') renderBulanan();
-  if(hal==='format') renderFormat();
-  if(hal==='form') updateJamList();
-  if(hal==='stock') renderStock();
-  if(hal==='rencana') renderRencana();
-  window.scrollTo(0,0);
-}
-function gantiRute(){
-  let rute=document.getElementById('rute').value;
-  document.body.className=rute.toLowerCase();
-  document.getElementById('badgeRute').innerText=rute.toUpperCase()+(rute==='Depok'?' - BIRU':' - HIJAU');
-  if(editIndex===-1) document.getElementById('jam').value='';
-  updateJamList();
-}
-let data=[]; let limo={}; let stockData={}; let infoData={}; let rencanaData={};
-let tabRekap='semua'; let editIndex=-1; let editKeyLimoLama=''; let teksFormatTerakhir='';
-let sedangMenerima=false;
+function pindah(hal){document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));document.querySelectorAll('.menu-btn').forEach(e=>e.classList.remove('active'));document.getElementById('page-'+hal).classList.add('active');document.getElementById('btn-'+hal).classList.add('active');tutupMenu();if(hal==='rekap')render();if(hal==='bulanan')renderBulanan();if(hal==='format')renderFormat();if(hal==='form')updateJamList();if(hal==='stock')renderStock();if(hal==='rencana')renderRencana();window.scrollTo(0,0);}
+function gantiRute(){let r=document.getElementById('rute').value;document.body.className=r.toLowerCase()+(document.body.classList.contains('ada-serah')?' ada-serah':'');document.getElementById('badgeRute').innerText=r.toUpperCase()+(r==='Depok'?' - BIRU':' - HIJAU');if(editIndex===-1)document.getElementById('jam').value='';updateJamList();}
+let data=[];let limo={};let stockData={};let infoData={};let rencanaData={};let tabRekap='semua';let editIndex=-1;let editKeyLimoLama='';let teksFormatTerakhir='';let sedangMenerima=false;let serahTerima=null;
 function tampilTanggal(t){return t.split('-').reverse().join('/');}
 function toISO(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function updateTampilTanggal(idInput,idTampil){
-  let v=document.getElementById(idInput).value;
-  let el=document.getElementById(idTampil);
-  if(!v){el.innerHTML='Pilih tanggal';return;}
-  let today=new Date(); today.setHours(0,0,0,0);
-  let kemarin=new Date(today); kemarin.setDate(kemarin.getDate()-1);
-  let besok=new Date(today); besok.setDate(besok.getDate()+1);
-  let teks=tampilTanggal(v);
-  let label='';
-  if(v===toISO(today)) label=' <span class="label-hariini">[Hari Ini]</span>';
-  else if(v===toISO(kemarin)) label=' <span class="label-kemarin">[Kemarin]</span>';
-  else if(v===toISO(besok)) label=' <span class="label-besok">[Besok]</span>';
-  el.innerHTML=teks+label;
-}
+function updateTampilTanggal(idI,idT){let v=document.getElementById(idI).value;let el=document.getElementById(idT);if(!v){el.innerHTML='Pilih tanggal';return;}let today=new Date();today.setHours(0,0,0,0);let km=new Date(today);km.setDate(km.getDate()-1);let bs=new Date(today);bs.setDate(bs.getDate()+1);let label='';if(v===toISO(today))label=' <span class="label-hariini">[Hari Ini]</span>';else if(v===toISO(km))label=' <span class="label-kemarin">[Kemarin]</span>';else if(v===toISO(bs))label=' <span class="label-besok">[Besok]</span>';el.innerHTML=tampilTanggal(v)+label;}
 function updateSemuaTampilTanggal(){updateTampilTanggal('tanggal','tampilTanggalForm');updateTampilTanggal('tanggalRekap','tampilTanggalRekap');updateTampilTanggal('tanggalFormat','tampilTanggalFormat');updateTampilTanggal('tanggalStock','tampilTanggalStock');updateTampilTanggal('tanggalRencana','tampilTanggalRencana');}
-function bukaKalender(id){let inp=document.getElementById(id); if(inp.showPicker){try{inp.showPicker();return;}catch(e){}} inp.click();}
+function bukaKalender(id){let i=document.getElementById(id);if(i.showPicker){try{i.showPicker();return;}catch(e){}}i.click();}
 function onTanggalFormGanti(){updateTampilTanggal('tanggal','tampilTanggalForm');updateJamList();}
 function onTanggalRekapGanti(){updateTampilTanggal('tanggalRekap','tampilTanggalRekap');render();}
 function onTanggalFormatGanti(){updateTampilTanggal('tanggalFormat','tampilTanggalFormat');renderFormat();}
 function onTanggalStockGanti(){updateTampilTanggal('tanggalStock','tampilTanggalStock');renderStock();}
 function onTanggalRencanaGanti(){updateTampilTanggal('tanggalRencana','tampilTanggalRencana');renderRencana();}
-function setTabRekap(t){
-  tabRekap=t;
-  document.getElementById('tab-semua').classList.toggle('active',t==='semua');
-  document.getElementById('tab-depok').classList.toggle('active',t==='depok');
-  document.getElementById('tab-bandara').classList.toggle('active',t==='bandara');
-  document.getElementById('boxDepok').style.display=(t==='semua'||t==='depok')?'block':'none';
-  document.getElementById('boxBandara').style.display=(t==='semua'||t==='bandara')?'block':'none';
-}
-function jamTerpakai(tgl,rute){ return data.filter((d,idx)=>d.tgl===tgl && d.rute===rute && idx!==editIndex).map(d=>d.jam); }
-function updateJamList(){
-  let tgl=document.getElementById('tanggal').value; let rute=document.getElementById('rute').value;
-  let terpakai=jamTerpakai(tgl,rute);
-  let sisa=jadwal[rute].filter(j=>!terpakai.includes(j));
-  if(editIndex!==-1){ let d=data[editIndex]; if(d && d.tgl===tgl && d.rute===rute && !sisa.includes(d.jam)){ sisa.push(d.jam); sisa.sort((a,b)=>nilaiJam(a)-nilaiJam(b)); } }
-  document.getElementById('listJam').innerHTML=sisa.map(j=>`<option value="${j}">`).join('');
-  document.getElementById('listBody').innerHTML=listBodyBus.map(b=>`<option value="${b}">`).join('');
-}
+function setTabRekap(t){tabRekap=t;document.getElementById('tab-semua').classList.toggle('active',t==='semua');document.getElementById('tab-depok').classList.toggle('active',t==='depok');document.getElementById('tab-bandara').classList.toggle('active',t==='bandara');document.getElementById('boxDepok').style.display=(t==='semua'||t==='depok')?'block':'none';document.getElementById('boxBandara').style.display=(t==='semua'||t==='bandara')?'block':'none';}
+function jamTerpakai(tgl,rute){return data.filter((d,idx)=>d.tgl===tgl&&d.rute===rute&&idx!==editIndex).map(d=>d.jam);}
+function updateJamList(){let tgl=document.getElementById('tanggal').value;let rute=document.getElementById('rute').value;let ter=jamTerpakai(tgl,rute);let sisa=jadwal[rute].filter(j=>!ter.includes(j));if(editIndex!==-1){let d=data[editIndex];if(d&&d.tgl===tgl&&d.rute===rute&&!sisa.includes(d.jam)){sisa.push(d.jam);sisa.sort((a,b)=>nilaiJam(a)-nilaiJam(b));}}document.getElementById('listJam').innerHTML=sisa.map(j=>`<option value="${j}">`).join('');document.getElementById('listBody').innerHTML=listBodyBus.map(b=>`<option value="${b}">`).join('');}
 function kunciLimo(tgl,rute,jam){return tgl+'|'+rute+'|'+jam;}
 function kunciData(d){return d.tgl+'|'+d.rute+'|'+d.jam;}
 function keyAman(k){return String(k).replace(/[.#$\[\]\/]/g,'_');}
-function toggleMenu(btn){ let menu=btn.nextElementSibling; let lagiBuka=menu.style.display==='block'; document.querySelectorAll('.menu-aksi').forEach(m=>m.style.display='none'); menu.style.display=lagiBuka?'none':'block'; event.stopPropagation(); }
+function toggleMenu(btn){let m=btn.nextElementSibling;let buka=m.style.display==='block';document.querySelectorAll('.menu-aksi').forEach(x=>x.style.display='none');m.style.display=buka?'none':'block';event.stopPropagation();}
 document.addEventListener('click',()=>{document.querySelectorAll('.menu-aksi').forEach(m=>m.style.display='none');});
-function cariIndex(tgl,rute,jam){ return data.findIndex(d=>d.tgl===tgl && d.rute===rute && d.jam===jam); }
-function editBaris(tgl,rute,jam){
-  let idx=cariIndex(tgl,rute,jam); if(idx===-1) return; let d=data[idx];
-  editIndex=idx; editKeyLimoLama=kunciLimo(d.tgl,d.rute,d.jam);
-  document.getElementById('tanggal').value=d.tgl; document.getElementById('rute').value=d.rute;
-  document.body.className=d.rute.toLowerCase();
-  document.getElementById('badgeRute').innerText=d.rute.toUpperCase()+(d.rute==='Depok'?' - BIRU':' - HIJAU');
-  document.getElementById('jam').value=d.jam; document.getElementById('body').value=d.body||'';
-  document.getElementById('penumpang').value=d.pnp; document.getElementById('ket').value=d.ket||'';
-  document.getElementById('editBanner').style.display='block';
-  document.getElementById('btnSimpan').innerText='💾 Simpan Perubahan';
-  document.getElementById('btnSimpan').style.background='#f59e0b';
-  document.getElementById('btnBatalEdit').style.display='block';
-  document.getElementById('tanggalRekap').value=d.tgl; document.getElementById('tanggalFormat').value=d.tgl;
-  updateSemuaTampilTanggal(); updateJamList(); pindah('form');
-}
-function batalEdit(){
-  editIndex=-1; editKeyLimoLama='';
-  document.getElementById('editBanner').style.display='none';
-  document.getElementById('btnSimpan').innerText='+ Tambah Laporan';
-  document.getElementById('btnSimpan').style.background='var(--warna)';
-  document.getElementById('btnBatalEdit').style.display='none';
-  document.getElementById('penumpang').value='';document.getElementById('body').value='';document.getElementById('jam').value='';document.getElementById('ket').value='';
-  updateJamList();
-}
-function hapusBaris(tgl,rute,jam,body){
-  if(!confirm('Yakin hapus?\n'+rute+' | '+jam+' | Body '+body+'\nJam ini nanti bisa di-input lagi.')) return;
-  let idx=cariIndex(tgl,rute,jam); if(idx===-1) return;
-  let k=kunciLimo(tgl,rute,jam);
-  delete limo[k];
-  data.splice(idx,1);
-  if(editIndex===idx) batalEdit(); else if(editIndex>idx) editIndex--;
-  fbHapus('data/'+keyAman(kunciData({tgl,rute,jam})));
-  fbHapus('limo/'+keyAman(k));
-  simpanLokal(); render();renderBulanan();renderFormat();updateJamList();
-  alert('Baris dihapus. Jam '+jam+' sekarang bisa di-input lagi.');
-}
-function render(){
-  let tglFilter=document.getElementById('tanggalRekap').value;
-  let filtered=data.filter(d=>!tglFilter||d.tgl===tglFilter);
-  let depok=filtered.filter(d=>d.rute==='Depok').sort(urutJam);
-  let bandara=filtered.filter(d=>d.rute==='Bandara').sort(urutJam);
-  let tD=0,tB=0,tDL=0,tKL=0;
-  depok.forEach(d=>tD+=Number(d.pnp)); bandara.forEach(d=>tB+=Number(d.pnp));
-  let hD=''; let rowsD=Math.max(depok.length,1);
-  for(let i=0;i<rowsD;i++){
-    let d=depok[i]; let key=d?kunciLimo(d.tgl,'Depok',d.jam):(tglFilter+'|Depok|baris-'+(i+1)); let v=limo[key]||'';
-    if(v!=='') tDL+=Number(v);
-    let aksi=d?`<td class="depok aksi"><button class="btn-titik" onclick="toggleMenu(this)">⋮</button><div class="menu-aksi"><button class="edit" onclick="editBaris('${d.tgl}','Depok','${d.jam}')">✏️ Edit Baris</button><button class="hapus" onclick="hapusBaris('${d.tgl}','Depok','${d.jam}','${d.body}')">🗑️ Hapus Baris</button></div></td>`:`<td class="depok"></td>`;
-    hD+=`<tr><td class="depok">${i+1}</td><td class="depok">${d?d.body:''}</td><td class="depok">${d?d.jam:''}</td><td class="depok">${d?d.pnp:''}</td><td class="depok"><input class="limo" type="number" placeholder="0" value="${v}" onchange="simpanLimo('${tglFilter}','Depok','${d?d.jam:'baris-'+(i+1)}',this.value)"></td>${aksi}</tr>`;
-  }
-  document.getElementById('listDepok').innerHTML=hD;
-  let hB=''; let rowsB=Math.max(bandara.length,1);
-  for(let i=0;i<rowsB;i++){
-    let b=bandara[i]; let key=b?kunciLimo(b.tgl,'Bandara',b.jam):(tglFilter+'|Bandara|baris-'+(i+1)); let v=limo[key]||'';
-    if(v!=='') tKL+=Number(v);
-    let aksi=b?`<td class="bandara aksi"><button class="btn-titik" onclick="toggleMenu(this)">⋮</button><div class="menu-aksi"><button class="edit" onclick="editBaris('${b.tgl}','Bandara','${b.jam}')">✏️ Edit Baris</button><button class="hapus" onclick="hapusBaris('${b.tgl}','Bandara','${b.jam}','${b.body}')">🗑️ Hapus Baris</button></div></td>`:`<td class="bandara"></td>`;
-    hB+=`<tr><td class="bandara">${i+1}</td><td class="bandara">${b?b.body:''}</td><td class="bandara">${b?b.jam:''}</td><td class="bandara">${b?b.pnp:''}</td><td class="bandara"><input class="limo" type="number" placeholder="0" value="${v}" onchange="simpanLimo('${tglFilter}','Bandara','${b?b.jam:'baris-'+(i+1)}',this.value)"></td>${aksi}</tr>`;
-  }
-  document.getElementById('listBandara').innerHTML=hB;
-  document.getElementById('totDepok').innerText='Depok: '+tD+' Pnp';
-  document.getElementById('totBandara').innerText='Bandara: '+tB+' Pnp';
-  document.getElementById('totAll').innerText='Total Semua: '+(tD+tB)+' Pnp';
-  document.getElementById('totDariLimo').innerText='Dari Limo: '+tDL;
-  document.getElementById('totKeLimo').innerText='Ke Limo: '+tKL;
-  setTabRekap(tabRekap);
-}
-function simpanLimo(tgl,rute,jam,val){
-  let k=kunciLimo(tgl,rute,jam);
-  if(val===''||val===null){ delete limo[k]; fbHapus('limo/'+keyAman(k)); }
-  else { limo[k]=val; fbSet('limo/'+keyAman(k), {k:k, v:val, ts:Date.now()}); }
-  simpanLokal(); render();renderBulanan();renderFormat();
-}
-function totalLimoPerTanggal(tgl,rute){
-  let total=0; Object.keys(limo).forEach(k=>{ let parts=k.split('|'); if(parts[0]===tgl && parts[1]===rute){ total+=Number(limo[k]||0); } }); return total;
-}
-function hitungBulanan(bln){
-  let grouped={};
-  data.forEach(d=>{ if(bln && !d.tgl.startsWith(bln)) return; if(!grouped[d.tgl]) grouped[d.tgl]={depokKotor:0,bandaraKotor:0}; if(d.rute==='Depok') grouped[d.tgl].depokKotor+=Number(d.pnp); else grouped[d.tgl].bandaraKotor+=Number(d.pnp); });
-  Object.keys(limo).forEach(k=>{ let tgl=k.split('|')[0]; if(bln && !tgl.startsWith(bln)) return; if(!grouped[tgl]) grouped[tgl]={depokKotor:0,bandaraKotor:0}; });
-  let keys=Object.keys(grouped).sort(); let rows=[]; let tDepok=0,tDariLimo=0,tBandara=0,tKeLimo=0,tTotal=0;
-  keys.forEach(k=>{ let g=grouped[k]; let dariLimo=totalLimoPerTanggal(k,'Depok'); let keLimo=totalLimoPerTanggal(k,'Bandara'); let depok=g.depokKotor-dariLimo; let bandara=g.bandaraKotor-keLimo; let total=depok+dariLimo+bandara+keLimo; tDepok+=depok; tDariLimo+=dariLimo; tBandara+=bandara; tKeLimo+=keLimo; tTotal+=total; rows.push({tgl:k,tampil:k.split('-').reverse().join('/'),depok,dariLimo,bandara,keLimo,total,db:depok+bandara,limoTotal:dariLimo+keLimo}); });
-  return {rows,tDepok,tDariLimo,tBandara,tKeLimo,tTotal};
-}
-function renderGrafik(rows){
-  let el=document.getElementById('grafikBulanan');
-  if(!rows.length){el.innerHTML='<div class="grafik-kosong">Belum ada data - Grafik muncul setelah ada data di bulan ini</div>';return;}
-  let maxVal=0; rows.forEach(x=>{maxVal=Math.max(maxVal,x.db,x.limoTotal);}); if(maxVal===0) maxVal=1;
-  let h='<div class="grafik-chart">';
-  rows.forEach(x=>{ let hDB=Math.max(4,Math.round(x.db/maxVal*150)); let hL=Math.max(4,Math.round(x.limoTotal/maxVal*150)); let tglPendek=x.tampil.slice(0,5); h+='<div class="grafik-col"><div class="grafik-bars"><div class="grafik-bar-wrap"><div class="grafik-nilai">'+x.db+'</div><div class="grafik-bar bar-db" style="height:'+hDB+'px"></div></div><div class="grafik-bar-wrap"><div class="grafik-nilai">'+x.limoTotal+'</div><div class="grafik-bar bar-l" style="height:'+hL+'px"></div></div></div><div class="grafik-tgl">'+tglPendek+'</div></div>'; });
-  h+='</div>'; el.innerHTML=h;
-}
-function renderBulanan(){
-  let bln=document.getElementById('bulan').value; let r=hitungBulanan(bln); let h='';
-  r.rows.forEach(x=>{ h+=`<tr><td>${x.tampil}</td><td>${x.depok}</td><td>${x.dariLimo}</td><td>${x.bandara}</td><td>${x.keLimo}</td><td><b>${x.total}</b></td></tr>`; });
-  if(!r.rows.length) h='<tr><td colspan="6">Belum ada data di bulan ini</td></tr>';
-  document.getElementById('listBulanan').innerHTML=h;
-  document.getElementById('totBDepok').innerText='Depok: '+r.tDepok;
-  document.getElementById('totBDariLimo').innerText='Dari Limo: '+r.tDariLimo;
-  document.getElementById('totBBandara').innerText='Bandara: '+r.tBandara;
-  document.getElementById('totBKeLimo').innerText='Ke Limo: '+r.tKeLimo;
-  document.getElementById('totBAll').innerText='Total: '+r.tTotal;
-  renderGrafik(r.rows);
-}
-function exportBulanan(){
-  let bln=document.getElementById('bulan').value; if(!bln){alert('Pilih bulan dulu Aa');return;}
-  let r=hitungBulanan(bln); if(!r.rows.length){alert('Belum ada data di bulan ini Aa');return;}
-  let namaBulan=new Date(bln+'-01').toLocaleDateString('id-ID',{month:'long',year:'numeric'}).replace(/ /g,'_');
-  let csv='\uFEFFLaporan Penumpang JAC - Hiba Bandara\n'; csv+='Bulan,'+namaBulan.replace(/_/g,' ')+'\n\n'; csv+='Tanggal,Depok,Dari Limo,Bandara,Ke Limo,Total\n';
-  r.rows.forEach(x=>{ csv+=x.tampil+','+x.depok+','+x.dariLimo+','+x.bandara+','+x.keLimo+','+x.total+'\n'; });
-  csv+='TOTAL,'+r.tDepok+','+r.tDariLimo+','+r.tBandara+','+r.tKeLimo+','+r.tTotal+'\n';
-  let blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); let a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='Laporan_JAC_'+namaBulan+'.csv'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  alert('Berhasil export Aa! File Laporan_JAC_'+namaBulan+'.csv sudah ke-download, bisa dibuka di Excel / Spreadsheet.');
-}
-function namaHariDanTanggalPanjang(tgl){ let p=tgl.split('-'); let d=new Date(Number(p[0]),Number(p[1])-1,Number(p[2])); return {hari:namaHariArr[d.getDay()],panjang:Number(p[2])+' '+namaBulanArr[Number(p[1])-1]+' '+p[0]}; }
-function hitungShift(tgl,shift){
-  let list=data.filter(d=>d.tgl===tgl && d.rute==='Bandara');
-  if(shift===1) list=list.filter(d=>nilaiJam(d.jam)<nilaiJam('15:20'));
-  if(shift===2) list=list.filter(d=>nilaiJam(d.jam)>=nilaiJam('15:20'));
-  let total=0, keLimo=0; list.forEach(d=>{ total+=Number(d.pnp); keLimo+=Number(limo[kunciLimo(d.tgl,'Bandara',d.jam)]||0); });
-  return {total,keLimo,depok:total-keLimo,ritase:list.length};
-}
-function hitungTotalHarian(tgl){
-  let depokList=data.filter(d=>d.tgl===tgl && d.rute==='Depok'); let bandaraList=data.filter(d=>d.tgl===tgl && d.rute==='Bandara');
-  let totalDepokKotor=0, totalBandaraKotor=0, dariLimo=0, keLimo=0;
-  depokList.forEach(d=>{totalDepokKotor+=Number(d.pnp); dariLimo+=Number(limo[kunciLimo(d.tgl,'Depok',d.jam)]||0);});
-  bandaraList.forEach(d=>{totalBandaraKotor+=Number(d.pnp); keLimo+=Number(limo[kunciLimo(d.tgl,'Bandara',d.jam)]||0);});
-  let depokBandara=totalDepokKotor-dariLimo; let bandaraDepok=totalBandaraKotor-keLimo;
-  return {depokBandara,dariLimo,totalDepok:totalDepokKotor,bandaraDepok,keLimo,totalBandara:totalBandaraKotor,ritase:depokList.length+bandaraList.length,totalHarian:totalDepokKotor+totalBandaraKotor};
-}
-function renderFormat(){
-  let tgl=document.getElementById('tanggalFormat').value; let jenis=document.getElementById('jenisLaporan').value;
-  if(!tgl){document.getElementById('previewFormat').textContent='Pilih tanggal dulu Aa';teksFormatTerakhir='';return;}
-  let info=namaHariDanTanggalPanjang(tgl); let teks='';
-  if(jenis==='shift1' || jenis==='shift2'){
-    let s=jenis==='shift1'?1:2; let h=hitungShift(tgl,s); let salam=s===1?'Selamat sore Team':'Selamat malam Team'; let jamRange=s===1?'*Dari Jam : 05:20 - 14:50*':'*Dari Jam : 15:20 - 00:20*';
-    teks='*LAPORAN SHIFT '+s+'*\n\n'+salam+'\n\nLaporan Harian\nJAC Hiba Utama\nBANDARA SOETTA\n*Hari : '+info.hari+'*\n*Tanggal : '+info.panjang+'*\n'+jamRange+'\n--------------------------------\nBsh - Depok = '+h.depok+' pnp\nBsh - Limo = '+h.keLimo+' pnp\nTotal Pnp = '+h.total+' pnp\nRitase = '+h.ritase+'\n--------------------------------\nDemikian laporan harian yang dapat disampaikan.\n\n*Terima Kasih*';
-  } else {
-    let t=hitungTotalHarian(tgl);
-    teks='*LAPORAN HARIAN*\n\n*Hari : '+info.hari+'*\n*Tanggal : '+info.panjang+'*\n\n*1. DEPOK*\n- Depok - Bandara (Pnp) = '+t.depokBandara+'\n- Limo - Bandara (Pnp) = '+t.dariLimo+'\n- _TOTAL DEPOK (Pnp) = '+t.totalDepok+'_\n\n*2. BANDARA*\n- Bandara - Depok (Pnp) = '+t.bandaraDepok+'\n- Bandara - Limo (Pnp) = '+t.keLimo+'\n- _TOTAL BANDARA (Pnp) = '+t.totalBandara+'_\n- Ritase/KR = '+t.ritase+'\n\n___________________________\n\n- *_TOTAL Harian (Pnp) = '+t.totalHarian+'_*\n\nDemikian laporan harian yang dapat disampaikan.\n\n*Terima Kasih*';
-  }
-  teksFormatTerakhir=teks; document.getElementById('previewFormat').textContent=teks;
-}
-function editPreview(){ let el=document.getElementById('previewFormat'); el.focus(); let range=document.createRange(); range.selectNodeContents(el); range.collapse(false); let sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(range); el.scrollTop=el.scrollHeight; }
-function onPreviewEdit(){ teksFormatTerakhir=document.getElementById('previewFormat').innerText.replace(/\n\n+/g,'\n\n'); }
-function shareWA(){ let isi=document.getElementById('previewFormat').innerText; if(!isi || isi==='Pilih tanggal dulu Aa'){renderFormat(); isi=document.getElementById('previewFormat').innerText;} if(!isi){alert('Pilih tanggal dulu Aa');return;} window.open('https://wa.me/?text='+encodeURIComponent(isi),'_blank'); }
-function tambah(){
-  let tgl=document.getElementById('tanggal').value; let rute=document.getElementById('rute').value;
-  let jam=document.getElementById('jam').value.trim(); let body=document.getElementById('body').value.trim().toUpperCase();
-  let pnp=document.getElementById('penumpang').value; let ket=document.getElementById('ket').value;
-  if(!tgl||!jam||!pnp){alert('Isi tanggal, jam & penumpang dulu Aa');return;}
-  if(jamTerpakai(tgl,rute).includes(jam)){ alert('Jam '+jam+' di '+rute+' tanggal '+tgl.split('-').reverse().join('/')+' SUDAH TERPAKAI Aa! Pilih jam lain yang masih sisa.'); updateJamList(); return; }
-  if(editIndex!==-1){
-    let keyBaru=kunciLimo(tgl,rute,jam);
-    let dLama=data[editIndex];
-    if(editKeyLimoLama && editKeyLimoLama!==keyBaru && limo[editKeyLimoLama]!==undefined){
-      limo[keyBaru]=limo[editKeyLimoLama]; delete limo[editKeyLimoLama];
-      fbSet('limo/'+keyAman(keyBaru), {k:keyBaru, v:limo[keyBaru], ts:Date.now()}); fbHapus('limo/'+keyAman(editKeyLimoLama));
-    }
-    let kunciLama=kunciData(dLama);
-    let obj={tgl,rute,jam,body,pnp,ket,ts:Date.now()};
-    data[editIndex]=obj;
-    if(kunciLama!==kunciData(obj)) fbHapus('data/'+keyAman(kunciLama));
-    fbSet('data/'+keyAman(kunciData(obj)), obj);
-    simpanLokal(); alert('Perubahan disimpan!'); batalEdit();
-    document.getElementById('tanggalRekap').value=tgl; document.getElementById('tanggalFormat').value=tgl;
-    updateSemuaTampilTanggal(); render();renderBulanan();renderFormat(); pindah('rekap'); return;
-  }
-  let obj={tgl,rute,jam,body,pnp,ket,ts:Date.now()};
-  data.push(obj);
-  fbSet('data/'+keyAman(kunciData(obj)), obj);
-  simpanLokal();
-  document.getElementById('penumpang').value='';document.getElementById('body').value='';document.getElementById('jam').value='';document.getElementById('ket').value='';
-  document.getElementById('tanggalRekap').value=tgl; document.getElementById('tanggalFormat').value=tgl;
-  updateSemuaTampilTanggal(); alert('Berhasil! Cek di Rekap Laporan'); updateJamList(); render();renderBulanan();renderFormat();
-}
+function cariIndex(tgl,rute,jam){return data.findIndex(d=>d.tgl===tgl&&d.rute===rute&&d.jam===jam);}
+function editBaris(tgl,rute,jam){let idx=cariIndex(tgl,rute,jam);if(idx===-1)return;let d=data[idx];editIndex=idx;editKeyLimoLama=kunciLimo(d.tgl,d.rute,d.jam);document.getElementById('tanggal').value=d.tgl;document.getElementById('rute').value=d.rute;document.body.className=d.rute.toLowerCase()+(document.body.classList.contains('ada-serah')?' ada-serah':'');document.getElementById('badgeRute').innerText=d.rute.toUpperCase()+(d.rute==='Depok'?' - BIRU':' - HIJAU');document.getElementById('jam').value=d.jam;document.getElementById('body').value=d.body||'';document.getElementById('penumpang').value=d.pnp;document.getElementById('ket').value=d.ket||'';document.getElementById('editBanner').style.display='block';document.getElementById('btnSimpan').innerText='💾 Simpan Perubahan';document.getElementById('btnSimpan').style.background='#f59e0b';document.getElementById('btnBatalEdit').style.display='block';document.getElementById('tanggalRekap').value=d.tgl;document.getElementById('tanggalFormat').value=d.tgl;updateSemuaTampilTanggal();updateJamList();pindah('form');}
+function batalEdit(){editIndex=-1;editKeyLimoLama='';document.getElementById('editBanner').style.display='none';document.getElementById('btnSimpan').innerText='+ Tambah Laporan';document.getElementById('btnSimpan').style.background='var(--warna)';document.getElementById('btnBatalEdit').style.display='none';document.getElementById('penumpang').value='';document.getElementById('body').value='';document.getElementById('jam').value='';document.getElementById('ket').value='';updateJamList();}
+function hapusBaris(tgl,rute,jam,body){if(!confirm('Yakin hapus?\n'+rute+' | '+jam+' | Body '+body))return;let idx=cariIndex(tgl,rute,jam);if(idx===-1)return;let k=kunciLimo(tgl,rute,jam);delete limo[k];data.splice(idx,1);if(editIndex===idx)batalEdit();else if(editIndex>idx)editIndex--;fbHapus('data/'+keyAman(kunciData({tgl,rute,jam})));fbHapus('limo/'+keyAman(k));simpanLokal();render();renderBulanan();renderFormat();updateJamList();alert('Baris dihapus.');}
+function render(){let tf=document.getElementById('tanggalRekap').value;let f=data.filter(d=>!tf||d.tgl===tf);let depok=f.filter(d=>d.rute==='Depok').sort(urutJam);let bandara=f.filter(d=>d.rute==='Bandara').sort(urutJam);let tD=0,tB=0,tDL=0,tKL=0;depok.forEach(d=>tD+=Number(d.pnp));bandara.forEach(d=>tB+=Number(d.pnp));let hD='';let rD=Math.max(depok.length,1);for(let i=0;i<rD;i++){let d=depok[i];let key=d?kunciLimo(d.tgl,'Depok',d.jam):(tf+'|Depok|baris-'+(i+1));let v=limo[key]||'';if(v!=='')tDL+=Number(v);let aksi=d?`<td class="depok aksi"><button class="btn-titik" onclick="toggleMenu(this)">⋮</button><div class="menu-aksi"><button class="edit" onclick="editBaris('${d.tgl}','Depok','${d.jam}')">✏️ Edit Baris</button><button class="hapus" onclick="hapusBaris('${d.tgl}','Depok','${d.jam}','${d.body}')">🗑️ Hapus Baris</button></div></td>`:`<td class="depok"></td>`;hD+=`<tr><td class="depok">${i+1}</td><td class="depok">${d?d.body:''}</td><td class="depok">${d?d.jam:''}</td><td class="depok">${d?d.pnp:''}</td><td class="depok"><input class="limo" type="number" placeholder="0" value="${v}" onchange="simpanLimo('${tf}','Depok','${d?d.jam:'baris-'+(i+1)}',this.value)"></td>${aksi}</tr>`;}document.getElementById('listDepok').innerHTML=hD;let hB='';let rB=Math.max(bandara.length,1);for(let i=0;i<rB;i++){let b=bandara[i];let key=b?kunciLimo(b.tgl,'Bandara',b.jam):(tf+'|Bandara|baris-'+(i+1));let v=limo[key]||'';if(v!=='')tKL+=Number(v);let aksi=b?`<td class="bandara aksi"><button class="btn-titik" onclick="toggleMenu(this)">⋮</button><div class="menu-aksi"><button class="edit" onclick="editBaris('${b.tgl}','Bandara','${b.jam}')">✏️ Edit Baris</button><button class="hapus" onclick="hapusBaris('${b.tgl}','Bandara','${b.jam}','${b.body}')">🗑️ Hapus Baris</button></div></td>`:`<td class="bandara"></td>`;hB+=`<tr><td class="bandara">${i+1}</td><td class="bandara">${b?b.body:''}</td><td class="bandara">${b?b.jam:''}</td><td class="bandara">${b?b.pnp:''}</td><td class="bandara"><input class="limo" type="number" placeholder="0" value="${v}" onchange="simpanLimo('${tf}','Bandara','${b?b.jam:'baris-'+(i+1)}',this.value)"></td>${aksi}</tr>`;}document.getElementById('listBandara').innerHTML=hB;document.getElementById('totDepok').innerText='Depok: '+tD+' Pnp';document.getElementById('totBandara').innerText='Bandara: '+tB+' Pnp';document.getElementById('totAll').innerText='Total Semua: '+(tD+tB)+' Pnp';document.getElementById('totDariLimo').innerText='Dari Limo: '+tDL;document.getElementById('totKeLimo').innerText='Ke Limo: '+tKL;setTabRekap(tabRekap);}
+function simpanLimo(tgl,rute,jam,val){let k=kunciLimo(tgl,rute,jam);if(val===''||val===null){delete limo[k];fbHapus('limo/'+keyAman(k));}else{limo[k]=val;fbSet('limo/'+keyAman(k),{k:k,v:val,ts:Date.now()});}simpanLokal();render();renderBulanan();renderFormat();}
+function totalLimoPerTanggal(tgl,rute){let t=0;Object.keys(limo).forEach(k=>{let p=k.split('|');if(p[0]===tgl&&p[1]===rute)t+=Number(limo[k]||0);});return t;}
+function hitungBulanan(bln){let g={};data.forEach(d=>{if(bln&&!d.tgl.startsWith(bln))return;if(!g[d.tgl])g[d.tgl]={depokKotor:0,bandaraKotor:0};if(d.rute==='Depok')g[d.tgl].depokKotor+=Number(d.pnp);else g[d.tgl].bandaraKotor+=Number(d.pnp);});Object.keys(limo).forEach(k=>{let tgl=k.split('|')[0];if(bln&&!tgl.startsWith(bln))return;if(!g[tgl])g[tgl]={depokKotor:0,bandaraKotor:0};});let keys=Object.keys(g).sort();let rows=[];let tDepok=0,tDari=0,tBand=0,tKe=0,tTot=0;keys.forEach(k=>{let gg=g[k];let dari=totalLimoPerTanggal(k,'Depok');let ke=totalLimoPerTanggal(k,'Bandara');let depok=gg.depokKotor-dari;let bandara=gg.bandaraKotor-ke;let tot=depok+dari+bandara+ke;tDepok+=depok;tDari+=dari;tBand+=bandara;tKe+=ke;tTot+=tot;rows.push({tgl:k,tampil:k.split('-').reverse().join('/'),depok,dariLimo:dari,bandara,keLimo:ke,total:tot,db:depok+bandara,limoTotal:dari+ke});});return{rows,tDepok,tDariLimo:tDari,tBandara:tBand,tKeLimo:tKe,tTotal:tTot};}
+function renderGrafik(rows){let el=document.getElementById('grafikBulanan');if(!rows.length){el.innerHTML='<div class="grafik-kosong">Belum ada data</div>';return;}let mx=0;rows.forEach(x=>{mx=Math.max(mx,x.db,x.limoTotal);});if(mx===0)mx=1;let h='<div class="grafik-chart">';rows.forEach(x=>{let hDB=Math.max(4,Math.round(x.db/mx*150));let hL=Math.max(4,Math.round(x.limoTotal/mx*150));h+='<div class="grafik-col"><div class="grafik-bars"><div class="grafik-bar-wrap"><div class="grafik-nilai">'+x.db+'</div><div class="grafik-bar bar-db" style="height:'+hDB+'px"></div></div><div class="grafik-bar-wrap"><div class="grafik-nilai">'+x.limoTotal+'</div><div class="grafik-bar bar-l" style="height:'+hL+'px"></div></div></div><div class="grafik-tgl">'+x.tampil.slice(0,5)+'</div></div>';});h+='</div>';el.innerHTML=h;}
+function renderBulanan(){let bln=document.getElementById('bulan').value;let r=hitungBulanan(bln);let h='';r.rows.forEach(x=>{h+=`<tr><td>${x.tampil}</td><td>${x.depok}</td><td>${x.dariLimo}</td><td>${x.bandara}</td><td>${x.keLimo}</td><td><b>${x.total}</b></td></tr>`;});if(!r.rows.length)h='<tr><td colspan="6">Belum ada data di bulan ini</td></tr>';document.getElementById('listBulanan').innerHTML=h;document.getElementById('totBDepok').innerText='Depok: '+r.tDepok;document.getElementById('totBDariLimo').innerText='Dari Limo: '+r.tDariLimo;document.getElementById('totBBandara').innerText='Bandara: '+r.tBandara;document.getElementById('totBKeLimo').innerText='Ke Limo: '+r.tKeLimo;document.getElementById('totBAll').innerText='Total: '+r.tTotal;renderGrafik(r.rows);}
+function exportBulanan(){let bln=document.getElementById('bulan').value;if(!bln){alert('Pilih bulan dulu Aa');return;}let r=hitungBulanan(bln);if(!r.rows.length){alert('Belum ada data');return;}let nb=new Date(bln+'-01').toLocaleDateString('id-ID',{month:'long',year:'numeric'}).replace(/ /g,'_');let csv='\uFEFFLaporan JAC\nBulan,'+nb.replace(/_/g,' ')+'\n\nTanggal,Depok,Dari Limo,Bandara,Ke Limo,Total\n';r.rows.forEach(x=>{csv+=x.tampil+','+x.depok+','+x.dariLimo+','+x.bandara+','+x.keLimo+','+x.total+'\n';});csv+='TOTAL,'+r.tDepok+','+r.tDariLimo+','+r.tBandara+','+r.tKeLimo+','+r.tTotal+'\n';let blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Laporan_JAC_'+nb+'.csv';document.body.appendChild(a);a.click();document.body.removeChild(a);alert('Berhasil export Aa!');}
+function namaHariDanTanggalPanjang(tgl){let p=tgl.split('-');let d=new Date(Number(p[0]),Number(p[1])-1,Number(p[2]));return{hari:namaHariArr[d.getDay()],panjang:Number(p[2])+' '+namaBulanArr[Number(p[1])-1]+' '+p[0]};}
+function hitungShift(tgl,shift){let list=data.filter(d=>d.tgl===tgl&&d.rute==='Bandara');if(shift===1)list=list.filter(d=>nilaiJam(d.jam)<nilaiJam('15:20'));if(shift===2)list=list.filter(d=>nilaiJam(d.jam)>=nilaiJam('15:20'));let tot=0,ke=0;list.forEach(d=>{tot+=Number(d.pnp);ke+=Number(limo[kunciLimo(d.tgl,'Bandara',d.jam)]||0);});return{total:tot,keLimo:ke,depok:tot-ke,ritase:list.length};}
+function hitungTotalHarian(tgl){let dL=data.filter(d=>d.tgl===tgl&&d.rute==='Depok');let bL=data.filter(d=>d.tgl===tgl&&d.rute==='Bandara');let tDK=0,tBK=0,dari=0,ke=0;dL.forEach(d=>{tDK+=Number(d.pnp);dari+=Number(limo[kunciLimo(d.tgl,'Depok',d.jam)]||0);});bL.forEach(d=>{tBK+=Number(d.pnp);ke+=Number(limo[kunciLimo(d.tgl,'Bandara',d.jam)]||0);});return{depokBandara:tDK-dari,dariLimo:dari,totalDepok:tDK,bandaraDepok:tBK-ke,keLimo:ke,totalBandara:tBK,ritase:dL.length+bL.length,totalHarian:tDK+tBK};}
+function renderFormat(){let tgl=document.getElementById('tanggalFormat').value;let jenis=document.getElementById('jenisLaporan').value;if(!tgl){document.getElementById('previewFormat').textContent='Pilih tanggal dulu Aa';return;}let info=namaHariDanTanggalPanjang(tgl);let teks='';if(jenis==='shift1'||jenis==='shift2'){let s=jenis==='shift1'?1:2;let h=hitungShift(tgl,s);teks='*LAPORAN SHIFT '+s+'*\n\n'+(s===1?'Selamat sore Team':'Selamat malam Team')+'\n\nLaporan Harian\nJAC Hiba Utama\nBANDARA SOETTA\n*Hari : '+info.hari+'*\n*Tanggal : '+info.panjang+'*\n'+(s===1?'*Dari Jam : 05:20 - 14:50*':'*Dari Jam : 15:20 - 00:20*')+'\n--------------------------------\nBsh - Depok = '+h.depok+' pnp\nBsh - Limo = '+h.keLimo+' pnp\nTotal Pnp = '+h.total+' pnp\nRitase = '+h.ritase+'\n--------------------------------\nDemikian laporan harian yang dapat disampaikan.\n\n*Terima Kasih*';}else{let t=hitungTotalHarian(tgl);teks='*LAPORAN HARIAN*\n\n*Hari : '+info.hari+'*\n*Tanggal : '+info.panjang+'*\n\n*1. DEPOK*\n- Depok - Bandara = '+t.depokBandara+'\n- Limo - Bandara = '+t.dariLimo+'\n- _TOTAL DEPOK = '+t.totalDepok+'_\n\n*2. BANDARA*\n- Bandara - Depok = '+t.bandaraDepok+'\n- Bandara - Limo = '+t.keLimo+'\n- _TOTAL BANDARA = '+t.totalBandara+'_\n- Ritase/KR = '+t.ritase+'\n\n___________________________\n\n- *_TOTAL Harian = '+t.totalHarian+'_*\n\nDemikian laporan harian yang dapat disampaikan.\n\n*Terima Kasih*';}teksFormatTerakhir=teks;document.getElementById('previewFormat').textContent=teks;}
+function editPreview(){let el=document.getElementById('previewFormat');el.focus();}
+function onPreviewEdit(){teksFormatTerakhir=document.getElementById('previewFormat').innerText;}
+function shareWA(){let isi=document.getElementById('previewFormat').innerText;if(!isi){renderFormat();isi=document.getElementById('previewFormat').innerText;}window.open('https://wa.me/?text='+encodeURIComponent(isi),'_blank');}
+function tambah(){let tgl=document.getElementById('tanggal').value;let rute=document.getElementById('rute').value;let jam=document.getElementById('jam').value.trim();let body=document.getElementById('body').value.trim().toUpperCase();let pnp=document.getElementById('penumpang').value;let ket=document.getElementById('ket').value;if(!tgl||!jam||!pnp){alert('Isi tanggal, jam & penumpang dulu Aa');return;}if(jamTerpakai(tgl,rute).includes(jam)){alert('Jam '+jam+' SUDAH TERPAKAI Aa!');updateJamList();return;}if(editIndex!==-1){let keyBaru=kunciLimo(tgl,rute,jam);let dLama=data[editIndex];if(editKeyLimoLama&&editKeyLimoLama!==keyBaru&&limo[editKeyLimoLama]!==undefined){limo[keyBaru]=limo[editKeyLimoLama];delete limo[editKeyLimoLama];fbSet('limo/'+keyAman(keyBaru),{k:keyBaru,v:limo[keyBaru],ts:Date.now()});fbHapus('limo/'+keyAman(editKeyLimoLama));}let kLama=kunciData(dLama);let obj={tgl,rute,jam,body,pnp,ket,ts:Date.now()};data[editIndex]=obj;if(kLama!==kunciData(obj))fbHapus('data/'+keyAman(kLama));fbSet('data/'+keyAman(kunciData(obj)),obj);simpanLokal();alert('Perubahan disimpan!');batalEdit();document.getElementById('tanggalRekap').value=tgl;document.getElementById('tanggalFormat').value=tgl;updateSemuaTampilTanggal();render();renderBulanan();renderFormat();pindah('rekap');return;}let obj={tgl,rute,jam,body,pnp,ket,ts:Date.now()};data.push(obj);fbSet('data/'+keyAman(kunciData(obj)),obj);simpanLokal();document.getElementById('penumpang').value='';document.getElementById('body').value='';document.getElementById('jam').value='';document.getElementById('ket').value='';document.getElementById('tanggalRekap').value=tgl;document.getElementById('tanggalFormat').value=tgl;updateSemuaTampilTanggal();alert('Berhasil! Cek di Rekap Laporan');updateJamList();render();renderBulanan();renderFormat();}
 const STATUS_LIST=["READY","INAP BANDARA","SERVICE","AKAP","STORING","DLL"];
-function kelasStatus(s){ if(s==="READY") return "st-ready"; if(s==="INAP BANDARA") return "st-inap"; return "st-merah"; }
-function defaultKet(s,ketLama){ if(s==="DLL") return ketLama||""; return s; }
-function getStockTanggal(tgl){
-  if(!stockData[tgl]){ stockData[tgl]={}; listBodyBus.forEach(b=>{ stockData[tgl][b]={status:"READY",ket:"READY",ts:0}; }); }
-  return stockData[tgl];
-}
-function tsBaruStock(){
-  let mx=0; Object.keys(stockData||{}).forEach(t=>{ Object.keys(stockData[t]||{}).forEach(b=>{ let v=(stockData[t][b]||{}).ts||0; if(v>mx) mx=v; }); });
-  return Math.max(Date.now(), mx+1);
-}
-function simpanLokal(){
-  try{ localStorage.setItem('jac_tim_cache', JSON.stringify({data,limo,stock:stockData,info:infoData,rencana:rencanaData})); }catch(e){}
-}
-function renderStock(){
-  let tgl=document.getElementById('tanggalStock').value; if(!tgl) return;
-  let st=getStockTanggal(tgl); let h=''; let cReady=0,cInap=0,cMerah=0;
-  listBodyBus.forEach(body=>{
-    let item=st[body]||{status:"READY",ket:"READY",ts:0};
-    if(item.status==="READY") cReady++; else if(item.status==="INAP BANDARA") cInap++; else cMerah++;
-    let opts=STATUS_LIST.map(s=>`<option value="${s}" ${s===item.status?'selected':''}>${s}</option>`).join('');
-    let isDLL=item.status==="DLL";
-    h+=`<tr><td class="no-body">${body}</td><td><select class="status-select ${kelasStatus(item.status)}" onchange="ubahStatusStock('${body}',this.value)">${opts}</select></td><td><input class="ket-input" type="text" value="${(item.ket||'').replace(/"/g,'&quot;')}" ${isDLL?'':'disabled'} placeholder="${isDLL?'Ketik keterangan...':'Otomatis'}" onchange="ubahKetStock('${body}',this.value)"></td></tr>`;
-  });
-  document.getElementById('listStock').innerHTML=h;
-  document.getElementById('totReady').innerText='READY: '+cReady;
-  document.getElementById('totInap').innerText='INAP: '+cInap;
-  document.getElementById('totMerah').innerText='SERVICE / DLL: '+cMerah;
-  renderInfo();
-}
-function ubahStatusStock(body,status){
-  let tgl=document.getElementById('tanggalStock').value; let st=getStockTanggal(tgl);
-  let lama=st[body]||{status:"READY",ket:"READY",ts:0};
-  let ketBaru=defaultKet(status, status==="DLL" ? (lama.status==="DLL"?lama.ket:"") : "");
-  let obj={status:status,ket:ketBaru,ts:tsBaruStock()};
-  st[body]=obj; simpanLokal(); fbSet('stock/'+tgl+'/'+body, obj); renderStock();
-}
-function ubahKetStock(body,val){
-  let tgl=document.getElementById('tanggalStock').value; let st=getStockTanggal(tgl);
-  st[body].ket=val; st[body].ts=tsBaruStock(); simpanLokal(); fbSet('stock/'+tgl+'/'+body, st[body]);
-}
-function resetStock(){
-  let tgl=document.getElementById('tanggalStock').value; if(!tgl){alert('Pilih tanggal dulu Aa');return;}
-  if(!confirm('Reset semua unit tanggal '+tgl.split('-').reverse().join('/')+' jadi READY?')) return;
-  let st=getStockTanggal(tgl); let ts=tsBaruStock();
-  let updates={};
-  listBodyBus.forEach(b=>{ st[b]={status:"READY",ket:"READY",ts:ts}; updates['stock/'+tgl+'/'+b]=st[b]; });
-  stockData[tgl]=st; simpanLokal(); fbUpdate(updates); renderStock();
-  alert('Berhasil di-reset jadi READY semua Aa, semua tim langsung ikut READY.');
-}
-function renderInfo(){
-  let tgl=document.getElementById('tanggalStock').value; if(!infoData[tgl]) infoData[tgl]=[];
-  let arr=infoData[tgl]; if(arr.length===0) arr=[""];
-  let h=''; arr.forEach((txt,i)=>{ h+=`<div class="info-row"><span class="no-info">${i+1}.</span><input type="text" value="${String(txt).replace(/"/g,'&quot;')}" placeholder="Ketik info tambahan..." onchange="ubahInfo(${i},this.value)"><button class="btn-hapus-info" onclick="hapusInfo(${i})">✕</button></div>`; });
-  document.getElementById('listInfoTambahan').innerHTML=h;
-}
-function ubahInfo(i,val){ let tgl=document.getElementById('tanggalStock').value; if(!infoData[tgl]) infoData[tgl]=[]; infoData[tgl][i]=val; simpanLokal(); fbSet('info/'+tgl+'/'+i, {v:val, ts:Date.now()}); }
-function tambahInfo(){ let tgl=document.getElementById('tanggalStock').value; if(!infoData[tgl]) infoData[tgl]=[]; infoData[tgl].push(""); simpanLokal(); renderInfo(); let inputs=document.querySelectorAll('#listInfoTambahan input'); if(inputs.length) inputs[inputs.length-1].focus(); }
-function hapusInfo(i){ let tgl=document.getElementById('tanggalStock').value; infoData[tgl].splice(i,1); if(infoData[tgl].length===0) infoData[tgl]=[""]; simpanLokal(); fbHapus('info/'+tgl+'/'+i); renderInfo(); }
-function getRencana(tgl){
-  if(!rencanaData[tgl]){ rencanaData[tgl]={depok:[],bandara:[]}; for(let i=0;i<45;i++){ rencanaData[tgl].depok.push({body:"",jam:"",ts:0}); rencanaData[tgl].bandara.push({body:"",jam:"",ts:0}); } }
-  while(rencanaData[tgl].depok.length<45) rencanaData[tgl].depok.push({body:"",jam:"",ts:0});
-  while(rencanaData[tgl].bandara.length<45) rencanaData[tgl].bandara.push({body:"",jam:"",ts:0});
-  return rencanaData[tgl];
-}
-function tsBaruRencana(){
-  let mx=0; Object.keys(rencanaData||{}).forEach(t=>{ ['depok','bandara'].forEach(s=>{ (rencanaData[t][s]||[]).forEach(c=>{ let v=(c||{}).ts||0; if(v>mx) mx=v; }); }); });
-  return Math.max(Date.now(), mx+1);
-}
-function isMerahRencana(tgl,body){ let st=stockData[tgl] && stockData[tgl][body]; if(!st) return false; return st.status!=="READY" && st.status!=="INAP BANDARA"; }
-function statusBodyRencana(tgl,body){ let st=stockData[tgl] && stockData[tgl][body]; return st ? st.status : "READY"; }
-function nextReadyPos(tgl, dariPos){ for(let step=1; step<=listBodyBus.length; step++){ let p=(dariPos+step)%listBodyBus.length; if(!isMerahRencana(tgl, listBodyBus[p])) return p; } return -1; }
-function optBodyRencana(tgl,val){ let h='<option value="">-</option>'; listBodyBus.forEach(b=>{ let merah=isMerahRencana(tgl,b); let label=merah ? b+' - '+statusBodyRencana(tgl,b) : b; h+=`<option value="${b}" ${b===val?'selected':''} ${merah && b!==val ? 'disabled' : ''}>${label}</option>`; }); return h; }
-function renderRencana(){
-  let tgl=document.getElementById('tanggalRencana').value; if(!tgl) return;
-  let r=getRencana(tgl);
-  let jamDepokTerpakai=r.depok.map(x=>x.jam).filter(j=>j); let jamBandaraTerpakai=r.bandara.map(x=>x.jam).filter(j=>j);
-  let dlHtml='';
-  for(let i=0;i<45;i++){
-    let d=r.depok[i]||{body:"",jam:""}; let b=r.bandara[i]||{body:"",jam:""};
-    let sisaD=jadwal.Depok.filter(j=>j===d.jam || !jamDepokTerpakai.includes(j));
-    let sisaB=jadwal.Bandara.filter(j=>j===b.jam || !jamBandaraTerpakai.includes(j));
-    dlHtml+='<datalist id="dlD'+i+'">'+sisaD.map(j=>'<option value="'+j+'">').join('')+'</datalist>';
-    dlHtml+='<datalist id="dlB'+i+'">'+sisaB.map(j=>'<option value="'+j+'">').join('')+'</datalist>';
-  }
-  document.getElementById('wrapDatalistRencana').innerHTML=dlHtml;
-  let h=''; let cD=0,cB=0;
-  for(let i=0;i<45;i++){
-    let d=r.depok[i]||{body:"",jam:""}; let b=r.bandara[i]||{body:"",jam:""};
-    if(d.body||d.jam) cD++; if(b.body||b.jam) cB++;
-    let escD=(d.jam||'').replace(/"/g,'&quot;'); let escB=(b.jam||'').replace(/"/g,'&quot;');
-    h+=`<tr><td class="no">${i+1}</td>`
-      +`<td><select class="rencana-sel ${d.body?'':'kosong'}" onchange="ubahRencana('depok',${i},'body',this.value)">${optBodyRencana(tgl,d.body)}</select></td>`
-      +`<td><input class="rencana-inp" type="text" list="dlD${i}" placeholder="-" value="${escD}" onchange="ubahRencana('depok',${i},'jam',this.value)"></td>`
-      +`<td><select class="rencana-sel ${b.body?'':'kosong'}" onchange="ubahRencana('bandara',${i},'body',this.value)">${optBodyRencana(tgl,b.body)}</select></td>`
-      +`<td><input class="rencana-inp" type="text" list="dlB${i}" placeholder="-" value="${escB}" onchange="ubahRencana('bandara',${i},'jam',this.value)"></td></tr>`;
-  }
-  document.getElementById('listRencana').innerHTML=h;
-  document.getElementById('totRencanaDepok').innerText='Depok: '+cD+' / 45';
-  document.getElementById('totRencanaBandara').innerText='Bandara: '+cB+' / 45';
-}
-function ubahRencana(sisi,idx,field,val){
-  let tgl=document.getElementById('tanggalRencana').value; let arr=getRencana(tgl)[sisi];
-  if(field==='body' && val!=='' && isMerahRencana(tgl,val)){ alert('Body '+val+' lagi '+statusBodyRencana(tgl,val)+' di Stock Unit tanggal ini Aa, ga bisa dipilih.'); renderRencana(); return; }
-  if(field==='jam'){
-    val=val.trim();
-    if(val!==''){
-      let duplikatIdx=arr.findIndex((x,i)=>i!==idx && x.jam===val);
-      if(duplikatIdx!==-1){ let labelSisi=sisi==='depok'?'DEPOK':'BANDARA'; alert('Jam '+val+' di '+labelSisi+' SUDAH TERPAKAI di Baris '+(duplikatIdx+1)+' Aa! Pilih jam lain yang masih sisa.'); renderRencana(); return; }
-    }
-  }
-  arr[idx][field]=val; arr[idx].ts=tsBaruRencana();
-  fbSet('rencana/'+tgl+'/'+sisi+'/'+idx, arr[idx]);
-  if(field==='body' && val!==''){
-    let awalBlok=Math.floor(idx/7)*7; let posisiDiBlok=idx-awalBlok;
-    if(posisiDiBlok===1){
-      let body1=arr[awalBlok].body; let body2=arr[awalBlok+1].body;
-      let pos1=listBodyBus.indexOf(body1); let pos2=listBodyBus.indexOf(body2);
-      if(pos1!==-1 && pos2!==-1){
-        let nextPos=nextReadyPos(tgl, pos1);
-        if(pos2===nextPos){
-          let collected=[]; let p=pos2;
-          for(let k=0;k<5;k++){ let np=nextReadyPos(tgl, p); if(np===-1) break; if(np===pos1 || np===pos2) break; collected.push(listBodyBus[np]); p=np; }
-          let updates={};
-          for(let k=0;k<collected.length;k++){
-            let targetIdx=awalBlok+2+k; if(targetIdx>=awalBlok+7 || targetIdx>=45) break;
-            arr[targetIdx].body=collected[k]; arr[targetIdx].ts=tsBaruRencana();
-            updates['rencana/'+tgl+'/'+sisi+'/'+targetIdx]=arr[targetIdx];
-          }
-          simpanLokal(); fbUpdate(updates); renderRencana(); return;
-        }
-      }
-    }
-  }
-  simpanLokal(); renderRencana();
-}
-function resetRencana(){
-  let tgl=document.getElementById('tanggalRencana').value;
-  if(!confirm('Kosongkan semua rencana tanggal '+tgl.split('-').reverse().join('/')+' ?')) return;
-  delete rencanaData[tgl]; simpanLokal(); fbHapus('rencana/'+tgl); renderRencana();
-}
-function salinRencanaKemarin(){
-  let tgl=document.getElementById('tanggalRencana').value; let d=new Date(tgl); d.setDate(d.getDate()-1); let tglKemarin=toISO(d);
-  if(!rencanaData[tglKemarin]){ alert('Kemarin ('+tglKemarin.split('-').reverse().join('/')+') belum ada rencana Aa'); return; }
-  if(!confirm('Salin rencana kemarin ke hari ini? Data hari ini akan ketimpa.')) return;
-  rencanaData[tgl]=JSON.parse(JSON.stringify(rencanaData[tglKemarin]));
-  simpanLokal();
-  let updates={};
-  ['depok','bandara'].forEach(s=>{ for(let i=0;i<45;i++){ let c=rencanaData[tgl][s][i]; c.ts=tsBaruRencana(); updates['rencana/'+tgl+'/'+s+'/'+i]=c; } });
-  fbUpdate(updates); renderRencana(); alert('Berhasil disalin dari kemarin!');
-}
+function kelasStatus(s){if(s==="READY")return"st-ready";if(s==="INAP BANDARA")return"st-inap";return"st-merah";}
+function defaultKet(s,kl){if(s==="DLL")return kl||"";return s;}
+function getStockTanggal(tgl){if(!stockData[tgl]){stockData[tgl]={};listBodyBus.forEach(b=>{stockData[tgl][b]={status:"READY",ket:"READY",ts:0};});}return stockData[tgl];}
+function tsBaruStock(){let mx=0;Object.keys(stockData||{}).forEach(t=>{Object.keys(stockData[t]||{}).forEach(b=>{let v=(stockData[t][b]||{}).ts||0;if(v>mx)mx=v;});});return Math.max(Date.now(),mx+1);}
+function simpanLokal(){try{localStorage.setItem('jac_tim_cache',JSON.stringify({data,limo,stock:stockData,info:infoData,rencana:rencanaData,serahTerima:serahTerima}));}catch(e){}}
+function renderStock(){let tgl=document.getElementById('tanggalStock').value;if(!tgl)return;let st=getStockTanggal(tgl);let h='';let cR=0,cI=0,cM=0;listBodyBus.forEach(body=>{let item=st[body]||{status:"READY",ket:"READY",ts:0};if(item.status==="READY")cR++;else if(item.status==="INAP BANDARA")cI++;else cM++;let opts=STATUS_LIST.map(s=>`<option value="${s}" ${s===item.status?'selected':''}>${s}</option>`).join('');let isDLL=item.status==="DLL";h+=`<tr><td class="no-body">${body}</td><td><select class="status-select ${kelasStatus(item.status)}" onchange="ubahStatusStock('${body}',this.value)">${opts}</select></td><td><input class="ket-input" type="text" value="${(item.ket||'').replace(/"/g,'&quot;')}" ${isDLL?'':'disabled'} placeholder="${isDLL?'Ketik keterangan...':'Otomatis'}" onchange="ubahKetStock('${body}',this.value)"></td></tr>`;});document.getElementById('listStock').innerHTML=h;document.getElementById('totReady').innerText='READY: '+cR;document.getElementById('totInap').innerText='INAP: '+cI;document.getElementById('totMerah').innerText='SERVICE / DLL: '+cM;renderInfo();renderSerahTerima();}
+function ubahStatusStock(body,status){let tgl=document.getElementById('tanggalStock').value;let st=getStockTanggal(tgl);let lama=st[body]||{status:"READY",ket:"READY",ts:0};let ketBaru=defaultKet(status,status==="DLL"?(lama.status==="DLL"?lama.ket:""):"");let obj={status:status,ket:ketBaru,ts:tsBaruStock()};st[body]=obj;simpanLokal();fbSet('stock/'+tgl+'/'+body,obj);renderStock();}
+function ubahKetStock(body,val){let tgl=document.getElementById('tanggalStock').value;let st=getStockTanggal(tgl);st[body].ket=val;st[body].ts=tsBaruStock();simpanLokal();fbSet('stock/'+tgl+'/'+body,st[body]);}
+function resetStock(){let tgl=document.getElementById('tanggalStock').value;if(!tgl){alert('Pilih tanggal dulu Aa');return;}if(!confirm('Reset semua unit tanggal '+tgl+' jadi READY?'))return;let st=getStockTanggal(tgl);let ts=tsBaruStock();let up={};listBodyBus.forEach(b=>{st[b]={status:"READY",ket:"READY",ts:ts};up['stock/'+tgl+'/'+b]=st[b];});stockData[tgl]=st;simpanLokal();fbUpdate(up);renderStock();alert('Berhasil di-reset jadi READY semua Aa.');}
+function renderInfo(){let tgl=document.getElementById('tanggalStock').value;if(!infoData[tgl])infoData[tgl]=[];let arr=infoData[tgl];if(arr.length===0)arr=[""];let h='';arr.forEach((txt,i)=>{h+=`<div class="info-row"><span class="no-info">${i+1}.</span><input type="text" value="${String(txt).replace(/"/g,'&quot;')}" placeholder="Ketik info tambahan..." onchange="ubahInfo(${i},this.value)"><button class="btn-hapus-info" onclick="hapusInfo(${i})">✕</button></div>`;});document.getElementById('listInfoTambahan').innerHTML=h;}
+function ubahInfo(i,val){let tgl=document.getElementById('tanggalStock').value;if(!infoData[tgl])infoData[tgl]=[];infoData[tgl][i]=val;simpanLokal();fbSet('info/'+tgl+'/'+i,{v:val,ts:Date.now()});}
+function tambahInfo(){let tgl=document.getElementById('tanggalStock').value;if(!infoData[tgl])infoData[tgl]=[];infoData[tgl].push("");simpanLokal();renderInfo();}
+function hapusInfo(i){let tgl=document.getElementById('tanggalStock').value;infoData[tgl].splice(i,1);if(infoData[tgl].length===0)infoData[tgl]=[""];simpanLokal();fbHapus('info/'+tgl+'/'+i);renderInfo();}
+function getRencana(tgl){if(!rencanaData[tgl]){rencanaData[tgl]={depok:[],bandara:[]};for(let i=0;i<45;i++){rencanaData[tgl].depok.push({body:"",jam:"",ts:0});rencanaData[tgl].bandara.push({body:"",jam:"",ts:0});}}while(rencanaData[tgl].depok.length<45)rencanaData[tgl].depok.push({body:"",jam:"",ts:0});while(rencanaData[tgl].bandara.length<45)rencanaData[tgl].bandara.push({body:"",jam:"",ts:0});return rencanaData[tgl];}
+function tsBaruRencana(){let mx=0;Object.keys(rencanaData||{}).forEach(t=>{['depok','bandara'].forEach(s=>{(rencanaData[t][s]||[]).forEach(c=>{let v=(c||{}).ts||0;if(v>mx)mx=v;});});});return Math.max(Date.now(),mx+1);}
+function isMerahRencana(tgl,body){let st=stockData[tgl]&&stockData[tgl][body];if(!st)return false;return st.status!=="READY"&&st.status!=="INAP BANDARA";}
+function statusBodyRencana(tgl,body){let st=stockData[tgl]&&stockData[tgl][body];return st?st.status:"READY";}
+function nextReadyPos(tgl,dari){for(let s=1;s<=listBodyBus.length;s++){let p=(dari+s)%listBodyBus.length;if(!isMerahRencana(tgl,listBodyBus[p]))return p;}return -1;}
+function optBodyRencana(tgl,val){let h='<option value="">-</option>';listBodyBus.forEach(b=>{let merah=isMerahRencana(tgl,b);let label=merah?b+' - '+statusBodyRencana(tgl,b):b;h+=`<option value="${b}" ${b===val?'selected':''} ${merah&&b!==val?'disabled':''}>${label}</option>`;});return h;}
+function renderRencana(){let tgl=document.getElementById('tanggalRencana').value;if(!tgl)return;let r=getRencana(tgl);let jd=r.depok.map(x=>x.jam).filter(j=>j);let jb=r.bandara.map(x=>x.jam).filter(j=>j);let dl='';for(let i=0;i<45;i++){let d=r.depok[i]||{body:"",jam:""};let b=r.bandara[i]||{body:"",jam:""};let sD=jadwal.Depok.filter(j=>j===d.jam||!jd.includes(j));let sB=jadwal.Bandara.filter(j=>j===b.jam||!jb.includes(j));dl+='<datalist id="dlD'+i+'">'+sD.map(j=>'<option value="'+j+'">').join('')+'</datalist>';dl+='<datalist id="dlB'+i+'">'+sB.map(j=>'<option value="'+j+'">').join('')+'</datalist>';}document.getElementById('wrapDatalistRencana').innerHTML=dl;let h='';let cD=0,cB=0;for(let i=0;i<45;i++){let d=r.depok[i]||{body:"",jam:""};let b=r.bandara[i]||{body:"",jam:""};if(d.body||d.jam)cD++;if(b.body||b.jam)cB++;h+=`<tr><td class="no">${i+1}</td><td><select class="rencana-sel ${d.body?'':'kosong'}" onchange="ubahRencana('depok',${i},'body',this.value)">${optBodyRencana(tgl,d.body)}</select></td><td><input class="rencana-inp" type="text" list="dlD${i}" placeholder="-" value="${(d.jam||'').replace(/"/g,'&quot;')}" onchange="ubahRencana('depok',${i},'jam',this.value)"></td><td><select class="rencana-sel ${b.body?'':'kosong'}" onchange="ubahRencana('bandara',${i},'body',this.value)">${optBodyRencana(tgl,b.body)}</select></td><td><input class="rencana-inp" type="text" list="dlB${i}" placeholder="-" value="${(b.jam||'').replace(/"/g,'&quot;')}" onchange="ubahRencana('bandara',${i},'jam',this.value)"></td></tr>`;}document.getElementById('listRencana').innerHTML=h;document.getElementById('totRencanaDepok').innerText='Depok: '+cD+' / 45';document.getElementById('totRencanaBandara').innerText='Bandara: '+cB+' / 45';}
+function ubahRencana(sisi,idx,field,val){let tgl=document.getElementById('tanggalRencana').value;let arr=getRencana(tgl)[sisi];if(field==='body'&&val!==''&&isMerahRencana(tgl,val)){alert('Body '+val+' lagi '+statusBodyRencana(tgl,val)+' Aa, ga bisa dipilih.');renderRencana();return;}if(field==='jam'){val=val.trim();if(val!==''){let dup=arr.findIndex((x,i)=>i!==idx&&x.jam===val);if(dup!==-1){alert('Jam '+val+' SUDAH TERPAKAI di Baris '+(dup+1)+' Aa!');renderRencana();return;}}}arr[idx][field]=val;arr[idx].ts=tsBaruRencana();fbSet('rencana/'+tgl+'/'+sisi+'/'+idx,arr[idx]);simpanLokal();renderRencana();}
+function resetRencana(){let tgl=document.getElementById('tanggalRencana').value;if(!confirm('Kosongkan semua rencana tanggal '+tgl+' ?'))return;delete rencanaData[tgl];simpanLokal();fbHapus('rencana/'+tgl);renderRencana();}
+function salinRencanaKemarin(){let tgl=document.getElementById('tanggalRencana').value;let d=new Date(tgl);d.setDate(d.getDate()-1);let tk=toISO(d);if(!rencanaData[tk]){alert('Kemarin belum ada rencana Aa');return;}if(!confirm('Salin rencana kemarin ke hari ini? Data hari ini akan ketimpa.'))return;rencanaData[tgl]=JSON.parse(JSON.stringify(rencanaData[tk]));simpanLokal();let up={};['depok','bandara'].forEach(s=>{for(let i=0;i<45;i++){let c=rencanaData[tgl][s][i];c.ts=tsBaruRencana();up['rencana/'+tgl+'/'+s+'/'+i]=c;}});fbUpdate(up);renderRencana();alert('Berhasil disalin dari kemarin!');}
+function renderSerahTerima(){let mq=document.getElementById('marqueeSerah');let bA=document.getElementById('boxSerahAktif');let bR=document.getElementById('boxSerahRiwayat');if(!mq||!bA)return;if(serahTerima&&serahTerima.aktif){let isi='⚠️ SERAH TERIMA '+serahTerima.dari.toUpperCase()+' ➜ '+serahTerima.ke.toUpperCase()+'  •  '+serahTerima.teks+'  •  ';document.getElementById('teksMarqueeSerah').innerText=isi+isi+isi;mq.style.display='block';document.body.classList.add('ada-serah');bA.style.display='block';bA.innerHTML='<div class="serah-aktif"><b>⚠️ PENGINGAT AKTIF - SEDANG JALAN DI SEMUA HALAMAN</b><br><br>"'+serahTerima.teks+'"<br><small>'+serahTerima.dari+' ➜ '+serahTerima.ke+' • Dibuat: '+serahTerima.dibuat+'</small><br><button class="btn-serah-konfirm" onclick="konfirmSerahTerima()">✅ KONFIRM - SERAH TERIMA DITERIMA</button></div>';}else{mq.style.display='none';document.body.classList.remove('ada-serah');bA.style.display='none';bA.innerHTML='';}if(serahTerima&&!serahTerima.aktif&&serahTerima.konfirmJam){bR.style.display='block';bR.innerHTML='<div class="serah-riwayat">✅ SERAH TERIMA TERAKHIR BERHASIL<br>'+serahTerima.dari+' ➜ '+serahTerima.ke+' • Dikonfirm: '+serahTerima.konfirmJam+'</div>';}else{bR.style.display='none';}}
+function buatSerahTerima(){let teks=document.getElementById('serahTeks').value.trim();if(!teks){alert('Isi dulu info serah terimanya Aa');return;}let dari=document.getElementById('serahDari').value;let ke=document.getElementById('serahKe').value;let jam=new Date().toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});serahTerima={teks:teks,dari:dari,ke:ke,dibuat:jam,aktif:true,konfirmOleh:'',konfirmJam:''};simpanLokal();fbSet('serahTerima',serahTerima);document.getElementById('serahTeks').value='';renderSerahTerima();alert('Berhasil Aa! Teks sekarang jalan di semua halaman, di semua HP tim.');}
+function konfirmSerahTerima(){if(!serahTerima||!serahTerima.aktif)return;if(!confirm('Konfirm serah terima?\n\n"'+serahTerima.teks+'"\n\nTeks berjalan akan hilang di semua HP.'))return;let jam=new Date().toLocaleString('id-ID',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});serahTerima.aktif=false;serahTerima.konfirmOleh=serahTerima.ke;serahTerima.konfirmJam=jam+' - '+serahTerima.ke;simpanLokal();fbSet('serahTerima',serahTerima);renderSerahTerima();alert('✅ Serah terima BERHASIL dikonfirm!\n'+serahTerima.konfirmJam);}
 let today=new Date().toISOString().slice(0,10);
-document.getElementById('tanggal').value=today;
-document.getElementById('tanggalRekap').value=today;
-document.getElementById('tanggalFormat').value=today;
-document.getElementById('tanggalStock').value=today;
-document.getElementById('tanggalRencana').value=today;
-document.getElementById('bulan').value=today.slice(0,7);
-updateSemuaTampilTanggal();
-gantiRute();
+document.getElementById('tanggal').value=today;document.getElementById('tanggalRekap').value=today;document.getElementById('tanggalFormat').value=today;document.getElementById('tanggalStock').value=today;document.getElementById('tanggalRencana').value=today;document.getElementById('bulan').value=today.slice(0,7);updateSemuaTampilTanggal();gantiRute();
 </script>
 <script>
-const FB_CONFIG = { databaseURL: 'https://laporan-jac-baru-default-rtdb.asia-southeast1.firebasedatabase.app' };
+const FB_CONFIG={databaseURL:'https://laporan-jac-baru-default-rtdb.asia-southeast1.firebasedatabase.app'};
 firebase.initializeApp(FB_CONFIG);
-const db = firebase.database();
-const rootRef = db.ref('team_v1');
+const db=firebase.database();
+const rootRef=db.ref('team_v1');
 let sudahDapatAwal=false;
-function setStatusOnline(ok){
-  let el=document.getElementById('statusSync');
-  if(!el) return;
-  if(ok){ el.className='status-online'; el.innerText='● ONLINE - Realtime'; }
-  else { el.className='status-offline'; el.innerText='● OFFLINE'; }
-}
-function fbSet(path, val){
-  if(sedangMenerima) return;
-  rootRef.child(path).set(val).catch(e=>{});
-}
-function fbUpdate(updates){
-  if(sedangMenerima) return;
-  rootRef.update(updates).catch(e=>{});
-}
-function fbHapus(path){
-  if(sedangMenerima) return;
-  rootRef.child(path).remove().catch(e=>{});
-}
-try{
-  let cache=JSON.parse(localStorage.getItem('jac_tim_cache')||'null');
-  if(cache){ data=cache.data||[]; limo=cache.limo||{}; stockData=cache.stock||{}; infoData=cache.info||{}; rencanaData=cache.rencana||{}; }
-}catch(e){}
-render(); renderBulanan(); renderFormat(); renderStock(); renderRencana();
-async function migrasiLama(){
-  try{
-    let snap=await rootRef.child('_migrated').get();
-    if(snap.val()) return;
-    let res=await fetch('https://laporan-jac-baru-default-rtdb.asia-southeast1.firebasedatabase.app/laporan.json');
-    let j=await res.json(); if(!j) return;
-    let updates={};
-    (j.data||[]).forEach(d=>{ updates['data/'+keyAman(kunciData(d))]=Object.assign({},d,{ts:d.ts||Date.now()}); });
-    Object.keys(j.limo||{}).forEach(k=>{ updates['limo/'+keyAman(k)]={k:k,v:j.limo[k],ts:Date.now()}; });
-    Object.keys(j.stock||{}).forEach(t=>{ Object.keys(j.stock[t]||{}).forEach(b=>{ let it=j.stock[t][b]; updates['stock/'+t+'/'+b]={status:it.status,ket:it.ket,ts:it.ts||Date.now()}; }); });
-    Object.keys(j.infoTambahan||{}).forEach(t=>{ (j.infoTambahan[t]||[]).forEach((v,i)=>{ updates['info/'+t+'/'+i]={v:v,ts:Date.now()}; }); });
-    Object.keys(j.rencana||{}).forEach(t=>{ ['depok','bandara'].forEach(s=>{ (j.rencana[t][s]||[]).forEach((c,i)=>{ updates['rencana/'+t+'/'+s+'/'+i]={body:c.body||'',jam:c.jam||'',ts:c.ts||Date.now()}; }); }); });
-    if(Object.keys(updates).length){ updates['_migrated']=Date.now(); await rootRef.update(updates); }
-  }catch(e){}
-}
-migrasiLama();
-rootRef.on('value', (snap)=>{
-  let v=snap.val()||{};
-  sedangMenerima=true;
-  let arrData=[];
-  Object.values(v.data||{}).forEach(d=>{ if(d && d.tgl) arrData.push(d); });
-  arrData.sort((a,b)=> (a.tgl+a.rute+a.jam).localeCompare(b.tgl+b.rute+b.jam));
-  let limoBaru={};
-  Object.values(v.limo||{}).forEach(it=>{ if(it && it.k) limoBaru[it.k]=it.v; });
-  let stockBaru={};
-  Object.keys(v.stock||{}).forEach(t=>{
-    stockBaru[t]={};
-    Object.keys(v.stock[t]||{}).forEach(b=>{ stockBaru[t][b]=v.stock[t][b]; });
-  });
-  let infoBaru={};
-  Object.keys(v.info||{}).forEach(t=>{
-    infoBaru[t]=[];
-    Object.keys(v.info[t]||{}).forEach(i=>{ infoBaru[t][Number(i)]= (v.info[t][i]||{}).v||''; });
-  });
-  let rencanaBaru={};
-  Object.keys(v.rencana||{}).forEach(t=>{
-    rencanaBaru[t]={depok:[],bandara:[]};
-    ['depok','bandara'].forEach(s=>{
-      for(let i=0;i<45;i++){
-        let c=(v.rencana[t]||{})[s] ? (v.rencana[t][s]||{})[i] : null;
-        rencanaBaru[t][s].push(c||{body:"",jam:"",ts:0});
-      }
-    });
-  });
-  if(!sudahDapatAwal && arrData.length===0 && data.length>0){
-    sudahDapatAwal=true; sedangMenerima=false;
-    let updates={};
-    data.forEach(d=>{ updates['data/'+keyAman(kunciData(d))]=d; });
-    Object.keys(limo).forEach(k=>{ updates['limo/'+keyAman(k)]={k:k,v:limo[k],ts:Date.now()}; });
-    Object.keys(stockData).forEach(t=>{ Object.keys(stockData[t]||{}).forEach(b=>{ updates['stock/'+t+'/'+b]=stockData[t][b]; }); });
-    if(Object.keys(updates).length) rootRef.update(updates);
-    setStatusOnline(true); return;
-  }
-  sudahDapatAwal=true;
-  data=arrData; limo=limoBaru; stockData=stockBaru; infoData=infoBaru; rencanaData=rencanaBaru;
-  simpanLokal();
-  let lagiEdit = editIndex!==-1;
-  render(); renderBulanan(); renderFormat(); renderStock(); renderRencana(); updateJamList();
-  sedangMenerima=false; setStatusOnline(true);
-}, (err)=>{ setStatusOnline(false); });
-db.ref('.info/connected').on('value', s=>{ setStatusOnline(!!s.val()); });
+function setStatusOnline(ok){let el=document.getElementById('statusSync');if(!el)return;if(ok){el.className='status-online';el.innerText='● ONLINE - Realtime';}else{el.className='status-offline';el.innerText='● OFFLINE';}}
+function fbSet(path,val){if(sedangMenerima)return;rootRef.child(path).set(val).catch(e=>{});}
+function fbUpdate(up){if(sedangMenerima)return;rootRef.update(up).catch(e=>{});}
+function fbHapus(path){if(sedangMenerima)return;rootRef.child(path).remove().catch(e=>{});}
+try{let cache=JSON.parse(localStorage.getItem('jac_tim_cache')||'null');if(cache){data=cache.data||[];limo=cache.limo||{};stockData=cache.stock||{};infoData=cache.info||{};rencanaData=cache.rencana||{};serahTerima=cache.serahTerima||null;}}catch(e){}
+render();renderBulanan();renderFormat();renderStock();renderRencana();renderSerahTerima();
+rootRef.on('value',(snap)=>{let v=snap.val()||{};sedangMenerima=true;let arr=[];Object.values(v.data||{}).forEach(d=>{if(d&&d.tgl)arr.push(d);});arr.sort((a,b)=>(a.tgl+a.rute+a.jam).localeCompare(b.tgl+b.rute+b.jam));let limoBaru={};Object.values(v.limo||{}).forEach(it=>{if(it&&it.k)limoBaru[it.k]=it.v;});let stockBaru={};Object.keys(v.stock||{}).forEach(t=>{stockBaru[t]={};Object.keys(v.stock[t]||{}).forEach(b=>{stockBaru[t][b]=v.stock[t][b];});});let infoBaru={};Object.keys(v.info||{}).forEach(t=>{infoBaru[t]=[];Object.keys(v.info[t]||{}).forEach(i=>{infoBaru[t][Number(i)]=(v.info[t][i]||{}).v||'';});});let rencanaBaru={};Object.keys(v.rencana||{}).forEach(t=>{rencanaBaru[t]={depok:[],bandara:[]};['depok','bandara'].forEach(s=>{for(let i=0;i<45;i++){let c=(v.rencana[t]||{})[s]?(v.rencana[t][s]||{})[i]:null;rencanaBaru[t][s].push(c||{body:"",jam:"",ts:0});}});});if(v.serahTerima)serahTerima=v.serahTerima;if(!sudahDapatAwal&&arr.length===0&&data.length>0){sudahDapatAwal=true;sedangMenerima=false;let up={};data.forEach(d=>{up['data/'+keyAman(kunciData(d))]=d;});Object.keys(limo).forEach(k=>{up['limo/'+keyAman(k)]={k:k,v:limo[k],ts:Date.now()};});if(Object.keys(up).length)rootRef.update(up);setStatusOnline(true);return;}sudahDapatAwal=true;data=arr;limo=limoBaru;stockData=stockBaru;infoData=infoBaru;rencanaData=rencanaBaru;simpanLokal();render();renderBulanan();renderFormat();renderStock();renderRencana();updateJamList();renderSerahTerima();sedangMenerima=false;setStatusOnline(true);},(err)=>{setStatusOnline(false);});
+db.ref('.info/connected').on('value',s=>{setStatusOnline(!!s.val());});
 </script>
 </body>
-  </html>
+</html>
