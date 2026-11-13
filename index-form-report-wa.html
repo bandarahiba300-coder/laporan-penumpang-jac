@@ -379,7 +379,34 @@ function statusBodyRencana(tgl,body){let st=stockData[tgl]&&stockData[tgl][body]
 function nextReadyPos(tgl,dari){for(let s=1;s<=listBodyBus.length;s++){let p=(dari+s)%listBodyBus.length;if(!isMerahRencana(tgl,listBodyBus[p]))return p;}return -1;}
 function optBodyRencana(tgl,val){let h='<option value="">-</option>';listBodyBus.forEach(b=>{let merah=isMerahRencana(tgl,b);let label=merah?b+' - '+statusBodyRencana(tgl,b):b;h+=`<option value="${b}" ${b===val?'selected':''} ${merah&&b!==val?'disabled':''}>${label}</option>`;});return h;}
 function renderRencana(){let tgl=document.getElementById('tanggalRencana').value;if(!tgl)return;let r=getRencana(tgl);let jd=r.depok.map(x=>x.jam).filter(j=>j);let jb=r.bandara.map(x=>x.jam).filter(j=>j);let dl='';for(let i=0;i<45;i++){let d=r.depok[i]||{body:"",jam:""};let b=r.bandara[i]||{body:"",jam:""};let sD=jadwal.Depok.filter(j=>j===d.jam||!jd.includes(j));let sB=jadwal.Bandara.filter(j=>j===b.jam||!jb.includes(j));dl+='<datalist id="dlD'+i+'">'+sD.map(j=>'<option value="'+j+'">').join('')+'</datalist>';dl+='<datalist id="dlB'+i+'">'+sB.map(j=>'<option value="'+j+'">').join('')+'</datalist>';}document.getElementById('wrapDatalistRencana').innerHTML=dl;let h='';let cD=0,cB=0;for(let i=0;i<45;i++){let d=r.depok[i]||{body:"",jam:""};let b=r.bandara[i]||{body:"",jam:""};if(d.body||d.jam)cD++;if(b.body||b.jam)cB++;h+=`<tr><td class="no">${i+1}</td><td><select class="rencana-sel ${d.body?'':'kosong'}" onchange="ubahRencana('depok',${i},'body',this.value)">${optBodyRencana(tgl,d.body)}</select></td><td><input class="rencana-inp" type="text" list="dlD${i}" placeholder="-" value="${(d.jam||'').replace(/"/g,'&quot;')}" onchange="ubahRencana('depok',${i},'jam',this.value)"></td><td><select class="rencana-sel ${b.body?'':'kosong'}" onchange="ubahRencana('bandara',${i},'body',this.value)">${optBodyRencana(tgl,b.body)}</select></td><td><input class="rencana-inp" type="text" list="dlB${i}" placeholder="-" value="${(b.jam||'').replace(/"/g,'&quot;')}" onchange="ubahRencana('bandara',${i},'jam',this.value)"></td></tr>`;}document.getElementById('listRencana').innerHTML=h;document.getElementById('totRencanaDepok').innerText='Depok: '+cD+' / 45';document.getElementById('totRencanaBandara').innerText='Bandara: '+cB+' / 45';}
-function ubahRencana(sisi,idx,field,val){let tgl=document.getElementById('tanggalRencana').value;let arr=getRencana(tgl)[sisi];if(field==='body'&&val!==''&&isMerahRencana(tgl,val)){alert('Body '+val+' lagi '+statusBodyRencana(tgl,val)+' Aa, ga bisa dipilih.');renderRencana();return;}if(field==='jam'){val=val.trim();if(val!==''){let dup=arr.findIndex((x,i)=>i!==idx&&x.jam===val);if(dup!==-1){alert('Jam '+val+' SUDAH TERPAKAI di Baris '+(dup+1)+' Aa!');renderRencana();return;}}}arr[idx][field]=val;arr[idx].ts=tsBaruRencana();fbSet('rencana/'+tgl+'/'+sisi+'/'+idx,arr[idx]);simpanLokal();renderRencana();}
+function ubahRencana(sisi,idx,field,val){let tgl=document.getElementById('tanggalRencana').value;let arr=getRencana(tgl)[sisi];if(field==='body'&&val!==''&&isMerahRencana(tgl,val)){alert('Body '+val+' lagi '+statusBodyRencana(tgl,val)+' Aa, ga bisa dipilih.');renderRencana();return;}if(field==='jam'){val=val.trim();if(val!==''){let dup=arr.findIndex((x,i)=>i!==idx&&x.jam===val);if(dup!==-1){alert('Jam '+val+' SUDAH TERPAKAI di Baris '+(dup+1)+' Aa!');renderRencana();return;}}}arr[idx][field]=val;arr[idx].ts=tsBaruRencana();fbSet('rencana/'+tgl+'/'+sisi+'/'+idx,arr[idx]);if(field==='body' && val!==''){
+    let awalBlok=Math.floor(idx/7)*7;
+    let posisiDiBlok=idx-awalBlok;
+    if(posisiDiBlok===0 || posisiDiBlok===1){
+      let body1=arr[awalBlok].body;
+      let body2=arr[awalBlok+1].body;
+      let pos1=listBodyBus.indexOf(body1);
+      let pos2=listBodyBus.indexOf(body2);
+      if(pos1!==-1 && pos2!==-1 && pos2>pos1){
+        let collected=[]; let p=pos2;
+        for(let k=0;k<5;k++){
+          let np=nextReadyPos(tgl, p);
+          if(np===-1) break;
+          if(np===pos1 || np===pos2) break;
+          collected.push(listBodyBus[np]); p=np;
+        }
+        let updates={};
+        for(let k=0;k<collected.length;k++){
+          let targetIdx=awalBlok+2+k;
+          if(targetIdx>=awalBlok+7 || targetIdx>=45) break;
+          arr[targetIdx].body=collected[k];
+          arr[targetIdx].ts=tsBaruRencana();
+          updates['rencana/'+tgl+'/'+sisi+'/'+targetIdx]=arr[targetIdx];
+        }
+        simpanLokal(); fbUpdate(updates); renderRencana(); return;
+      }
+    }
+  }simpanLokal();renderRencana();}
 function resetRencana(){let tgl=document.getElementById('tanggalRencana').value;if(!confirm('Kosongkan semua rencana tanggal '+tgl+' ?'))return;delete rencanaData[tgl];simpanLokal();fbHapus('rencana/'+tgl);renderRencana();}
 function salinRencanaKemarin(){let tgl=document.getElementById('tanggalRencana').value;let d=new Date(tgl);d.setDate(d.getDate()-1);let tk=toISO(d);if(!rencanaData[tk]){alert('Kemarin belum ada rencana Aa');return;}if(!confirm('Salin rencana kemarin ke hari ini? Data hari ini akan ketimpa.'))return;rencanaData[tgl]=JSON.parse(JSON.stringify(rencanaData[tk]));simpanLokal();let up={};['depok','bandara'].forEach(s=>{for(let i=0;i<45;i++){let c=rencanaData[tgl][s][i];c.ts=tsBaruRencana();up['rencana/'+tgl+'/'+s+'/'+i]=c;}});fbUpdate(up);renderRencana();alert('Berhasil disalin dari kemarin!');}
 function renderSerahTerima(){
