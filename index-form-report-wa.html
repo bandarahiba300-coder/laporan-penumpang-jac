@@ -136,6 +136,7 @@ body.ada-serah .sidebar{top:38px}
 .serah-mini b{font-size:12px;white-space:nowrap}
 .serah-mini select{flex:1;padding:7px 4px;font-size:12px;margin:0}
 .serah-mini .btn-mini-serah{width:auto;padding:7px 10px;font-size:12px;margin:0;background:#dc2626;white-space:nowrap}
+.btn-mini-serah.btn-konfirm{background:#16a34a !important}
 .serah-detail{margin-top:6px;text-align:center;font-size:11px;color:#666}
 .serah-aktif{background:#fee2e2;border:2px solid #dc2626;border-radius:12px;padding:12px;margin-bottom:12px;text-align:center}
 .btn-serah-tampil{background:#dc2626;margin-top:10px}
@@ -285,7 +286,7 @@ body.ada-serah .sidebar{top:38px}
 <select id="serahDari"><option value="Shift 1">Shift 1</option><option value="Shift 2">Shift 2</option></select>
 <span style="font-weight:900">➜</span>
 <select id="serahKe"><option value="Shift 2">Shift 2</option><option value="Shift 1">Shift 1</option></select>
-<button class="btn-mini-serah" onclick="buatSerahTerima()">📢 TAMPILKAN</button>
+<button class="btn-mini-serah" id="btnSerahAksi" onclick="buatSerahTerima()">📢 TAMPILKAN</button>
 </div>
 <div class="serah-detail">Otomatis dari STOCK + INFO TAMBAHAN • Ga usah ketik</div>
 </div>
@@ -381,7 +382,32 @@ function renderRencana(){let tgl=document.getElementById('tanggalRencana').value
 function ubahRencana(sisi,idx,field,val){let tgl=document.getElementById('tanggalRencana').value;let arr=getRencana(tgl)[sisi];if(field==='body'&&val!==''&&isMerahRencana(tgl,val)){alert('Body '+val+' lagi '+statusBodyRencana(tgl,val)+' Aa, ga bisa dipilih.');renderRencana();return;}if(field==='jam'){val=val.trim();if(val!==''){let dup=arr.findIndex((x,i)=>i!==idx&&x.jam===val);if(dup!==-1){alert('Jam '+val+' SUDAH TERPAKAI di Baris '+(dup+1)+' Aa!');renderRencana();return;}}}arr[idx][field]=val;arr[idx].ts=tsBaruRencana();fbSet('rencana/'+tgl+'/'+sisi+'/'+idx,arr[idx]);simpanLokal();renderRencana();}
 function resetRencana(){let tgl=document.getElementById('tanggalRencana').value;if(!confirm('Kosongkan semua rencana tanggal '+tgl+' ?'))return;delete rencanaData[tgl];simpanLokal();fbHapus('rencana/'+tgl);renderRencana();}
 function salinRencanaKemarin(){let tgl=document.getElementById('tanggalRencana').value;let d=new Date(tgl);d.setDate(d.getDate()-1);let tk=toISO(d);if(!rencanaData[tk]){alert('Kemarin belum ada rencana Aa');return;}if(!confirm('Salin rencana kemarin ke hari ini? Data hari ini akan ketimpa.'))return;rencanaData[tgl]=JSON.parse(JSON.stringify(rencanaData[tk]));simpanLokal();let up={};['depok','bandara'].forEach(s=>{for(let i=0;i<45;i++){let c=rencanaData[tgl][s][i];c.ts=tsBaruRencana();up['rencana/'+tgl+'/'+s+'/'+i]=c;}});fbUpdate(up);renderRencana();alert('Berhasil disalin dari kemarin!');}
-function renderSerahTerima(){let mq=document.getElementById('marqueeSerah');let bA=document.getElementById('boxSerahAktif');let bR=document.getElementById('boxSerahRiwayat');if(!mq||!bA)return;if(serahTerima&&serahTerima.aktif){let isi='⚠️ SERAH TERIMA '+serahTerima.dari.toUpperCase()+' ➜ '+serahTerima.ke.toUpperCase()+'  •  '+serahTerima.teks+'  •  ';document.getElementById('teksMarqueeSerah').innerText=isi+isi+isi;mq.style.display='block';document.body.classList.add('ada-serah');bA.style.display='block';bA.innerHTML='<div class="serah-aktif"><b>⚠️ PENGINGAT AKTIF - SEDANG JALAN DI SEMUA HALAMAN</b><br><br>"'+serahTerima.teks+'"<br><small>'+serahTerima.dari+' ➜ '+serahTerima.ke+' • Dibuat: '+serahTerima.dibuat+'</small><br><button class="btn-serah-konfirm" onclick="konfirmSerahTerima()">✅ KONFIRM - SERAH TERIMA DITERIMA</button></div>';}else{mq.style.display='none';document.body.classList.remove('ada-serah');bA.style.display='none';bA.innerHTML='';}if(serahTerima&&!serahTerima.aktif&&serahTerima.konfirmJam){bR.style.display='block';bR.innerHTML='<div class="serah-riwayat">✅ SERAH TERIMA TERAKHIR BERHASIL<br>'+serahTerima.dari+' ➜ '+serahTerima.ke+' • Dikonfirm: '+serahTerima.konfirmJam+'</div>';}else{bR.style.display='none';}}
+function renderSerahTerima(){
+  let mq=document.getElementById('marqueeSerah');
+  let bR=document.getElementById('boxSerahRiwayat');
+  let btn=document.getElementById('btnSerahAksi');
+  // Kotak gede PENGINGAT AKTIF dimatiin total
+  let bA=document.getElementById('boxSerahAktif');
+  if(bA){bA.style.display='none';bA.innerHTML='';}
+  if(!mq) return;
+  if(serahTerima&&serahTerima.aktif){
+    let isi='⚠️ SERAH TERIMA '+serahTerima.dari.toUpperCase()+' ➜ '+serahTerima.ke.toUpperCase()+'  •  '+serahTerima.teks+'  •  ';
+    document.getElementById('teksMarqueeSerah').innerText=isi+isi+isi;
+    mq.style.display='block';
+    document.body.classList.add('ada-serah');
+    // Tombol berubah jadi KONFIRM di tempat yang sama
+    if(btn){btn.innerText='✅ KONFIRM';btn.classList.add('btn-konfirm');btn.onclick=konfirmSerahTerima;}
+  }else{
+    mq.style.display='none';
+    document.body.classList.remove('ada-serah');
+    // Balik lagi jadi TAMPILKAN
+    if(btn){btn.innerText='📢 TAMPILKAN';btn.classList.remove('btn-konfirm');btn.onclick=buatSerahTerima;}
+  }
+  if(serahTerima&&!serahTerima.aktif&&serahTerima.konfirmJam){
+    bR.style.display='block';
+    bR.innerHTML='<div class="serah-riwayat">✅ SERAH TERIMA TERAKHIR BERHASIL<br>'+serahTerima.dari+' ➜ '+serahTerima.ke+' • Dikonfirm: '+serahTerima.konfirmJam+'</div>';
+  }else if(bR){bR.style.display='none';}
+  }
 function buatTeksSerahOtomatis(){
   let tgl=document.getElementById('tanggalStock').value;
   let st=getStockTanggal(tgl);
