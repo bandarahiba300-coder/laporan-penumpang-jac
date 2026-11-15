@@ -310,7 +310,6 @@ body.ada-serah .sidebar{top:38px}
 <div class="st-t-merah" id="totMerah">SERVICE / DLL: 0</div>
 </div>
 <style>
-/* INFO TAMBAHAN - BUBBLE CHAT */
 .stock-info{
   background:linear-gradient(90deg,#FF8A00,#FFB800) !important;
   color:#fff !important;
@@ -422,11 +421,11 @@ function simpanLimo(tgl,rute,jam,val){let k=kunciLimo(tgl,rute,jam);if(val===''|
 function totalLimoPerTanggal(tgl,rute){let t=0;Object.keys(limo).forEach(k=>{let p=k.split('|');if(p[0]===tgl&&p[1]===rute)t+=Number(limo[k]||0);});return t;}
 function hitungBulanan(bln){let g={};data.forEach(d=>{if(bln&&!d.tgl.startsWith(bln))return;if(!g[d.tgl])g[d.tgl]={depokKotor:0,bandaraKotor:0};if(d.rute==='Depok')g[d.tgl].depokKotor+=Number(d.pnp);else g[d.tgl].bandaraKotor+=Number(d.pnp);});Object.keys(limo).forEach(k=>{let tgl=k.split('|')[0];if(bln&&!tgl.startsWith(bln))return;if(!g[tgl])g[tgl]={depokKotor:0,bandaraKotor:0};});let keys=Object.keys(g).sort();let rows=[];let tDepok=0,tDari=0,tBand=0,tKe=0,tTot=0;keys.forEach(k=>{let gg=g[k];let dari=totalLimoPerTanggal(k,'Depok');let ke=totalLimoPerTanggal(k,'Bandara');let depok=gg.depokKotor-dari;let bandara=gg.bandaraKotor-ke;let tot=depok+dari+bandara+ke;tDepok+=depok;tDari+=dari;tBand+=bandara;tKe+=ke;tTot+=tot;rows.push({tgl:k,tampil:k.split('-').reverse().join('/'),depok,dariLimo:dari,bandara,keLimo:ke,total:tot,db:depok+bandara,limoTotal:dari+ke});});return{rows,tDepok,tDariLimo:tDari,tBandara:tBand,tKeLimo:tKe,tTotal:tTot};}
 function renderGrafik(rows){let el=document.getElementById('grafikBulanan');if(!rows.length){el.innerHTML='<div class="grafik-kosong">Belum ada data</div>';return;}let mx=0;rows.forEach(x=>{mx=Math.max(mx,x.db,x.limoTotal);});if(mx===0)mx=1;let h='<div class="grafik-chart">';rows.forEach(x=>{let hDB=Math.max(4,Math.round(x.db/mx*150));let hL=Math.max(4,Math.round(x.limoTotal/mx*150));h+='<div class="grafik-col"><div class="grafik-bars"><div class="grafik-bar-wrap"><div class="grafik-nilai">'+x.db+'</div><div class="grafik-bar bar-db" style="height:'+hDB+'px"></div></div><div class="grafik-bar-wrap"><div class="grafik-nilai">'+x.limoTotal+'</div><div class="grafik-bar bar-l" style="height:'+hL+'px"></div></div></div><div class="grafik-tgl">'+x.tampil.slice(0,5)+'</div></div>';});h+='</div>';el.innerHTML=h;}
-function renderBulanan(){let bln=document.getElementById('bulan').value;let r=hitungBulanan(bln);let h='';r.rows.forEach(x=>{h+=`<tr><td>${x.tampil}</td><td>${x.depok}</td><td>${x.dariLimo}</td><td>${x.bandara}</td><td>${x.keLimo}</td><td><b>${x.total}</b></td></tr>`;});if(!r.rows.length)h='<tr><td colspan="6">Belum ada data di bulan ini</td></tr>';document.getElementById('listBulanan').innerHTML=h;document.getElementById('totBDepok').innerText='Depok: '+r.tDepok;document.getElementById('totBDariLimo').innerText='Dari Limo: '+r.tDariLimo;document.getElementById('totBBandara').innerText='Bandara: '+r.tBandara;document.getElementById('totBKeLimo').innerText='Ke Limo: '+r.tKeLimo;document.getElementById('totBAll').innerText='Total: '+r.tTotal;renderGrafik(r.rows);}
+function renderBulanan(){let bln=document.getElementById('bulan').value;let r=hitungBulanan(bln);let h='';r.rows.forEach(x=>{h+=`<tr><td>${x.tampil}</td><td>${x.depok}</td><td>${x.dariLimo}</td><td>${x.bandara}</td><td>${x.keLimo}</td><td><b>${x.total}</b></td></tr>`;});if(!r.rows.length)h='<tr><td colspan="6">Belum ada data di bulan ini</td></tr>';document.getElementById('listBulanan').innerHTML=h;document.getElementById('totBDepok').innerText='Depok: '+r.tDepok;document.getElementById('totBDariLimo').innerText='Dari Limo: '+r.tDariLimo;document.getElementById('totBBandara').innerText='Bandara: '+r.tBand;document.getElementById('totBKeLimo').innerText='Ke Limo: '+r.tKeLimo;document.getElementById('totBAll').innerText='Total: '+r.tTotal;renderGrafik(r.rows);}
 function exportBulanan(){let bln=document.getElementById('bulan').value;if(!bln){alert('Pilih bulan dulu Aa');return;}let r=hitungBulanan(bln);if(!r.rows.length){alert('Belum ada data');return;}let nb=new Date(bln+'-01').toLocaleDateString('id-ID',{month:'long',year:'numeric'}).replace(/ /g,'_');let csv='\uFEFFLaporan JAC\nBulan,'+nb.replace(/_/g,' ')+'\n\nTanggal,Depok,Dari Limo,Bandara,Ke Limo,Total\n';r.rows.forEach(x=>{csv+=x.tampil+','+x.depok+','+x.dariLimo+','+x.bandara+','+x.keLimo+','+x.total+'\n';});csv+='TOTAL,'+r.tDepok+','+r.tDariLimo+','+r.tBandara+','+r.tKeLimo+','+r.tTotal+'\n';let blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Laporan_JAC_'+nb+'.csv';document.body.appendChild(a);a.click();document.body.removeChild(a);alert('Berhasil export Aa!');}
 function namaHariDanTanggalPanjang(tgl){let p=tgl.split('-');let d=new Date(Number(p[0]),Number(p[1])-1,Number(p[2]));return{hari:namaHariArr[d.getDay()],panjang:Number(p[2])+' '+namaBulanArr[Number(p[1])-1]+' '+p[0]};}
 function hitungShift(tgl,shift){let list=data.filter(d=>d.tgl===tgl&&d.rute==='Bandara');if(shift===1)list=list.filter(d=>nilaiJam(d.jam)<nilaiJam('15:20'));if(shift===2)list=list.filter(d=>nilaiJam(d.jam)>=nilaiJam('15:20'));let tot=0,ke=0;list.forEach(d=>{tot+=Number(d.pnp);ke+=Number(limo[kunciLimo(d.tgl,'Bandara',d.jam)]||0);});return{total:tot,keLimo:ke,depok:tot-ke,ritase:list.length};}
-function hitungTotalHarian(tgl){let dL=data.filter(d=>d.tgl===tgl&&d.rute==='Depok');let bL=data.filter(d=>d.tgl===tgl&&d.rute==='Bandara');let tDK=0,tBK=0,dari=0,ke=0;dL.forEach(d=>{tDK+=Number(d.pnp);dari+=Number(limo[kunciLimo(d.tgl,'Depok',d.jam)]||0);});bL.forEach(d=>{tBK+=Number(d.pnp);ke+=Number(limo[kunciLimo(d.tgl,'Bandara',d.jam)]||0);});return{depokBandara:tDK-dari,dariLimo:dari,totalDepok:tDK,bandaraDepok:tBK-ke,keLimo:ke,totalBandara:tBK,ritase:dL.length+bL.length,totalHarian:tDK+tBK};}
+function hitungTotalHarian(tgl){let dL=data.filter(d=>d.tgl===tgl&&d.rute==='Depok');let bL=data.filter(d=>d.tgl===tgl&&d.rute==='Bandara');let tDK=0,tBK=0,dari=0,ke=0;dL.forEach(d=>{tDK+=Number(d.pnp);dari+=Number(limo[kunciLimo(d.tgl,'Depok',d.jam)]||0);});bL.forEach(d=>{tBK+=Number(d.pnp);ke+=Number(limo[kunciLimo(d.tgl,'Bandara',d.jam)]||0);});return{depokBandara:tDK-dari,dariLimo:dari,totalDepok:tDK,bandaraDepok:tBK-ke,keLimo:ke,totalBandara:tBK,ritase:bL.length,totalHarian:tDK+tBK};}
 function renderFormat(){let tgl=document.getElementById('tanggalFormat').value;let jenis=document.getElementById('jenisLaporan').value;if(!tgl){document.getElementById('previewFormat').textContent='Pilih tanggal dulu Aa';return;}let info=namaHariDanTanggalPanjang(tgl);let teks='';if(jenis==='shift1'||jenis==='shift2'){let s=jenis==='shift1'?1:2;let h=hitungShift(tgl,s);teks='*LAPORAN SHIFT '+s+'*\n\n'+(s===1?'Selamat sore Team':'Selamat malam Team')+'\n\nLaporan Harian\nJAC Hiba Utama\nBANDARA SOETTA\n*Hari : '+info.hari+'*\n*Tanggal : '+info.panjang+'*\n'+(s===1?'*Dari Jam : 05:20 - 14:50*':'*Dari Jam : 15:20 - 00:20*')+'\n--------------------------------\nBsh - Depok = '+h.depok+' pnp\nBsh - Limo = '+h.keLimo+' pnp\nTotal Pnp = '+h.total+' pnp\nRitase = '+h.ritase+'\n--------------------------------\nDemikian laporan harian yang dapat disampaikan.\n\n*Terima Kasih*';}else{let t=hitungTotalHarian(tgl);teks='*LAPORAN HARIAN*\n\n*Hari : '+info.hari+'*\n*Tanggal : '+info.panjang+'*\n\n*1. DEPOK*\n- Depok - Bandara = '+t.depokBandara+'\n- Limo - Bandara = '+t.dariLimo+'\n- _TOTAL DEPOK = '+t.totalDepok+'_\n\n*2. BANDARA*\n- Bandara - Depok = '+t.bandaraDepok+'\n- Bandara - Limo = '+t.keLimo+'\n- _TOTAL BANDARA = '+t.totalBandara+'_\n- Ritase/KR = '+t.ritase+'\n\n___________________________\n\n- *_TOTAL Harian = '+t.totalHarian+'_*\n\nDemikian laporan harian yang dapat disampaikan.\n\n*Terima Kasih*';}teksFormatTerakhir=teks;document.getElementById('previewFormat').textContent=teks;}
 function editPreview(){let el=document.getElementById('previewFormat');el.focus();}
 function onPreviewEdit(){teksFormatTerakhir=document.getElementById('previewFormat').innerText;}
@@ -487,7 +486,6 @@ function renderSerahTerima(){
   let mq=document.getElementById('marqueeSerah');
   let bR=document.getElementById('boxSerahRiwayat');
   let btn=document.getElementById('btnSerahAksi');
-  // Kotak gede PENGINGAT AKTIF dimatiin total
   let bA=document.getElementById('boxSerahAktif');
   if(bA){bA.style.display='none';bA.innerHTML='';}
   if(!mq) return;
@@ -496,12 +494,10 @@ function renderSerahTerima(){
     document.getElementById('teksMarqueeSerah').innerText=isi+isi+isi;
     mq.style.display='block';
     document.body.classList.add('ada-serah');
-    // Tombol berubah jadi KONFIRM di tempat yang sama
     if(btn){btn.innerText='✅ KONFIRM';btn.classList.add('btn-konfirm');btn.onclick=konfirmSerahTerima;}
   }else{
     mq.style.display='none';
     document.body.classList.remove('ada-serah');
-    // Balik lagi jadi TAMPILKAN
     if(btn){btn.innerText='📢 TAMPILKAN';btn.classList.remove('btn-konfirm');btn.onclick=buatSerahTerima;}
   }
   if(serahTerima&&!serahTerima.aktif&&serahTerima.konfirmJam){
@@ -558,4 +554,4 @@ rootRef.on('value',(snap)=>{let v=snap.val()||{};sedangMenerima=true;let arr=[];
 db.ref('.info/connected').on('value',s=>{setStatusOnline(!!s.val());});
 </script>
 </body>
-  </html>
+</html>
